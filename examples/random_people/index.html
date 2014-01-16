@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Random People</title>
+    <meta name="viewport" content="user-scalable=no, width=device-width, initial-scale=1, maximum-scale=1">
+    <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+    <div id="host"></div>
+
+    <script id="person-template" type="text/template">
+        <div class='outer-person'>
+            <div class="picture">
+                <img src="{{picture}}" alt="Picture" class='thumbnail'>
+            </div>
+            <div class='person'>
+
+                <h3>Hi, my name is <em>{{name.first}} {{name.last}}</em></h3>
+                <ul>
+                    <li>Name: {{name.first}} {{name.last}}</li>
+                    <li>Gender: {{gender}}</li>
+                    <li>email: {{email}}</li>
+                    <li>Username: {{username}}</li>
+                    <li>
+                       <address>
+                         {{location.street}}
+                         {{location.city}} {{location.state}} {{location.zip}}
+                        </address>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </script>
+
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+    <script src="/examples/vendor/mustache.js"></script>
+    <script src="/examples/vendor/wf-uicomponents.min.js"></script>
+    <script src="random_people.js"></script>
+</body>
+</html>

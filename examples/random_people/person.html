@@ -1,0 +1,21 @@
+<div class='outer-person'>
+    <div class="picture">
+        <img src="{{picture}}" alt="Picture" class='thumbnail'>
+    </div>
+    <div class='person'>
+
+        <h3>Hi, my name is <em>{{name.first}} {{name.last}}</em></h3>
+        <ul>
+            <li>Name: {{name.first}} {{name.last}}</li>
+            <li>Gender: {{gender}}</li>
+            <li>email: {{email}}</li>
+            <li>Username: {{username}}</li>
+            <li>
+               <address>
+                 {{location.street}}
+                 {{location.city}} {{location.state}} {{location.zip}}
+                </address>
+            </li>
+        </ul>
+    </div>
+</div>

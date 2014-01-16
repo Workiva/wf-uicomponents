@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Viewer Component</title>
+	<meta name="viewport" content="user-scalable=no, width=device-width, initial-scale=1, maximum-scale=1">
+	<link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+    <div id="header" class="chrome">
+        <h1>Fake Document</h1>
+        <div class="mode-controls-container">
+            <label for="scrollMode">Scroll</label>
+            <select name="scrollMode" id="scrollMode">
+                <option value="flow">Flow</option>
+                <option value="peek">Peek</option>
+                <option value="single">Single</option>
+            </select>
+            <label for="fitMode">Fit</label>
+            <select name="fitMode" id="fitMode">
+                <option value="auto">Auto</option>
+                <option value="width">Width</option>
+                <option value="height">Height</option>
+            </select>
+        </div>
+    </div>
+
+    <div id="document"></div>
+
+    <div id="footer" class="chrome">
+        <div class="zooming-container">
+            <form id="zoomToScale">
+                <label for="zoomTo">Zoom</label>
+                <input type="number" name="zoomTo" id="zoomTo" />
+                %
+            </form>
+        </div>
+        <div class="toggle-disabled-container">
+            <label for="toggle-disabled">
+                <input type="checkbox" id="toggle-disabled" />
+                Disabled
+            </label>
+        </div>
+        <div class="paging-container">
+            <form id="jumpToPage">
+                <label for="page">Page</label>
+                <input type="number" name="page" id="page" />
+                / <span id="totalPages"></span>
+            </form>
+        </div>
+    </div>
+
+    <script data-main="/examples/scroll_list/scroll-list.js" src="/bower_components/requirejs/require.js"></script>
+    <script src="../require.config.js"></script>
+</body>
+</html>

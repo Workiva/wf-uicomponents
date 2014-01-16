@@ -1,0 +1,26 @@
+{
+  "name": "wf-js-uicomponents",
+  "version": "0.5.0",
+  "private": true,
+  "ignore": [
+    "bower_components",
+    "examples",
+    "node_modules",
+    "test",
+    "tools",
+    "Gruntfile.js",
+    "index.html",
+    "init.sh",
+    "package.json",
+    "smithy.yaml"
+  ],
+  "dependencies": {
+    "lodash": "1.3.1",
+    "hammerjs": "1.0.5",
+    "wf-js-common": "git@github.com:WebFilings/wf-js-common.git#ee92ea2091c166ee32bda2f71b080a5539723e23"
+  },
+  "devDependencies": {
+    "jquery": "2.0.3",
+    "requirejs": "2.1.8"
+  }
+}

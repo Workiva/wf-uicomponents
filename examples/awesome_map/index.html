@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Awesome Map</title>
+	<meta name="viewport" content="user-scalable=no, width=device-width, initial-scale=1, maximum-scale=1">
+
+	<link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+    <div id="controls">
+        <p class="currentState"></p>
+        <p class="touch-alert"><strong>Press shift on your desktop for multi-touch.</strong></p>
+        <form class="pan">
+            <strong>PAN</strong>
+            <span class="options-group">
+                <label><input type="radio" name="panMode" checked="checked" /> by</label>
+                <label><input type="radio" name="panMode" /> to</label>
+            </span>
+            <label>x: <input name="x" type="number" /></label>
+            <label>y: <input name="y" type="number" /></label>
+            <label>duration: <input name="duration" type="number" value="500" /></label>
+            <button type="submit">Pan</button>
+        </form>
+        <form class="zoom">
+            <strong>ZOOM</strong>
+            <span class="options-group">
+                <label><input type="radio" name="zoomMode" checked="checked" /> by</label>
+                <label><input type="radio" name="zoomMode" /> to</label>
+            </span>
+            <label>scale: <input name="scale" type="number" step="any" /></label>
+            <label>duration: <input name="duration" type="number" value="500" /></label>
+            <button type="submit">Zoom</button>
+        </form>
+        <p>
+            <label>
+                <input id="enforceViewportBoundaries" type="checkbox" checked="checked" />
+                Enforce Viewport Boundaries
+            </label>
+            <label>
+                <input id="enforceScaleLimits" type="checkbox" checked="checked" />
+                Enforce Scale Limits (0.7 - 3.0)
+            </label>
+            <label>
+                <input id="enableSwipes" type="checkbox" checked="checked" />
+                Enable Swipes
+            </label>
+        </p>
+    </div>
+
+    <div id="host"></div>
+
+    <script data-main="/examples/awesome_map/awesome-map.js" src="/bower_components/requirejs/require.js"></script>
+    <script src="../require.config.js"></script>
+</body>
+</html>

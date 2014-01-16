@@ -1,0 +1,96 @@
+* {
+    -moz-box-sizing: border-box;
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    padding: 0;
+}
+body, input, button {
+    font-family: Helvetica, Arial, sans-serif;
+    font-size: 14px;
+    color: #333;
+}
+
+#header {
+    position: absolute;
+    top: 0;
+    height: 40px;
+    width: 100%;
+    border-bottom: solid 1px #333;
+    line-height: 40px;
+}
+#header h1 {
+    float: left;
+    margin: 0;
+    height: 40px;
+    font-size: 16px;
+    text-align: center;
+    font-weight: bold;
+}
+#document {
+    position: fixed;
+    top: 40px;
+    bottom: 40px;
+    width: 100%;
+    background: url('navy_blue.png') #333;
+}
+#footer {
+    position: fixed;
+    bottom: 0;
+    height: 40px;
+    width: 100%;
+    line-height: 40px;
+    border-top: solid 1px #333;
+    text-align: center;
+}
+
+.chrome {
+    background-color: #222;
+    color: #999;
+    padding: 0 20px;
+}
+
+.mode-controls-container {
+    float: right;
+}
+.zooming-container {
+    float: left;
+    width: 33%;
+    text-align: left;
+}
+.zooming-container input {
+    width: 40px;
+}
+.toggle-disabled-container {
+    float: left;
+    width: 33%;
+    text-align: center;
+}
+.paging-container {
+    float: right;
+    width: 33%;
+    text-align: right;
+}
+.paging-container input {
+    width: 50px;
+}
+
+.placeholder {
+    background: #fff;
+    box-shadow: 0 8px 6px -6px #000;
+}
+.placeholder.loading {
+    background: #fff url('ajax-loader.gif') no-repeat 50% 50%;
+}
+
+input[type=number]::-webkit-inner-spin-button,
+input[type=number]::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+/* Styles for phones and portrait tablets */
+@media (max-width: 768px) {
+}

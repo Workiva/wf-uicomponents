@@ -1,0 +1,74 @@
+* {
+    -moz-box-sizing: border-box;
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    padding: 0;
+}
+body, input, button {
+    font-family: Helvetica, Arial, sans-serif;
+    font-size: 14px;
+}
+
+#controls {
+    position: absolute;
+    left: 0;
+    right: 0;
+    padding: 0 10px;
+    background-color: #fafacc;
+    height: 160px;
+}
+#controls .currentState {
+    position: absolute;
+    top: 0;
+    right: 10px;
+    background-color: #d2d29a;
+    width: 120px;
+    padding: 10px;
+    margin: 0 -10px 0 10px;
+}
+#controls form {
+    margin: 10px 0;
+}
+#controls form strong {
+    display: inline-block;
+    width: 50px;
+}
+#controls form .options-group {
+    display: inline-block;
+    margin-right: 10px;
+}
+#controls form .options-group label {
+    margin-right: 0;
+}
+#controls form input[type="text"],
+#controls form input[type="number"] {
+    width: 50px;
+}
+
+#host {
+    position: absolute;
+    top: 160px;
+    left: 0px;
+    bottom: 0px;
+    right: 0px;
+    background-color: #ddd;
+    border: solid 1px #ccc;
+}
+#host .page {
+    position: absolute;
+    background-color: #0c0;
+}
+
+/* Restyle for phones */
+@media (max-width: 480px) {
+    #controls {
+        display: none;
+    }
+    #host {
+        margin: 0;
+        top: 0;
+    }
+}

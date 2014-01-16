@@ -1,0 +1,12 @@
+.grunt/
+.idea/
+*.sublime-*
+
+bower_components/
+node_modules/
+docs/api/
+out/
+
+_*.runner.html
+npm_debug.log
+*.orig
