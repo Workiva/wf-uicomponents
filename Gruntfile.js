@@ -1,6 +1,6 @@
 module.exports = function(grunt) {
 
-    require('wf-js-grunt').init(grunt, {
+    require('wf-grunt').init(grunt, {
         options: {
             requireConfig: {
                 paths: {
