@@ -8,7 +8,7 @@ module.exports = function(grunt) {
                     jquery: 'bower_components/jquery/jquery',
                     lodash: 'bower_components/lodash/dist/lodash',
                     modernizr: 'bower_components/modernizr/modernizr',
-                    'wf-js-common': 'bower_components/wf-js-common/src',
+                    'wf-js-common': 'bower_components/wf-common/src',
                     'wf-js-uicomponents': './src'
                 },
                 shim: {
