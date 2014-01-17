@@ -8,7 +8,7 @@ WebFilings JavaScript UI Components
 The goal is to have, by v1.0, a suite of composable objects
 inspired by the Spark/Flex 4 component architecture:
 
-- **Viewport**: Clipping container that supprots touch and mouse interactions
+- **Viewport**: Clipping container that supports touch and mouse interactions
 to pan, zoom, and swipe content.
 - **Scroller**: Decorator for Viewport that adds scroll bars to the container.
 - **Lists**: Memory-efficient, fast-performing virtualized lists for rendering any number of items.
@@ -23,7 +23,7 @@ Components
 #### AwesomeMap
 
 The AwesomeMap defines a viewport that supports direct interactions via touch and mouse,
-and simulated interactions view its public API.
+and simulated interactions via its public API.
 Available interactions include panning, swiping and zooming.
 
 An AwesomeMap is also highly extensible through the use of interceptors.
@@ -47,24 +47,24 @@ or via methods on instances of the object.
 Consuming This Library
 --------------------------------------------------------------------------------
 
-- Distribution is through bower. _Don't forget to add the version to the end of the URL!_
+- Distribution is through bower. _Don't forget to add the version to the end of the URL (or you can do #master)!_
 
 ```bash
 # install bower if you haven't already
 $ npm install -g bower
 
 # install this package
-$ bower install git@github.com:WebFilings/wf-js-uicomponents.git#{version}
+$ bower install git@github.com:WebFilings/wf-uicomponents.git#{version}
 ```
 
 - In your requirejs configuration, ensure the following config exists
-for both wf-js-uicomponents and its dependencies:
+for both wf-uicomponents and its dependencies:
 
 ```javascript
 requirejs.config({
     paths: {
-        'wf-js-uicomponents': 'path-to-bower_components/wf-js-uicomponents/src/',
-        'wf-js-common': 'path-to-bower_components/wf-js-common/src/',
+        'wf-uicomponents': 'path-to-bower_components/wf-uicomponents/src/',
+        'wf-common': 'path-to-bower_components/wf-common/src/',
 
         hammerjs: 'path-to-bower_components/hammerjs/dist/hammer',
         lodash: 'path-to-bower_components/lodash/dist/lodash',
@@ -87,8 +87,8 @@ Development: Getting Started
 
 ```bash
 # clone the repo
-$ git clone git@github.com:WebFilings/wf-js-uicomponents.git
-$ cd wf-js-uicomponents
+$ git clone git@github.com:WebFilings/wf-uicomponents.git
+$ cd wf-uicomponents
 
 # install global tools if you haven't already
 $ npm install -g bower
