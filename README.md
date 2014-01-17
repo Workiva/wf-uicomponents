@@ -154,7 +154,7 @@ Familiarize yourself with the package managers we use:
 Development: Process
 --------------------------------------------------------------------------------
 
-This project uses [wf-js-grunt](https://github.com/WebFilings/wf-js-grunt#task-reference).
+This project uses [wf-grunt](https://github.com/WebFilings/wf-grunt#task-reference).
 Please see that repo for more information.
 
 [Node]: http://nodejs.org/api/
