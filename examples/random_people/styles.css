@@ -3,11 +3,20 @@ body {
     padding: 0;
 }
 
-div#host {
+div#controlPanel {
     position: absolute;
     top: 0px;
     bottom: 0px;
     left: 0px;
+    width: 150px;
+    border-right: 1px solid black;
+}
+
+div#host {
+    position: absolute;
+    top: 0px;
+    bottom: 0px;
+    left: 151px;
     right: 0px;
     background-color: #fff;
 }

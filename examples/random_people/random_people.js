@@ -89,4 +89,41 @@
     });
 
     scrollList.render();
+
+    // CONTROL PANEL
+    var goToZoom$ = $('#goToZoom');
+    var scaleLevel$ = $('#zoomLevel');
+    scaleLevel$[0].value = scrollList.getScale();
+
+    goToZoom$.on('click', function() {
+        scrollList.zoomTo(scaleLevel$[0].value, 1000);
+    });
+
+    var targetIndex = 0;
+    $('#scroll10').on('click', function() {
+        console.debug('click');
+        targetIndex += 10;
+        var originalScale = scrollList.getScale();
+        scrollList.zoomTo(.3, 1000, function() {
+            console.log('firstZoomDone: ' + targetIndex);
+            var scrollDuration = 2000;
+            scrollList.scrollTo({
+                index: targetIndex,
+                duration: 2000,
+                done: function() {
+                    console.log('scrollTo done');
+                    scrollList.zoomTo(originalScale, 1000, function() {
+                        console.log('second scale done');
+                    });
+                }
+            });
+
+            // setTimeout(function() {
+            //     console.log('scrollTo done: ' + originalScale);
+            //     scrollList.zoomTo(originalScale, 1000, function() {
+            //         console.log('second scale done');
+            //     });
+            // },2001)
+        })
+    });
 })();

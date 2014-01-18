@@ -7,6 +7,13 @@
     <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
+    <div id="controlPanel">
+        <h3>Test</h3>
+        <input type="button" id="goToZoom" title="Zoom To">Zoom To</input>
+        <input type="number" id="zoomLevel"></input>
+        <button id="scroll10">Fly Scroll!</button>
+    </div>
+
     <div id="host"></div>
 
     <script id="person-template" type="text/template">
@@ -33,7 +40,7 @@
         </div>
     </script>
 
-    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+    <script src="/bower_components/jquery/jquery.min.js" type="text/javascript"></script>
     <script src="/examples/vendor/mustache.js"></script>
     <script src="/examples/vendor/wf-uicomponents.min.js"></script>
     <script src="random_people.js"></script>
