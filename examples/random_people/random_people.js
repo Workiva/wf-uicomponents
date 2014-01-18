@@ -104,26 +104,25 @@
         console.debug('click');
         targetIndex += 10;
         var originalScale = scrollList.getScale();
-        scrollList.zoomTo(.3, 1000, function() {
-            console.log('firstZoomDone: ' + targetIndex);
-            var scrollDuration = 2000;
+        scrollList.zoomTo(.3, 500, function() {
+            console.log('firstZoomDone'); 
+        });
+
+        setTimeout(function() {
             scrollList.scrollTo({
                 index: targetIndex,
                 duration: 2000,
                 done: function() {
                     console.log('scrollTo done');
-                    scrollList.zoomTo(originalScale, 1000, function() {
-                        console.log('second scale done');
-                    });
                 }
-            });
+            })
+        }, 550);
 
-            // setTimeout(function() {
-            //     console.log('scrollTo done: ' + originalScale);
-            //     scrollList.zoomTo(originalScale, 1000, function() {
-            //         console.log('second scale done');
-            //     });
-            // },2001)
-        })
+        setTimeout(function() {
+            console.log('scrollTo done: ' + originalScale);
+            scrollList.zoomTo(originalScale, 500, function() {
+                console.log('second scale done');
+            });
+        },2600);
     });
 })();
