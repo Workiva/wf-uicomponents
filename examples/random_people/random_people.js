@@ -5,6 +5,10 @@
     var personTemplate = $('#person-template').html();
     Mustache.parse(personTemplate);
     var cache = {};
+    var TOTAL_ITEMS = 10000,
+        MIN_NUMBER_OF_VIRTUAL_ITEMS = 50;
+
+
 
     function randomUserData(seed, onSuccess, onError) {
         if (cache[seed]){
@@ -27,7 +31,7 @@
 
     var items = (function(){
         var items = [];
-        for (var i = 0; i < 10000; i++) {
+        for (var i = 0; i < TOTAL_ITEMS; i++) {
             items.push({ width: 600, height: 300 });
         }
         return items;
@@ -38,7 +42,7 @@
         gap: 10,
         mode: 'flow',
         fit: 'auto',
-        minNumberOfVirtualItems: 50,
+        minNumberOfVirtualItems: MIN_NUMBER_OF_VIRTUAL_ITEMS,
         padding: 10,
         scaleLimits: { minimum: 0.25, maximum: 3 }
     });
@@ -89,4 +93,14 @@
     });
 
     scrollList.render();
+
+
+    // POSITIONAL INFORMATION
+    var pageLocation$ = $('#current-position');
+    pageLocation$.text('0 / ' + TOTAL_ITEMS);
+    scrollList.onCurrentItemChanged(function(sender, args) {
+        pageLocation$.text(args.itemIndex + ' / ' + TOTAL_ITEMS);
+    });
+
+
 })();

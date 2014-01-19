@@ -3,6 +3,17 @@ body {
     padding: 0;
 }
 
+div#current-position {
+    position: absolute;
+    bottom: 0px;
+    left: 0px;
+    width: 100px;
+    height: 40px;
+    border-top: 1px solid black;
+    border-right: 1px solid black;
+    padding: 10px;
+}
+
 div#host {
     position: absolute;
     top: 0px;
@@ -35,6 +46,7 @@ div#host {
     width: 75px;
     background-color: #eeffff;
 }
+
 .person {
     position: absolute;
     left: 75px;
