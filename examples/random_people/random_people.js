@@ -5,8 +5,8 @@
     var personTemplate = $('#person-template').html();
     Mustache.parse(personTemplate);
     var cache = {};
-    var TOTAL_ITEMS = 10000,
-        MIN_NUMBER_OF_VIRTUAL_ITEMS = 50;
+    var TOTAL_ITEMS = 15,
+        MIN_NUMBER_OF_VIRTUAL_ITEMS = 4;
 
 
 
@@ -43,7 +43,7 @@
         mode: 'flow',
         fit: 'auto',
         minNumberOfVirtualItems: MIN_NUMBER_OF_VIRTUAL_ITEMS,
-        padding: 10,
+        padding: 0,
         scaleLimits: { minimum: 0.25, maximum: 3 }
     });
 
@@ -102,5 +102,25 @@
         pageLocation$.text(args.itemIndex + ' / ' + TOTAL_ITEMS);
     });
 
+
+    // SCROLL BAR
+    var scrollBarEL = document.getElementById('scroll-bar');
+    var layout = scrollList.getLayout();
+    var virtualHeight = layout.getSize().height,          // virtual height of the content
+        viewportHeight = layout.getViewportSize().height; // This could change on window resize
+
+    // Calculate the size of the scrollbar depending on the virtual height
+    var scrollBarHeight = Math.max(16, ((viewportHeight/virtualHeight) * viewportHeight))
+    scrollBarEL.style.height = scrollBarHeight + 'px';
+
+    scrollList.onCurrentItemChanged(function(/*sender, args*/) {
+        setTimeout(function() {
+            var currentPosition = layout.getVisiblePosition().top;
+            var availableScrollbarHeight = viewportHeight - scrollBarHeight;
+            var scrollableVirtualHeight = virtualHeight - viewportHeight;
+            var translatedPosition = availableScrollbarHeight / scrollableVirtualHeight * currentPosition;
+            scrollBarEL.style.top = translatedPosition + 'px';
+        }, 0);
+    });
 
 })();

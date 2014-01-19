@@ -23,6 +23,14 @@ div#host {
     background-color: #fff;
 }
 
+div#scroll-bar {
+    position: absolute;
+    right: 2px;
+    width: 16px;
+    border: 1px solid black;
+    height: 100px;
+}
+
 .loading {
     background: url('ajax-loader.gif') 0 0 no-repeat;
     /*width: 100%;
