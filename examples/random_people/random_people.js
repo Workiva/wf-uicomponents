@@ -106,12 +106,12 @@
         viewportHeight = layout.getViewportSize().height; // This could change on window resize
 
     // Calculate the size of the scrollbar depending on the virtual height
-    var scrollbarHeight = Math.max(16, ((viewportHeight/virtualHeight) * viewportHeight))
+    var scrollbarHeight = Math.max(16, ((viewportHeight/virtualHeight) * viewportHeight));
     scrollbarEL.style.height = scrollbarHeight + 'px';
 
     scrollList.getListMap().onTranslationChanged(function(/*sender, args*/) {
         if (scrollbarScrolling) {
-          return;
+            return;
         }
         setTimeout(function() {
             var currentPosition = layout.getVisiblePosition().top;
@@ -149,25 +149,25 @@
         // Except the the first and last items, they also need to include the padding.
         var objHeight = 310;
         if (indexOfItem === 0 || indexOfItem === (TOTAL_ITEMS)){
-          objHeight = 315;
+            objHeight = 315;
         }
 
         scrollList.scrollTo({
-          index: indexOfItem,
-          center: {x: 0, y: objHeight * remainder}
+            index: indexOfItem,
+            center: {x: 0, y: objHeight * remainder}
         });
-    };
+    }
 
-    function stopUpdatingScrollbar(event) {
+    function stopUpdatingScrollbar(/* event */) {
         clickOffset = undefined;
         scrollbarScrolling = false;
         document.removeEventListener('mousemove', updateScrollBar);
         removeDocumentEventWatching();
-    };
+    }
 
     function removeDocumentEventWatching() {
-      document.removeEventListener('mouseup', stopUpdatingScrollbar);
-    };
+        document.removeEventListener('mouseup', stopUpdatingScrollbar);
+    }
 
     scrollbarEL.addEventListener('mousedown', function(event) {
         clickOffset = event.y - scrollbarEL.offsetTop;
