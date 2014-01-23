@@ -125,7 +125,8 @@ define(function(require) {
 
             it('should dispose all the observables', function() {
                 var observables = [
-                    layout.onCurrentItemIndexChanged
+                    layout.onCurrentItemIndexChanged,
+                    layout.onCurrentItemIndexChangeCanceled
                 ];
                 var i;
 
@@ -966,6 +967,18 @@ define(function(require) {
                 layout.render({ top: 0, left: 0 });
 
                 expect(layout.onCurrentItemIndexChanged.dispatch).not.toHaveBeenCalled();
+            });
+
+            it('should dispatch "onCurrentItemIndexChangeCanceled" when the current item DOES NOT change on render', function() {
+                spyOn(renderer, 'render');
+                spyOn(renderer, 'remove');
+
+                layout.render();
+                spyOn(layout.onCurrentItemIndexChangeCanceled, 'dispatch');
+                layout.render();
+
+                expect(layout.onCurrentItemIndexChangeCanceled.dispatch)
+                    .toHaveBeenCalledWith([layout, { index: 1 }]);
             });
         });
     });
