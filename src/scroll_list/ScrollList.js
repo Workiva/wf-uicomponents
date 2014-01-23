@@ -161,6 +161,17 @@ define(function(require) {
         this.onCurrentItemChanged = Observable.newObservable();
 
         /**
+         * Observable for subscribing to changes to the currently visible item.
+         * @method ScrollList#onCurrentItemChangeCanceled
+         * @param {Function} callback
+         *        Invoked with (sender, {
+         *            itemIndex: number,
+         *            placeholder: Object
+         *        })
+         */
+        this.onCurrentItemChangeCanceled = Observable.newObservable();
+
+        /**
          * Observable for subscribing to changes to the currently visible item
          * just before the change is triggered.
          * @method ScrollList#onCurrentItemChanging
@@ -439,6 +450,7 @@ define(function(require) {
             this.onContentRequested.dispose();
             this.onContentRemoved.dispose();
             this.onCurrentItemChanged.dispose();
+            this.onCurrentItemChangeCanceled.dispose();
             this.onCurrentItemChanging.dispose();
             this.onInteraction.dispose();
             this.onInteractionFinished.dispose();
@@ -645,6 +657,20 @@ define(function(require) {
                     self._scaleTranslator.attach(itemMap, itemIndex);
                 }
                 self.onCurrentItemChanged.dispatch([self, {
+                    itemIndex: itemIndex,
+                    placeholder: placeholder
+                }]);
+            });
+
+            this._layout.onCurrentItemIndexChangeCanceled(function(/*layout, args*/) {
+                var currentItem = self.getCurrentItem();
+                var itemIndex = currentItem.index;
+                var placeholder = currentItem.placeholder;
+                if (!isFlow) {
+                    var itemMap = self._renderer.get(itemIndex).map;
+                    self._scaleTranslator.attach(itemMap, itemIndex);
+                }
+                self.onCurrentItemChangeCanceled.dispatch([self, {
                     itemIndex: itemIndex,
                     placeholder: placeholder
                 }]);
