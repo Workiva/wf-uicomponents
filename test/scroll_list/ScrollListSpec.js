@@ -204,6 +204,7 @@ define(function(require) {
                         scrollList.onContentRequested,
                         scrollList.onContentRemoved,
                         scrollList.onCurrentItemChanged,
+                        scrollList.onCurrentItemChangeCanceled,
                         scrollList.onCurrentItemChanging,
                         scrollList.onInteraction,
                         scrollList.onInteractionFinished,

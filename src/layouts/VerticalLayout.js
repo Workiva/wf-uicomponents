@@ -101,6 +101,18 @@ define(function(require) {
          */
         this.onCurrentItemIndexChanged = Observable.newObservable();
 
+        /**
+         * Observable dispatched when the current item index DOES NOT change after
+         * rendering the layout.
+         *
+         * @method VerticalLayout#onCurrentItemIndexChangeCanceled
+         * @param {Function} callback
+         *        Invoked with (sender, {
+         *            index: number
+         *        })
+         */
+        this.onCurrentItemIndexChangeCanceled = Observable.newObservable();
+
         //---------------------------------------------------------
         // Private properties
         //---------------------------------------------------------
@@ -328,6 +340,7 @@ define(function(require) {
          */
         dispose: function() {
             this.onCurrentItemIndexChanged.dispose();
+            this.onCurrentItemIndexChangeCanceled.dispose();
 
             DestroyUtil.destroy(this);
         },
@@ -728,6 +741,8 @@ define(function(require) {
             // If the current item index has changed, dispatch.
             if (testCurrentItemIndex && currentItemIndex !== this._cache.lastItemIndex) {
                 this.onCurrentItemIndexChanged.dispatch([this, { index: currentItemIndex }]);
+            } else {
+                this.onCurrentItemIndexChangeCanceled.dispatch([this, { index: currentItemIndex }]);
             }
 
             // Store the new render state for next time.
