@@ -583,6 +583,10 @@ define(function(require) {
                 // when a release event is finished processing.
                 if (eventType === EventTypes.RELEASE) {
                     self.onInteractionFinished.dispatch([self]);
+                    if (self._deferInteractionStarted) {
+                        self.onInteractionStarted.dispatch([self]);
+                        self._deferInteractionStarted = false;
+                    }
                 }
                 if (args.done) {
                     args.done();
@@ -595,8 +599,14 @@ define(function(require) {
                 var cancelledState = queue.cancelCurrentTransformation();
                 if (cancelledState) {
                     this.setCurrentTransformState(cancelledState);
+                    // To preserve logical ordering of events when cancelling
+                    // transforms via touch events, dispatch onInteractionStarted
+                    // after the previous interaction's release event is handled.
+                    this._deferInteractionStarted = true;
                 }
-                this.onInteractionStarted.dispatch([this]);
+                else {
+                    this.onInteractionStarted.dispatch([this]);
+                }
             }
             // If resizing, invalidate the viewport dimensions.
             else if (eventType === EventTypes.RESIZE) {

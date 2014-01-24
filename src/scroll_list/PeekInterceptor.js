@@ -102,8 +102,9 @@ define(function(require) {
 
             case EventTypes.TOUCH:
 
+                // Must return after setting peek delta to avoid cancelling touch event.
                 this._setPeekDeltaByCurrentPosition();
-                break;
+                return;
 
             case EventTypes.DRAG:
             case EventTypes.DRAG_END:
@@ -256,7 +257,10 @@ define(function(require) {
                 }
             }
 
-            scrollList.scrollTo({ index: itemIndex, duration: 250 });
+            // Let this release event play out before scrolling.
+            setTimeout(function() {
+                scrollList.scrollTo({ index: itemIndex, duration: 250 });
+            }, 0);
 
             this._resetPeekState();
         },
@@ -297,3 +301,4 @@ define(function(require) {
 
     return PeekInterceptor;
 });
+
