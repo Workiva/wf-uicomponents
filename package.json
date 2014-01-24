@@ -1,6 +1,6 @@
 {
   "name": "wf-uicomponents",
-  "version": "0.5.0",
+  "version": "0.5.1",
   "description": "UI Components that support a rich HTML5 user experience.",
   "private": true,
   "repository": {
@@ -10,7 +10,7 @@
   "readmeFilename": "README.md",
   "devDependencies": {
     "grunt": "~0.4.1",
-    "wf-grunt": "git+ssh://git@github.com:WebFilings/wf-grunt.git#master",
+    "wf-grunt": "git+ssh://git@github.com:WebFilings/wf-grunt.git#0.3.1",
     "grunt-contrib-requirejs": "~0.4.1",
     "almond": "~0.2.7"
   }
