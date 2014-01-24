@@ -648,6 +648,18 @@ define(function(require) {
                 expect(awesomeMap.onInteractionStarted.dispatch).toHaveBeenCalledWith([awesomeMap]);
             });
 
+            it('should not dispatch "onInteractionStarted" observable on touch events that interrupt transformations', function() {
+                var evt = new InteractionEvent(EventTypes.TOUCH, new Gesture(), new Gesture());
+                var queue = awesomeMap._transformationQueue;
+                var cancelledState = new TransformState();
+
+                spyOn(queue, 'cancelCurrentTransformation').andReturn(cancelledState);
+                spyOn(awesomeMap.onInteractionStarted, 'dispatch');
+                awesomeMap.handleInteractionEvent(null, { event: evt });
+
+                expect(awesomeMap.onInteractionStarted.dispatch).not.toHaveBeenCalledWith([awesomeMap]);
+            });
+
             it('should invalidate viewport dimensions on resize', function() {
                 var evt = new InteractionEvent(EventTypes.RESIZE, new Gesture(), new Gesture());
                 var viewportDimensions = awesomeMap.getViewportDimensions();
@@ -697,6 +709,18 @@ define(function(require) {
                 awesomeMap.handleInteractionEvent(null, { event: evt });
 
                 expect(awesomeMap.onInteractionFinished.dispatch).toHaveBeenCalledWith([awesomeMap]);
+            });
+
+            it('should dispatch "onInteractionStarted" observable on release events when dispatch is deferred', function() {
+                var touch = new InteractionEvent(EventTypes.TOUCH, new Gesture(), new Gesture());
+                var release = new InteractionEvent(EventTypes.RELEASE, new Gesture(), new Gesture());
+
+                spyOn(awesomeMap._transformationQueue, 'cancelCurrentTransformation').andReturn(new TransformState());
+                spyOn(awesomeMap.onInteractionStarted, 'dispatch');
+                awesomeMap.handleInteractionEvent(null, { event: touch });
+                awesomeMap.handleInteractionEvent(null, { event: release });
+
+                expect(awesomeMap.onInteractionStarted.dispatch).toHaveBeenCalledWith([awesomeMap]);
             });
         });
     });
