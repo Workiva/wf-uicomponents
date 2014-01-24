@@ -7,7 +7,7 @@ requirejs.config({
         modernizr: '../../bower_components/modernizr/modernizr',
         'hammerjs.fakemultitouch': '../vendor/hammer.fakemultitouch',
         'hammerjs.showtouches': '../vendor/hammer.showtouches',
-        'wf-js-common': '../../bower_components/wf-js-common/src/',
+        'wf-js-common': '../../bower_components/wf-common/src/',
         'wf-js-uicomponents': '../../src/',
     },
     shim: {
