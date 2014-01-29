@@ -385,7 +385,7 @@ define(function(require) {
             };
         },
 
-        _getMouseWheelHandler: function() {
+        _getMouseWheelHandler: function(eventType) {
             var self = this;
 
             /**
@@ -401,7 +401,7 @@ define(function(require) {
                 };
 
                 // Dispatch the mouse wheel.
-                self._dispatchEvent(EventTypes.MOUSE_WHEEL, gesture);
+                self._dispatchEvent(eventType, gesture);
 
                 // Don't save the last gesture, as we're not in an interaction.
                 self._lastGesture = null;
@@ -576,7 +576,9 @@ define(function(require) {
             handlers[EventTypes.DRAG_END] = this._getDragEndHandler();
             handlers[EventTypes.DRAG_START] = this._getDragStartHandler();
             handlers[EventTypes.HOLD] = this._getHoldHandler();
-            handlers[EventTypes.MOUSE_WHEEL] = this._getMouseWheelHandler();
+            handlers[EventTypes.MOUSE_WHEEL] = this._getMouseWheelHandler(EventTypes.MOUSE_WHEEL);
+            handlers[EventTypes.MOUSE_WHEEL_START] = this._getMouseWheelHandler(EventTypes.MOUSE_WHEEL_START);
+            handlers[EventTypes.MOUSE_WHEEL_END] = this._getMouseWheelHandler(EventTypes.MOUSE_WHEEL_END);
             handlers[EventTypes.RELEASE] = this._getReleaseHandler();
             handlers[EventTypes.RESIZE] = this._getWindowResizeHandler();
             handlers[EventTypes.SWIPE] = this._getSwipeHandler();
@@ -609,6 +611,8 @@ define(function(require) {
             // Initialize the mouse adapter.
             this._mouseAdapter = dependencies.createMouseAdapter(this._host);
             this._mouseAdapter.onMouseWheel(handlers[EventTypes.MOUSE_WHEEL]);
+            this._mouseAdapter.onMouseWheelStart(handlers[EventTypes.MOUSE_WHEEL_START]);
+            this._mouseAdapter.onMouseWheelEnd(handlers[EventTypes.MOUSE_WHEEL_END]);
 
             // Initialize the window resize handler.
             dependencies.getWindow().addEventListener(this._resizeEventType, handlers[EventTypes.RESIZE]);
