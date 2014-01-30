@@ -9,6 +9,7 @@ require([
     'wf-js-common/BrowserInfo',
     'wf-js-common/Url',
     'wf-js-common/DOMUtil',
+    'wf-js-common/consoleDev',
     'hammerjs.fakemultitouch',
     'hammerjs.showtouches'
 ], function(
@@ -21,15 +22,10 @@ require([
     DeviceInfo,
     BrowserInfo,
     Url,
-    DOMUtil
+    DOMUtil,
+    console
 ) {
     'use strict';
-
-    //---------------------------------------------------------
-    // Logging
-    //---------------------------------------------------------
-
-    var DEBUG = false;
 
     //---------------------------------------------------------
     // Initialize ViewerComponent
@@ -134,45 +130,41 @@ require([
 
     scrollList.onContentRequested(function(sender, args) {
         var itemIndex = args.itemIndex;
-        if (DEBUG) {
-            console.log('content requested for', itemIndex);
-        }
+        console.debug('content requested for', itemIndex);
         createPage(args.placeholder.contentContainer, itemIndex,
             args.scaleToFit, args.width, args.height);
     });
 
     scrollList.onContentRemoved(function(sender, args) {
-        if (DEBUG) {
-            console.log('content removed for', args.itemIndex);
-        }
+        console.debug('content removed for', args.itemIndex);
     });
 
     scrollList.onCurrentItemChanged(function(sender, args) {
-        if (DEBUG) {
-            console.log('current item changed to', args.itemIndex);
-        }
+        console.debug('current item changed to', args.itemIndex);
         $('#page').val(args.itemIndex + 1);
         updateZoomPercentage();
     });
 
     scrollList.onInteraction(function(sender, args) {
-        if (DEBUG) {
-            console.log(args.event.type, args);
-        }
+        console.debug(args.event.type, args);
+    });
+
+    scrollList.onInteractionStarted(function(/*sender*/) {
+        console.debug('interaction started');
+    });
+
+    scrollList.onInteractionFinished(function(/*sender*/) {
+        console.debug('interaction finished');
     });
 
     scrollList.onPlaceholderRendered(function(sender, args) {
-        if (DEBUG) {
-            console.log('placeholder rendered for', args.itemIndex);
-        }
+        console.debug('placeholder rendered for', args.itemIndex);
         // BEWARE: Doing big stuff here can interrupt swipe animations!
         args.placeholder.contentContainer.style.backgroundColor = '#fff';
     });
 
     scrollList.onScaleChanged(function(sender, args) {
-        if (DEBUG) {
-            console.log('scale changed to', args.scale);
-        }
+        console.debug('scale changed to', args.scale);
         updateZoomPercentage();
     });
 
@@ -193,9 +185,9 @@ require([
 
     $(function() {
 
-        $(window).on('resize', function() { console.log('resize'); });
-        $(window).on('orientationchange', function() { console.log('orientationchange'); });
-        $(window).on('scroll', function() { console.log('scroll'); });
+        $(window).on('resize', function() { console.debug('resize'); });
+        $(window).on('orientationchange', function() { console.debug('orientationchange'); });
+        $(window).on('scroll', function() { console.debug('scroll'); });
 
         DOMUtil.dismissIOS7VirtualKeyboardOnOrientationChange();
         DOMUtil.preventIOS7WindowScroll();
