@@ -581,7 +581,7 @@ define(function(require) {
             var done = function() {
                 // Let consumers know that an interaction is complete
                 // when a release event is finished processing.
-                if (eventType === EventTypes.RELEASE) {
+                if (eventType === EventTypes.RELEASE || eventType === EventTypes.MOUSE_WHEEL_END) {
                     self.onInteractionFinished.dispatch([self]);
                     if (self._deferInteractionStarted) {
                         self.onInteractionStarted.dispatch([self]);
@@ -595,7 +595,7 @@ define(function(require) {
 
             // If this is a touch event, cancel the current transformation
             // and notify the consumer that an interaction has started.
-            if (eventType === EventTypes.TOUCH) {
+            if (eventType === EventTypes.TOUCH || eventType === EventTypes.MOUSE_WHEEL_START) {
                 var cancelledState = queue.cancelCurrentTransformation();
                 if (cancelledState) {
                     this.setCurrentTransformState(cancelledState);

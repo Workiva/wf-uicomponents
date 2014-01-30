@@ -613,8 +613,12 @@ define(function(require) {
 
         describe('handling interaction events', function() {
 
+            function createInteractionEvent(eventType) {
+                return new InteractionEvent(eventType, new Gesture(), new Gesture());
+            }
+
             it('should not handle an event if an onInteraction subscriber returns false', function() {
-                var evt = new InteractionEvent(EventTypes.RESIZE, new Gesture(), new Gesture());
+                var evt = createInteractionEvent(EventTypes.RESIZE);
 
                 spyOn(awesomeMap._transformationQueue, 'enqueue');
                 spyOn(awesomeMap._transformationQueue, 'processEvents');
@@ -627,7 +631,7 @@ define(function(require) {
             });
 
             it('should cancel the current transformation on touch and set the current state', function() {
-                var touch = new InteractionEvent(EventTypes.TOUCH, new Gesture(), new Gesture());
+                var touch = createInteractionEvent(EventTypes.TOUCH);
                 var queue = awesomeMap._transformationQueue;
                 var cancelledState = new TransformState();
 
@@ -639,8 +643,17 @@ define(function(require) {
                 expect(awesomeMap.setCurrentTransformState).toHaveBeenCalledWith(cancelledState);
             });
 
+            it('should dispatch "onInteractionStarted" observable on mouse wheel start events', function() {
+                var evt = createInteractionEvent(EventTypes.MOUSE_WHEEL_START);
+
+                spyOn(awesomeMap.onInteractionStarted, 'dispatch');
+                awesomeMap.handleInteractionEvent(null, { event: evt });
+
+                expect(awesomeMap.onInteractionStarted.dispatch).toHaveBeenCalledWith([awesomeMap]);
+            });
+
             it('should dispatch "onInteractionStarted" observable on touch events', function() {
-                var evt = new InteractionEvent(EventTypes.TOUCH, new Gesture(), new Gesture());
+                var evt = createInteractionEvent(EventTypes.TOUCH);
 
                 spyOn(awesomeMap.onInteractionStarted, 'dispatch');
                 awesomeMap.handleInteractionEvent(null, { event: evt });
@@ -649,7 +662,7 @@ define(function(require) {
             });
 
             it('should not dispatch "onInteractionStarted" observable on touch events that interrupt transformations', function() {
-                var evt = new InteractionEvent(EventTypes.TOUCH, new Gesture(), new Gesture());
+                var evt = createInteractionEvent(EventTypes.TOUCH);
                 var queue = awesomeMap._transformationQueue;
                 var cancelledState = new TransformState();
 
@@ -661,7 +674,7 @@ define(function(require) {
             });
 
             it('should invalidate viewport dimensions on resize', function() {
-                var evt = new InteractionEvent(EventTypes.RESIZE, new Gesture(), new Gesture());
+                var evt = createInteractionEvent(EventTypes.RESIZE);
                 var viewportDimensions = awesomeMap.getViewportDimensions();
 
                 // Resize the element, should still have stale values
@@ -679,7 +692,7 @@ define(function(require) {
 
             it('should dispatch "onInteraction" observable', function() {
                 var callback = function() {};
-                var evt = new InteractionEvent(null, new Gesture(), new Gesture());
+                var evt = createInteractionEvent(null);
                 var transformState = new TransformState();
 
                 spyOn(awesomeMap.onInteraction, 'dispatch');
@@ -694,7 +707,7 @@ define(function(require) {
             });
 
             it('should set current state to end state of event transformation', function() {
-                var evt = new InteractionEvent(EventTypes.Drag, new Gesture(), new Gesture());
+                var evt = createInteractionEvent(EventTypes.Drag);
 
                 spyOn(awesomeMap, 'setCurrentTransformState');
                 awesomeMap.handleInteractionEvent(null, { event: evt });
@@ -702,8 +715,17 @@ define(function(require) {
                 expect(awesomeMap.setCurrentTransformState).toHaveBeenCalled();
             });
 
+            it('should dispatch "onInteractionFinished" observable on mouse wheel end events', function() {
+                var evt = createInteractionEvent(EventTypes.MOUSE_WHEEL_END);
+
+                spyOn(awesomeMap.onInteractionFinished, 'dispatch');
+                awesomeMap.handleInteractionEvent(null, { event: evt });
+
+                expect(awesomeMap.onInteractionFinished.dispatch).toHaveBeenCalledWith([awesomeMap]);
+            });
+
             it('should dispatch "onInteractionFinished" observable on release events', function() {
-                var evt = new InteractionEvent(EventTypes.RELEASE, new Gesture(), new Gesture());
+                var evt = createInteractionEvent(EventTypes.RELEASE);
 
                 spyOn(awesomeMap.onInteractionFinished, 'dispatch');
                 awesomeMap.handleInteractionEvent(null, { event: evt });
@@ -712,8 +734,8 @@ define(function(require) {
             });
 
             it('should dispatch "onInteractionStarted" observable on release events when dispatch is deferred', function() {
-                var touch = new InteractionEvent(EventTypes.TOUCH, new Gesture(), new Gesture());
-                var release = new InteractionEvent(EventTypes.RELEASE, new Gesture(), new Gesture());
+                var touch = createInteractionEvent(EventTypes.TOUCH);
+                var release = createInteractionEvent(EventTypes.RELEASE);
 
                 spyOn(awesomeMap._transformationQueue, 'cancelCurrentTransformation').andReturn(new TransformState());
                 spyOn(awesomeMap.onInteractionStarted, 'dispatch');
