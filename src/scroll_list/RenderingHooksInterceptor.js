@@ -23,17 +23,23 @@ define(function(require) {
     var EventTypes = require('wf-js-uicomponents/awesome_map/EventTypes');
     var requestAnimFrame = require('wf-js-common/requestAnimationFrame');
 
+    /**
+     * Rendering 
+     * @constructor
+     */
     var RenderingHooksInterceptor = function(scrollList) {
         this._debouncedLoad = _.debounce(function() {
             scrollList.getLayout().loadContent();
         }, 100);
 
         this._scrollList = scrollList;
+        this._didWheelTranslateMap = false;
     };
 
     RenderingHooksInterceptor.prototype = {
 
         handleTransformStarted: function(sender, args) {
+            // assert sender is AwesomeMap
             // This logic only applies to 'flow' mode.
             if (this._scrollList.getOptions().mode !== ScrollModes.FLOW) {
                 return;
@@ -56,7 +62,14 @@ define(function(require) {
             }
             // Create placeholders to support mouse wheels.
             else if (eventType === EventTypes.MOUSE_WHEEL) {
-                this._renderLayout();
+                // Prevent unnecessary rendering for scrolls at boundaries
+                var currentTranslation = sender.getTranslation();
+                this._didWheelTranslateMap =
+                    (currentTranslation.y !== targetState.translateY) ||
+                    (currentTranslation.x !== targetState.translateX);
+                if (this._didWheelTranslateMap) {
+                    this._renderLayout();
+                }
             }
         },
 
@@ -72,7 +85,10 @@ define(function(require) {
             }
             // Load content after mousewheels stop.
             else if (eventType === EventTypes.MOUSE_WHEEL) {
-                this._debouncedLoad();
+                // Mousewheels at boundary should be ignored
+                if (this._didWheelTranslateMap) {
+                    this._debouncedLoad();
+                }
             }
         },
 
