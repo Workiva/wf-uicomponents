@@ -262,6 +262,19 @@ define(function(require) {
                     expect(result).toBe(true);
                     expectMostRecentTransformCallCalledWith(-100);
                 });
+
+                it('should modify event delta to prevent content from shifting out of bounds', function() {
+                    var evt = createEvent(eventType, { deltaY: 20 });
+                    var result;
+
+                    listState.translateY = -200;
+                    itemState.translateY = -10;
+
+                    result = interceptor.handleInteraction(null, { event: evt });
+
+                    expect(result).toBe(true);
+                    expect(evt.iterativeGesture.deltaY).toBe(10);
+                });
             }
 
             describe('drag down', function() {
@@ -350,6 +363,19 @@ define(function(require) {
 
                     expect(result).toBe(true);
                     expectMostRecentTransformCallCalledWith(-100);
+                });
+
+                it('should modify event delta to prevent content from shifting out of bounds', function() {
+                    var evt = createEvent(eventType, { deltaY: -20 });
+                    var result;
+
+                    listState.translateY = -200;
+                    itemState.translateY = 10;
+
+                    result = interceptor.handleInteraction(null, { event: evt });
+
+                    expect(result).toBe(true);
+                    expect(evt.iterativeGesture.deltaY).toBe(-10);
                 });
             }
 

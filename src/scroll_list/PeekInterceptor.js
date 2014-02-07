@@ -198,6 +198,17 @@ define(function(require) {
                     this._resetPeekState();
                 }
             }
+            else {
+                // Modify event to impose boundary condition on item map if:
+                // - dragging down and top will be visible, or
+                // - dragging up and bottom will be visible.
+                if (deltaY > 0 && contentTop + deltaY >= 0) {
+                    event.iterativeGesture.deltaY = -contentTop;
+                }
+                else if (deltaY < 0 && contentBottom + deltaY <= viewportHeight) {
+                    event.iterativeGesture.deltaY = viewportHeight - contentBottom;
+                }
+            }
 
             // If we have a new Y value, transform the list directly.
             if (newY !== undefined) {
