@@ -283,7 +283,8 @@ define(function(require) {
                 durationFactorY = boundedDelta / originalDelta;
             }
 
-            // Apply acceleration up to the default animation duration.
+            // Apply acceleration. This effect should be relative to, but faster
+            // than other snap backs.
             acceleratedDuration = targetState.duration * Math.min(durationFactorX, durationFactorY);
             targetState.duration = Math.max(this._animationDuration / 2, acceleratedDuration);
         },
