@@ -68,7 +68,7 @@ define(function(require) {
             }
             map.addInterceptor(new BoundaryInterceptor({
                 centerContent: true,
-                mode: 'stop'
+                mode: { x: 'stop', y: 'slow' }
             }));
 
             // Wire up observables.
