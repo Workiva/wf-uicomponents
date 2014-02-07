@@ -240,6 +240,13 @@ define(function(require) {
                 this._accelerateAnimationAtBoundaries(event, targetState, originalState);
 
                 break;
+
+            case EventTypes.TRANSFORM:
+
+                if (event.simulated) {
+                    this._stopAtBoundaries(event, targetState);
+                }
+                break;
             }
         },
 

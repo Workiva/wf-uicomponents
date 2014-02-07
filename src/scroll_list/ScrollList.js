@@ -308,14 +308,26 @@ define(function(require) {
         },
 
         /**
-         * Gets the item map.
+         * Gets the item map for the current item.
          *
          * @method ScrollList#getCurrentItemMap
          * @return {AwesomeMap}
          */
         getCurrentItemMap: function() {
-            var index = this._layout.getCurrentItemIndex();
-            var placeholder = this._renderer.get(index);
+            var currentItemIndex = this._layout.getCurrentItemIndex();
+            return this.getItemMap(currentItemIndex);
+        },
+
+        /**
+         * Gets the item map for the item with the given index.
+         * If the item is not rendered, will return undefined.
+         *
+         * @method ScrollList#getItemMap
+         * @param {number} itemIndex
+         * @return {AwesomeMap|undefined}
+         */
+        getItemMap: function(itemIndex) {
+            var placeholder = this._renderer.get(itemIndex);
             return placeholder && placeholder.map;
         },
 
@@ -529,11 +541,34 @@ define(function(require) {
                 done: options.done
             };
 
+            var self = this;
             var layout = this._layout;
-            var currentIndex = layout.getCurrentItemIndex();
-            var targetIndex = Math.max(0, Math.min(options.index || 0, this._items.length - 1));
+
+            // Zoom item maps to default scale when scroll completes unless the
+            // scroll is paused mid-stream, which can happen in peek mode.
+            if (this._options.mode !== ScrollModes.FLOW) {
+                panToOptions.done = function() {
+                    var endState = self._listMap.getCurrentTransformState();
+                    if (endState.translateX === panToOptions.x &&
+                        endState.translateY === panToOptions.y) {
+
+                        var currentItemIndex = layout.getCurrentItemIndex();
+                        var itemRange = layout.getRenderedItemRange();
+                        for (var i = itemRange.startIndex; i <= itemRange.endIndex; i++) {
+                            if (i !== currentItemIndex) {
+                                self.getItemMap(i).zoomTo({ scale: 1 });
+                            }
+                        }
+                    }
+                    if (options.done) {
+                        options.done();
+                    }
+                };
+            }
 
             // Calculate the left and top of the target content.
+            var currentIndex = layout.getCurrentItemIndex();
+            var targetIndex = Math.max(0, Math.min(options.index || 0, this._items.length - 1));
             var itemLayout = layout.getItemLayout(targetIndex);
             var listState = this._listMap.getCurrentTransformState();
             panToOptions.x = listState.translateX;
