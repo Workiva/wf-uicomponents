@@ -172,6 +172,8 @@ define(function(require) {
                 // If the transformation has been cancelled,
                 // resolve the promise with the state of the last step; ...
                 if (cancelled) {
+                    stepState.translateX = Math.ceil(stepState.translateX);
+                    stepState.translateY = Math.ceil(stepState.translateY);
                     return done(stepState);
                 }
 
@@ -186,8 +188,8 @@ define(function(require) {
                 elapsed = (timestamp || Date.now()) - startTime;
 
                 if (elapsed < duration) {
-                    stepState.translateX = Math.ceil(easingFn(startX, deltaX, duration, elapsed));
-                    stepState.translateY = Math.ceil(easingFn(startY, deltaY, duration, elapsed));
+                    stepState.translateX = easingFn(startX, deltaX, duration, elapsed);
+                    stepState.translateY = easingFn(startY, deltaY, duration, elapsed);
                     stepState.scale = easingFn(startScale, deltaScale, duration, elapsed);
 
                     TransformUtil.applyTransform(target, stepState);
