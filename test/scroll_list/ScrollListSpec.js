@@ -572,7 +572,7 @@ define(function(require) {
                         expect(panToOptions.done).toBeDefined();
                         panToOptions.done();
 
-                        // Now asset.
+                        // Now assert.
                         for (var i = itemRange.startIndex; i <= itemRange.endIndex; i++) {
                             var itemMap = itemMaps[i];
                             expect(itemMap).toBeDefined();
