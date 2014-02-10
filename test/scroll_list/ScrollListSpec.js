@@ -19,6 +19,7 @@ define(function(require) {
 
     var $ = require('jquery');
     var _ = require('lodash');
+    var AwesomeMap = require('wf-js-uicomponents/awesome_map/AwesomeMap');
     var DestroyUtil = require('wf-js-common/DestroyUtil');
     var ScrollList = require('wf-js-uicomponents/scroll_list/ScrollList');
 
@@ -98,7 +99,30 @@ define(function(require) {
 
             it('should get the current item map', function() {
                 testScrollList(function(scrollList) {
-                    expect(scrollList.getCurrentItemMap()).toBe(scrollList._itemMap);
+                    var currentIndex = 99;
+                    var map = {};
+                    spyOn(scrollList._layout, 'getCurrentItemIndex').andReturn(currentIndex);
+                    spyOn(scrollList, 'getItemMap').andReturn(map);
+
+                    var itemMap = scrollList.getCurrentItemMap();
+
+                    expect(scrollList.getItemMap).toHaveBeenCalledWith(currentIndex);
+                    expect(itemMap).toBe(map);
+                });
+            });
+
+            it('should get an item map', function() {
+                testScrollList(function(scrollList) {
+                    var renderer = scrollList._renderer;
+                    var placeholder = { map: 'foo' };
+                    var index = 1;
+
+                    spyOn(renderer, 'get').andReturn(placeholder);
+
+                    var itemMap = scrollList.getItemMap(index);
+
+                    expect(renderer.get).toHaveBeenCalledWith(index);
+                    expect(itemMap).toBe(placeholder.map);
                 });
             });
 
@@ -511,6 +535,58 @@ define(function(require) {
                 });
             });
 
+            describe('when scrolling in other than "flow" mode', function() {
+                it('should reset the zoom level of all out of view item maps when the scroll completes', function() {
+                    testScrollList({ mode: '!flow' }, function(scrollList) {
+                        var listMap = scrollList._listMap;
+
+                        // Expect that we panned the list map.
+                        spyOn(listMap, 'panTo');
+                        scrollList.scrollTo({ index: 2 });
+                        expect(listMap.panTo).toHaveBeenCalled();
+
+                        // Mock state during invocation of done and invoke.
+                        var itemRange = { startIndex: 0, endIndex: 4 };
+                        var itemMaps = [];
+                        (function() {
+                            for (var i = itemRange.startIndex; i <= itemRange.endIndex; i++) {
+                                var map = _.extend({}, AwesomeMap.prototype);
+                                spyOn(map, 'zoomTo');
+                                itemMaps.push(map);
+                            }
+                        }());
+                        var layout = scrollList.getLayout();
+                        var currentIndexAfterScroll = 2;
+                        var panToOptions = listMap.panTo.calls[0].args[0];
+
+                        spyOn(listMap, 'getCurrentTransformState').andReturn({
+                            translateX: panToOptions.x,
+                            translateY: panToOptions.y
+                        });
+                        spyOn(layout, 'getCurrentItemIndex').andReturn(currentIndexAfterScroll);
+                        spyOn(layout, 'getRenderedItemRange').andReturn(itemRange);
+                        spyOn(scrollList, 'getItemMap').andCallFake(function(index) {
+                            return itemMaps[index];
+                        });
+
+                        expect(panToOptions.done).toBeDefined();
+                        panToOptions.done();
+
+                        // Now assert.
+                        for (var i = itemRange.startIndex; i <= itemRange.endIndex; i++) {
+                            var itemMap = itemMaps[i];
+                            expect(itemMap).toBeDefined();
+                            if (i === currentIndexAfterScroll) {
+                                expect(itemMap.zoomTo).not.toHaveBeenCalled();
+                            }
+                            else {
+                                expect(itemMap.zoomTo).toHaveBeenCalledWith({ scale: 1 });
+                            }
+                        }
+                    });
+                });
+            });
+
             describe('when scrolling item position to center', function() {
 
                 it('should center list map in flow mode', function() {
@@ -578,7 +654,7 @@ define(function(require) {
                             x: -100,
                             y: -200,
                             duration: 0,
-                            done: undefined
+                            done: jasmine.any(Function)
                         });
                     });
                 });
