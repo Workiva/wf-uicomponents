@@ -628,15 +628,15 @@ define(function(require) {
             var listMap = this.getListMap();
             var currentState = listMap.getCurrentTransformState();
             var currentScale = currentState.scale;
-            var x = options.x === undefined ? -currentState.translateX / currentScale : options.x;
-            var y = options.y === undefined ? -currentState.translateY / currentScale : options.y;
+            var x = options.x === undefined ? -currentState.translateX : options.x * currentScale;
+            var y = options.y === undefined ? -currentState.translateY : options.y * currentScale;
 
             // Constrain position to within bounds.
             var layout = this.getLayout();
             var listSize = layout.getSize();
             var viewportSize = layout.getViewportSize();
-            x = constrain(x, 0, listSize.width - viewportSize.width);
-            y = constrain(y, 0, listSize.height - viewportSize.height);
+            x = constrain(x, 0, listSize.width * currentScale - viewportSize.width);
+            y = constrain(y, 0, listSize.height * currentScale - viewportSize.height);
 
             // Ensure placeholders exist at target position to prevent flash of
             // emptiness upon scrolling to target position.
@@ -651,8 +651,8 @@ define(function(require) {
 
             // If in flow mode, go to the position:
             this._listMap.panTo({
-                x: -x * currentScale,
-                y: -y * currentScale,
+                x: -x,
+                y: -y,
                 done: options.done
             });
         },

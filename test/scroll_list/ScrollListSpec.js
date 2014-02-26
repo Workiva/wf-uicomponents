@@ -722,9 +722,9 @@ define(function(require) {
                 testScrollList({ mode: 'flow' }, function(scrollList) {
                     setup(scrollList);
 
-                    scrollList.scrollToPosition({ x: 1000 });
+                    scrollList.scrollToPosition({ x: 2000 });
                     expect(listMap.panTo.mostRecentCall.args[0].x)
-                        .toBe(listState.scale * (viewportSize.width - listSize.width));
+                        .toBe(viewportSize.width - listSize.width * listState.scale);
 
                     scrollList.scrollToPosition({ x: -100 });
                     expect(listMap.panTo.mostRecentCall.args[0].x).toBe(0);
@@ -736,7 +736,7 @@ define(function(require) {
 
                     scrollList.scrollToPosition({ y: 1000 });
                     expect(listMap.panTo.mostRecentCall.args[0].y)
-                        .toBe(listState.scale * (viewportSize.height - listSize.height));
+                        .toBe(viewportSize.height - listSize.height * listState.scale);
 
                     scrollList.scrollToPosition({ y: -100 });
                     expect(listMap.panTo.mostRecentCall.args[0].y).toBe(0);
@@ -753,13 +753,13 @@ define(function(require) {
                     spyOn(layout, 'render');
 
                     // Vertical support:
-                    scrollList.scrollToPosition({ y: 500 });
-                    expect(layout.setScrollPosition.mostRecentCall.args[0].top).toBe(500);
+                    scrollList.scrollToPosition({ y: 200 });
+                    expect(layout.setScrollPosition.mostRecentCall.args[0].top).toBe(400);
                     expect(layout.render.calls.length).toBe(1);
 
                     // Horizontal support:
-                    scrollList.scrollToPosition({ x: 500 });
-                    expect(layout.setScrollPosition.mostRecentCall.args[0].left).toBe(500);
+                    scrollList.scrollToPosition({ x: 300 });
+                    expect(layout.setScrollPosition.mostRecentCall.args[0].left).toBe(600);
                     expect(layout.render.calls.length).toBe(2);
                 });
             });
