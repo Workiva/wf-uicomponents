@@ -673,7 +673,7 @@ define(function(require) {
                 spyOn(translator, 'toMapScale').andReturn(translatedScale);
                 spyOn(targetMap, 'zoomTo');
 
-                scrollList.zoomTo(scale, duration, done);
+                scrollList.zoomTo({ scale: scale, duration: duration, done: done});
 
                 expect(translator.toMapScale).toHaveBeenCalledWith(scale);
                 expect(targetMap.zoomTo).toHaveBeenCalledWith({
