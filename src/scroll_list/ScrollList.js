@@ -600,15 +600,19 @@ define(function(require) {
         /**
          * Zooms to the specified scale.
          * @method ScrollList#zoomTo
-         * @param {number} scale - The target scale.
-         * @param {number} [duration] - The animation duration, in ms.
-         * @param {Function} [done] - Callback invoked when the zoom is complete.
+         * @param {Object} options
+         * @param {number} options.scale - The target scale.
+         * @param {number} [options.duration] - The animation duration, in ms.
+         * @param {Function} [options.done] - Callback invoked when the zoom is complete.
          */
-        zoomTo: function(scale, duration, done) {
+        zoomTo: function(options) {
+            if (options.scale === undefined) {
+                throw new Error('ScrollList#zoomToScale: scale is required.');
+            }
             (this.getCurrentItemMap() || this._listMap).zoomTo({
-                scale: this._scaleTranslator.toMapScale(scale),
-                duration: duration,
-                done: done
+                scale: this._scaleTranslator.toMapScale(options.scale),
+                duration: options.duration,
+                done: options.done
             });
         },
 

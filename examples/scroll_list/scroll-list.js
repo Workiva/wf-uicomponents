@@ -208,7 +208,7 @@ require([
 
         $('#zoomToScale').submit(function() {
             var scale = parseInt(this.elements.zoomTo.value, 10) / 100;
-            scrollList.zoomTo(scale);
+            scrollList.zoomTo({ scale: scale });
             $(':focus').blur();
             return false;
         });
