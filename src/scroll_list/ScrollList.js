@@ -28,6 +28,16 @@ define(function(require) {
     var Utils = require('wf-js-common/Utils');
     var VerticalLayout = require('wf-js-uicomponents/layouts/VerticalLayout');
 
+    function constrain(value, min, max) {
+        return Math.max(min, Math.min(max, value));
+    }
+
+    function between(value, min, max) {
+        min = min || Number.MIN_VALUE;
+        max = max || Number.MAX_VALUE;
+        return value >= min && value <= max;
+    }
+
     /**
      * Creates a new ScrollList from the given configuration.
      *
@@ -525,13 +535,12 @@ define(function(require) {
          * @method ScrollList#scrollTo
          * @param {Object} options
          * @param {number} options.index - The index of the content to jump to.
-         * @param {number} [options.duration=0] - The duration of the jump animation, in ms.
-         * @param {{ x: number, y: number }} [options.center] - A content-relative position to center in the viewport.
+         * @param {{ x: number, y: number }} [options.center] - An item-relative position to center in the viewport.
          * @param {Function} [options.done] - Callback invoked when the jump is complete.
          */
         scrollTo: function(options) {
             if (options.index === undefined) {
-                throw new Error('ScrollList.scrollTo: index is required.');
+                throw new Error('ScrollList#scrollTo: index is required.');
             }
 
             var panToOptions = {
@@ -595,6 +604,57 @@ define(function(require) {
 
             // Perform the scroll.
             this._listMap.panTo(panToOptions);
+        },
+
+        /**
+         *
+         * @method ScrollList#scrollToPosition
+         * @param {Object} options
+         * @param {number} [options.x] - The x-axis position; defaults to current x.
+         * @param {number} [options.y] - The y-axis position; defaults to current y.
+         * @param {Function} [options.done] - Callback invoked when scroll completes.
+         */
+        scrollToPosition: function(options) {
+            // Validation:
+            if (this._options.mode !== ScrollModes.FLOW) {
+                throw 'ScrollList#scrollToPosition is only available in "flow" mode.';
+            }
+            options = options || {};
+            if (options.x === undefined && options.y === undefined) {
+                throw 'ScrollList#scrollToPosition: x or y is required.';
+            }
+
+            // Get the target x/y from the options or defaults.
+            var listMap = this.getListMap();
+            var currentState = listMap.getCurrentTransformState();
+            var currentScale = currentState.scale;
+            var x = options.x === undefined ? -currentState.translateX : options.x * currentScale;
+            var y = options.y === undefined ? -currentState.translateY : options.y * currentScale;
+
+            // Constrain position to within bounds.
+            var layout = this.getLayout();
+            var listSize = layout.getSize();
+            var viewportSize = layout.getViewportSize();
+            x = constrain(x, 0, listSize.width * currentScale - viewportSize.width);
+            y = constrain(y, 0, listSize.height * currentScale - viewportSize.height);
+
+            // Ensure placeholders exist at target position to prevent flash of
+            // emptiness upon scrolling to target position.
+            var renderedPosition = layout.getPositionToRender();
+            if (!renderedPosition ||
+                !between(x, renderedPosition.left, renderedPosition.right) ||
+                !between(y, renderedPosition.top, renderedPosition.bottom)
+            ) {
+                layout.setScrollPosition({ top: y, left: x });
+                layout.render();
+            }
+
+            // If in flow mode, go to the position:
+            this._listMap.panTo({
+                x: -x,
+                y: -y,
+                done: options.done
+            });
         },
 
         /**
