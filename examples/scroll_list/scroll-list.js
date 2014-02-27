@@ -9,7 +9,7 @@ require([
     'wf-js-common/BrowserInfo',
     'wf-js-common/Url',
     'wf-js-common/DOMUtil',
-    'wf-js-common/console',
+    'wf-js-common/consoleDev',
     'hammerjs.fakemultitouch',
     'hammerjs.showtouches'
 ], function(
@@ -166,6 +166,10 @@ require([
     scrollList.onScaleChanged(function(sender, args) {
         console.log('scale changed to', args.scale);
         updateZoomPercentage();
+    });
+
+    scrollList.onScrollPositionChanged(function(sender, args) {
+        console.log('scroll position changed to', args.x, args.y);
     });
 
     scrollList.render();

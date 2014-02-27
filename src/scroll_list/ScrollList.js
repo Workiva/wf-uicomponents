@@ -233,6 +233,19 @@ define(function(require) {
          */
         this.onScaleChanged = Observable.newObservable();
 
+        /**
+         * Observable for subscribing to changes in scroll position.
+         *
+         * @method ScrollList#onScrollPositionChanged
+         * @param {Function} callback
+         *        Invoked with (sender, {
+         *            event: {@link InteractionEvent},
+         *            x: {number}
+         *            y: {number}
+         *        })
+         */
+        this.onScrollPositionChanged = Observable.newObservable();
+
         //---------------------------------------------------------
         // Private properties
         //---------------------------------------------------------
