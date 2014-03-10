@@ -14,8 +14,9 @@
  * limitations under the License.
  */
 
- define(function(require) {
+define(function(require) {
     'use strict';
+    var $ = require('jquery');
 
     /**
      * Creates a new ScrollBar with the given ScrollList and options.
@@ -45,8 +46,8 @@
         var clickOffset, offset;
         var scrollbarScrolling = false;
         var viewportHeight, virtualHeight, scrollbarHeight, scrollbar;
-        var TOTAL_ITEMS, scrollList, layout;
-        var navbarBottem, objHeight, avgObjHeight, y, scrollbarContainer;
+        var TOTAL_ITEMS, layout;
+        var objHeight, avgObjHeight, y, scrollbarContainer;
 
         // Access the layout
         layout = scrollList.getLayout();
@@ -108,8 +109,8 @@
                 positionOfInterest = 0;
             }
             // We can't allow scrolling past the document height
-            if ( positionOfInterest == TOTAL_ITEMS ) {
-                positionOfInterest = TOTAL_ITEMS - .1;
+            if ( positionOfInterest === TOTAL_ITEMS ) {
+                positionOfInterest = TOTAL_ITEMS - 0.1;
             }
 
             var indexOfItem = Math.floor(positionOfInterest);
@@ -125,7 +126,7 @@
             });
         }
 
-        function stopUpdatingScrollbar(event) {
+        function stopUpdatingScrollbar() {
             clickOffset = undefined;
             $(document).off('mousemove', updateScrollBar);
             scrollbarScrolling = false;
@@ -147,4 +148,4 @@
 
     return ScrollBar;
 
- });
+});
