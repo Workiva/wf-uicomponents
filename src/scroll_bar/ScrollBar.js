@@ -37,30 +37,26 @@ define(function(require) {
      * @param {ScrollList} scrollList
      *        The ScrollList that the ScrollBar is constructed for
      *
-     * @param {HTMLElement} parentEL
+     * @param {HTMLElement} parent
      *        The parent element for the ScrollBar to be created within
      *
-     * @param {number} verticalOffset
-     *        The distance between the scrollList and the top of the
-     *        page, used for positioning purposes.
-     *
      * @param {Object} options
-     *        An object with optional classes and ids to be placed on the 
+     *        An object with optional classes and ids to be placed on the
      *        scrollbarEL and scrollbarContainerEL.
      *
      */
 
-    var ScrollBar = function (scrollList, parentEL, verticalOffset, options) {
+    var ScrollBar = function (scrollList, parent, options) {
         var clickOffset, offset;
         var scrollbarScrolling = false;
         var viewportHeight, virtualHeight, scrollbarHeight;
         var TOTAL_ITEMS, layout;
         var objHeight, avgObjHeight, y, scrollbarContainerEL, scrollbarEL;
-        
+
         function calculateScrollBarHeight ( viewportHeight, virtualHeight ) {
             return Math.max(16, ((viewportHeight/(virtualHeight)) * viewportHeight));
         }
-        
+
         // Access the layout
         layout = scrollList.getLayout();
         TOTAL_ITEMS = scrollList._items.length;
@@ -90,13 +86,12 @@ define(function(require) {
         }
 
         scrollbarContainerEL.appendChild(scrollbarEL);
-        parentEL.appendChild(scrollbarContainerEL);
+        parent.appendChild(scrollbarContainerEL);
 
         // Set the container height to the viewport height
         scrollbarContainerEL.style.height = viewportHeight + 'px';
         // Set the scrollbar height
         scrollbarEL.style.height = scrollbarHeight + 'px';
-        scrollbarContainerEL.style.marginTop = verticalOffset + 'px';
 
         avgObjHeight = virtualHeight/TOTAL_ITEMS;
 
@@ -176,12 +171,12 @@ define(function(require) {
 
         scrollbarEL.addEventListener('mousedown', function(event) {
             offset = scrollbarEL.offsetTop + scrollbarContainerEL.offsetTop;
-            clickOffset = event.clientY - offset + verticalOffset;
+            clickOffset = event.clientY - offset + scrollbarContainerEL.offsetTop;
             scrollbarScrolling = true;
             document.addEventListener('mousemove', updateScrollBar);
             document.addEventListener('mouseup', stopUpdatingScrollbar);
         });
-        
+
     };
 
     return ScrollBar;
