@@ -52,9 +52,12 @@ define(function(require) {
         var viewportHeight, virtualHeight, scrollbarHeight;
         var TOTAL_ITEMS, layout;
         var objHeight, avgObjHeight, y, scrollbarContainerEL, scrollbarEL;
+        var MIN_HEIGHT = '16';
 
         function calculateScrollBarHeight ( viewportHeight, virtualHeight ) {
-            return Math.max(16, ((viewportHeight/(virtualHeight)) * viewportHeight));
+            // Calculate the size of the scrollbar depending on the virtual height
+            // The scrollbar shouldn't be shorter than MIN_HEIGHT
+            return Math.max(MIN_HEIGHT, ((viewportHeight/(virtualHeight)) * viewportHeight));
         }
 
         // Access the layout
@@ -63,8 +66,6 @@ define(function(require) {
         viewportHeight = layout.getViewportSize().height;
         virtualHeight = layout.getSize().height;
 
-        // Calculate the size of the scrollbar depending on the virtual height
-        // The scrollbar shouldn't be shorter than 16px
         scrollbarHeight = calculateScrollBarHeight(viewportHeight, virtualHeight);
 
         // Create the scrollbar's container
@@ -85,6 +86,7 @@ define(function(require) {
             scrollbarContainerEL.classnames += options.scrollbarContainerClass;
         }
 
+        // Append the scrollbar and it's parent container to the given parent element
         scrollbarContainerEL.appendChild(scrollbarEL);
         parent.appendChild(scrollbarContainerEL);
 
