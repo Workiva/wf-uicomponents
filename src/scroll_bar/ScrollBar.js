@@ -53,43 +53,50 @@ define(function(require) {
     var ScrollBar = function (scrollList, parentEL, verticalOffset, options) {
         var clickOffset, offset;
         var scrollbarScrolling = false;
-        var viewportHeight, virtualHeight, scrollbarHeight, scrollbar;
+        var viewportHeight, virtualHeight, scrollbarHeight;
         var TOTAL_ITEMS, layout;
         var objHeight, avgObjHeight, y, scrollbarContainerEL, scrollbarEL;
-
+        
+        function calculateScrollBarHeight ( viewportHeight, virtualHeight ) {
+            return Math.max(16, ((viewportHeight/(virtualHeight)) * viewportHeight));
+        }
+        
         // Access the layout
         layout = scrollList.getLayout();
-
         TOTAL_ITEMS = scrollList._items.length;
         viewportHeight = layout.getViewportSize().height;
         virtualHeight = layout.getSize().height;
 
         // Calculate the size of the scrollbar depending on the virtual height
         // The scrollbar shouldn't be shorter than 16px
-        scrollbarHeight = Math.max(16, ((viewportHeight/(virtualHeight)) * viewportHeight));
+        scrollbarHeight = calculateScrollBarHeight(viewportHeight, virtualHeight);
 
         // Create the scrollbar's container
-        scrollbarContainerEL = document.createElement("div");
-        scrollbarEL = document.createElement("div");
+        scrollbarContainerEL = document.createElement('div');
+        scrollbarEL = document.createElement('div');
 
         // Set the given classes and ids scrollbar and it's container
-        if ( options.scrollbarId )
-            scrollbarEL.setAttribute("id", options.scrollbarId);
-        if ( options.scrollbarClass )
+        if ( options.scrollbarId ) {
+            scrollbarEL.setAttribute('id', options.scrollbarId);
+        }
+        if ( options.scrollbarClass ) {
             scrollbarEL.classNames += options.scrollbarClass;
-        if ( options.scrollbarContainerId )
-            scrollbarContainerEL.setAttribute("id", options.scrollbarContainerId);
-        if ( options.scrollbarContainerClass)
+        }
+        if ( options.scrollbarContainerId ) {
+            scrollbarContainerEL.setAttribute('id', options.scrollbarContainerId);
+        }
+        if ( options.scrollbarContainerClass) {
             scrollbarContainerEL.classnames += options.scrollbarContainerClass;
+        }
 
         scrollbarContainerEL.appendChild(scrollbarEL);
         parentEL.appendChild(scrollbarContainerEL);
 
         // Set the container height to the viewport height
-        scrollbarContainerEL.style.height = viewportHeight + "px";
+        scrollbarContainerEL.style.height = viewportHeight + 'px';
         // Set the scrollbar height
-        scrollbarEL.style.height = scrollbarHeight + "px";
-        scrollbarContainerEL.style.marginTop = verticalOffset + "px";
+        scrollbarEL.style.height = scrollbarHeight + 'px';
+        scrollbarContainerEL.style.marginTop = verticalOffset + 'px';
 
         avgObjHeight = virtualHeight/TOTAL_ITEMS;
 
@@ -99,11 +106,11 @@ define(function(require) {
                 var availableScrollbarHeight = viewportHeight - scrollbarHeight;
                 var scrollableVirtualHeight = virtualHeight - viewportHeight;
                 var translatedPosition = availableScrollbarHeight / scrollableVirtualHeight * currentPosition;
-                scrollbarEL.style.top = translatedPosition + "px";
+                scrollbarEL.style.top = translatedPosition + 'px';
             }, 0);
 
         // Match the scroll bar positioning to the users scrolling
-        scrollList.getListMap().onTranslationChanged(function(/*sender, args*/) {
+        scrollList.getListMap().onTranslationChanged(function() {
             if (scrollbarScrolling) {
                 return;
             }
@@ -112,15 +119,23 @@ define(function(require) {
                 var availableScrollbarHeight = viewportHeight - scrollbarHeight;
                 var scrollableVirtualHeight = virtualHeight - viewportHeight;
                 var translatedPosition = availableScrollbarHeight / scrollableVirtualHeight * currentPosition;
-                scrollbarEL.style.top = translatedPosition + "px";
+                scrollbarEL.style.top = translatedPosition + 'px';
             }, 0);
+        });
+        
+        // Make necessary adjustments when the users zooms in or out
+        scrollList.getListMap().onScaleChanged(function() {
+            virtualHeight = layout.getSize().height * scrollList._scaleTranslator._map.getCurrentTransformState().scale;
+            scrollbarHeight = calculateScrollBarHeight(viewportHeight, virtualHeight);
+            scrollbarEL.style.height = scrollbarHeight + 'px';
+            avgObjHeight = virtualHeight/TOTAL_ITEMS;
         });
 
         function updateScrollBar(event) {
             // Don't go past the window bounds
             var scrollbarPos = Math.max(0, event.clientY - clickOffset);
             scrollbarPos = Math.min(scrollbarPos, viewportHeight - scrollbarHeight);
-            scrollbarEL.style.top = scrollbarPos + "px";
+            scrollbarEL.style.top = scrollbarPos + 'px';
             var offset = (viewportHeight/avgObjHeight)/2;
 
             // Use the ratio of scrollbar position inside the scrolling area to calculate
@@ -166,6 +181,7 @@ define(function(require) {
             document.addEventListener('mousemove', updateScrollBar);
             document.addEventListener('mouseup', stopUpdatingScrollbar);
         });
+        
     };
 
     return ScrollBar;
