@@ -35,9 +35,16 @@ define(function(require) {
      * @param {ScrollList} scrollList
      *        The ScrollList that the ScrollBar is constructed for
      *
+     * @param {HTMLElement} parentEL
+     *        The parent element for the ScrollBar to be created within
+     *
      * @param {number} verticalOffset
      *        The distance between the scrollList and the top of the
      *        page, used for positioning purposes.
+     *
+     * @param {Object} options
+     *        An object with optional classes and ids to be placed on the 
+     *        scrollbarEL and scrollbarContainerEL.
      *
      */
 
