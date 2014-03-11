@@ -16,6 +16,8 @@
 
 define(function(require) {
     'use strict';
+    
+    var requestAnimFrame = require('wf-js-common/requestAnimationFrame');
 
     /**
      * Creates a new ScrollBar with the given ScrollList and options.
@@ -92,7 +94,7 @@ define(function(require) {
         avgObjHeight = virtualHeight/TOTAL_ITEMS;
 
         // Get the initial position, in case it's not at 0, and set the scrollbar position and page number
-        setTimeout(function() {
+        requestAnimFrame(function() {
                 var currentPosition = layout.getVisiblePosition().top;
                 var availableScrollbarHeight = viewportHeight - scrollbarHeight;
                 var scrollableVirtualHeight = virtualHeight - viewportHeight;
@@ -105,7 +107,7 @@ define(function(require) {
             if (scrollbarScrolling) {
                 return;
             }
-            setTimeout(function() {
+            requestAnimFrame(function() {
                 var currentPosition = layout.getVisiblePosition().top;
                 var availableScrollbarHeight = viewportHeight - scrollbarHeight;
                 var scrollableVirtualHeight = virtualHeight - viewportHeight;
