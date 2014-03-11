@@ -48,31 +48,6 @@ define(function(require) {
             expect(interceptor.register).toBeDefined();
         });
 
-        it('should not apply to transform, transform start or transform end events', function() {
-            var ignoredEventTypes = [
-                EventTypes.TRANSFORM,
-                EventTypes.TRANSFORM_END,
-                EventTypes.TRANSFORM_START
-            ];
-            var interceptor = new BoundaryInterceptor();
-            var type;
-            var evt;
-            var targetState;
-
-            for (type in ignoredEventTypes) {
-                if (EventTypes.hasOwnProperty(type)) {
-                    evt = createEvent(type);
-                    targetState = new TransformState({ translateX: -100, translateY: -100 });
-
-                    interceptor.handleTransformStarted(null, { event: evt, targetState: targetState });
-
-                    expect(targetState.translateX).toBe(-100);
-                    expect(targetState.translateY).toBe(-100);
-                    expect(targetState.duration).toBe(0);
-                }
-            }
-        });
-
         it('should use the given easing function for animations', function() {
             var easing = function() {};
             var interceptor = new BoundaryInterceptor({ easing: easing });
@@ -177,9 +152,55 @@ define(function(require) {
             });
         });
 
+        describe('handling simulated transforms', function() {
+            it('should stop at boundaries', function() {
+                var interceptor = new BoundaryInterceptor();
+                var evt = createEvent(EventTypes.TRANSFORM);
+                var targetState = new TransformState();
+
+                evt.simulated = true;
+                spyOn(interceptor, '_stopAtBoundaries');
+
+                interceptor.register(map);
+                interceptor.handleTransformStarted(null, { event: evt, targetState: targetState });
+
+                expect(interceptor._stopAtBoundaries).toHaveBeenCalledWith(evt, targetState);
+            });
+        });
+
         describe('behavior when content fits viewport dimension', function() {
 
             var contentDimensions = { width: 50, height: 100 };
+
+            function expectBounceAtViewportTopAndLeft(eventType) {
+                var interceptor = new BoundaryInterceptor({ mode: 'slow' });
+                var evt = createEvent(eventType);
+                var targetState = new TransformState({
+                    translateX: viewportDimensions.width,
+                    translateY: viewportDimensions.height
+                });
+
+                interceptor.register(map);
+                interceptor.handleTransformStarted(null, { event: evt, targetState: targetState });
+
+                expect(targetState.translateX).toBe(viewportDimensions.width - contentDimensions.width + viewportDimensions.width * 0.1);
+                expect(targetState.translateY).toBe(viewportDimensions.height - contentDimensions.height + viewportDimensions.height * 0.1);
+            }
+
+            function expectBounceAtViewportBottomAndRight(eventType) {
+                var interceptor = new BoundaryInterceptor({ mode: 'slow' });
+                var evt = createEvent(eventType);
+                var targetState = new TransformState({
+                    translateX: -viewportDimensions.width * 2,
+                    translateY: -viewportDimensions.height * 2
+                });
+
+                interceptor.register(map);
+                interceptor.handleTransformStarted(null, { event: evt, targetState: targetState });
+
+                expect(targetState.translateX).toBe(-viewportDimensions.width * 0.1);
+                expect(targetState.translateY).toBe(-viewportDimensions.height * 0.1);
+            }
 
             function expectStopAtViewportTopAndLeft(eventType) {
                 var interceptor = new BoundaryInterceptor({ mode: 'stop' });
@@ -347,12 +368,12 @@ define(function(require) {
 
             describe('during swipe', function() {
 
-                it('should stop at viewport top and left', function() {
-                    expectStopAtViewportTopAndLeft(EventTypes.SWIPE);
+                it('should bounce at viewport top and left', function() {
+                    expectBounceAtViewportTopAndLeft(EventTypes.SWIPE);
                 });
 
-                it('should stop at viewport bottom and right', function() {
-                    expectStopAtViewportBottomAndRight(EventTypes.SWIPE);
+                it('should bounce at viewport bottom and right', function() {
+                    expectBounceAtViewportBottomAndRight(EventTypes.SWIPE);
                 });
             });
 
@@ -382,6 +403,36 @@ define(function(require) {
         describe('behavior when content overflows viewport dimension', function() {
 
             var contentDimensions = { width: 200, height: 400 };
+
+            function expectBounceAtViewportTopAndLeft(eventType) {
+                var interceptor = new BoundaryInterceptor({ mode: 'slow' });
+                var evt = createEvent(eventType);
+                var targetState = new TransformState({
+                    translateX: viewportDimensions.width * 2,
+                    translateY: viewportDimensions.height * 2
+                });
+
+                interceptor.register(map);
+                interceptor.handleTransformStarted(null, { event: evt, targetState: targetState });
+
+                expect(targetState.translateX).toBe(viewportDimensions.width * 0.1);
+                expect(targetState.translateY).toBe(viewportDimensions.height * 0.1);
+            }
+
+            function expectBounceAtViewportBottomAndRight(eventType) {
+                var interceptor = new BoundaryInterceptor({ mode: 'slow' });
+                var evt = createEvent(eventType);
+                var targetState = new TransformState({
+                    translateX: -viewportDimensions.width * 2,
+                    translateY: -viewportDimensions.height * 2
+                });
+
+                interceptor.register(map);
+                interceptor.handleTransformStarted(null, { event: evt, targetState: targetState });
+
+                expect(targetState.translateX).toBe(viewportDimensions.width - contentDimensions.width - viewportDimensions.width * 0.1);
+                expect(targetState.translateY).toBe(viewportDimensions.height - contentDimensions.height - viewportDimensions.height * 0.1);
+            }
 
             function expectStopAtViewportTopAndLeft(eventType) {
                 var interceptor = new BoundaryInterceptor({ mode: 'stop' });
@@ -532,11 +583,11 @@ define(function(require) {
             describe('during swipe', function() {
 
                 it('should stop at viewport top and left', function() {
-                    expectStopAtViewportTopAndLeft(EventTypes.SWIPE);
+                    expectBounceAtViewportTopAndLeft(EventTypes.SWIPE);
                 });
 
                 it('should stop at viewport bottom and right', function() {
-                    expectStopAtViewportBottomAndRight(EventTypes.SWIPE);
+                    expectBounceAtViewportBottomAndRight(EventTypes.SWIPE);
                 });
             });
 

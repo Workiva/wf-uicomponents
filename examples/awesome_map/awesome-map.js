@@ -8,6 +8,7 @@ require([
     'wf-js-uicomponents/awesome_map/SwipeInterceptor',
     'wf-js-common/DeviceInfo',
     'wf-js-common/DOMUtil',
+    'wf-js-common/console',
     'wf-js-common/Compatibility',
     'hammerjs.fakemultitouch',
     'hammerjs.showtouches',
@@ -20,11 +21,10 @@ require([
     ScaleInterceptor,
     SwipeInterceptor,
     DeviceInfo,
-    DOMUtil
+    DOMUtil,
+    console
 ) {
     'use strict';
-
-    var DEBUG = false;
 
     //---------------------------------------------------------
     // Utilities
@@ -131,12 +131,10 @@ require([
     awesomeMap.onTransformFinished(updateCurrentState);
     updateCurrentState(awesomeMap);
 
-    if (DEBUG) {
-        awesomeMap.onInteraction(function(source, args) {
-            var event = args.event;
-            console.log(event.type, event);
-        });
-    }
+    awesomeMap.onInteraction(function(source, args) {
+        var event = args.event;
+        console.debug(event.type, event);
+    });
 
     //---------------------------------------------------------
     // Control wiring
@@ -144,7 +142,7 @@ require([
 
     $(function() {
         var done = function() {
-            console.log('done');
+            console.debug('done');
         };
 
         DOMUtil.dismissIOS7VirtualKeyboardOnOrientationChange();

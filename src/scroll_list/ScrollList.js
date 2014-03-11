@@ -28,6 +28,16 @@ define(function(require) {
     var Utils = require('wf-js-common/Utils');
     var VerticalLayout = require('wf-js-uicomponents/layouts/VerticalLayout');
 
+    function constrain(value, min, max) {
+        return Math.max(min, Math.min(max, value));
+    }
+
+    function between(value, min, max) {
+        min = min || Number.MIN_VALUE;
+        max = max || Number.MAX_VALUE;
+        return value >= min && value <= max;
+    }
+
     /**
      * Creates a new ScrollList from the given configuration.
      *
@@ -223,6 +233,19 @@ define(function(require) {
          */
         this.onScaleChanged = Observable.newObservable();
 
+        /**
+         * Observable for subscribing to changes in scroll position.
+         *
+         * @method ScrollList#onScrollPositionChanged
+         * @param {Function} callback
+         *        Invoked with (sender, {
+         *            event: {@link InteractionEvent},
+         *            x: {number}
+         *            y: {number}
+         *        })
+         */
+        this.onScrollPositionChanged = Observable.newObservable();
+
         //---------------------------------------------------------
         // Private properties
         //---------------------------------------------------------
@@ -308,14 +331,26 @@ define(function(require) {
         },
 
         /**
-         * Gets the item map.
+         * Gets the item map for the current item.
          *
          * @method ScrollList#getCurrentItemMap
          * @return {AwesomeMap}
          */
         getCurrentItemMap: function() {
-            var index = this._layout.getCurrentItemIndex();
-            var placeholder = this._renderer.get(index);
+            var currentItemIndex = this._layout.getCurrentItemIndex();
+            return this.getItemMap(currentItemIndex);
+        },
+
+        /**
+         * Gets the item map for the item with the given index.
+         * If the item is not rendered, will return undefined.
+         *
+         * @method ScrollList#getItemMap
+         * @param {number} itemIndex
+         * @return {AwesomeMap|undefined}
+         */
+        getItemMap: function(itemIndex) {
+            var placeholder = this._renderer.get(itemIndex);
             return placeholder && placeholder.map;
         },
 
@@ -513,13 +548,12 @@ define(function(require) {
          * @method ScrollList#scrollTo
          * @param {Object} options
          * @param {number} options.index - The index of the content to jump to.
-         * @param {number} [options.duration=0] - The duration of the jump animation, in ms.
-         * @param {{ x: number, y: number }} [options.center] - A content-relative position to center in the viewport.
+         * @param {{ x: number, y: number }} [options.center] - An item-relative position to center in the viewport.
          * @param {Function} [options.done] - Callback invoked when the jump is complete.
          */
         scrollTo: function(options) {
             if (options.index === undefined) {
-                throw new Error('ScrollList.scrollTo: index is required.');
+                throw new Error('ScrollList#scrollTo: index is required.');
             }
 
             var panToOptions = {
@@ -529,11 +563,34 @@ define(function(require) {
                 done: options.done
             };
 
+            var self = this;
             var layout = this._layout;
-            var currentIndex = layout.getCurrentItemIndex();
-            var targetIndex = Math.max(0, Math.min(options.index || 0, this._items.length - 1));
+
+            // Zoom item maps to default scale when scroll completes unless the
+            // scroll is paused mid-stream, which can happen in peek mode.
+            if (this._options.mode !== ScrollModes.FLOW) {
+                panToOptions.done = function() {
+                    var endState = self._listMap.getCurrentTransformState();
+                    if (endState.translateX === panToOptions.x &&
+                        endState.translateY === panToOptions.y) {
+
+                        var currentItemIndex = layout.getCurrentItemIndex();
+                        var itemRange = layout.getRenderedItemRange();
+                        for (var i = itemRange.startIndex; i <= itemRange.endIndex; i++) {
+                            if (i !== currentItemIndex) {
+                                self.getItemMap(i).zoomTo({ scale: 1 });
+                            }
+                        }
+                    }
+                    if (options.done) {
+                        options.done();
+                    }
+                };
+            }
 
             // Calculate the left and top of the target content.
+            var currentIndex = layout.getCurrentItemIndex();
+            var targetIndex = Math.max(0, Math.min(options.index || 0, this._items.length - 1));
             var itemLayout = layout.getItemLayout(targetIndex);
             var listState = this._listMap.getCurrentTransformState();
             panToOptions.x = listState.translateX;
@@ -563,17 +620,72 @@ define(function(require) {
         },
 
         /**
+         *
+         * @method ScrollList#scrollToPosition
+         * @param {Object} options
+         * @param {number} [options.x] - The x-axis position; defaults to current x.
+         * @param {number} [options.y] - The y-axis position; defaults to current y.
+         * @param {Function} [options.done] - Callback invoked when scroll completes.
+         */
+        scrollToPosition: function(options) {
+            // Validation:
+            if (this._options.mode !== ScrollModes.FLOW) {
+                throw 'ScrollList#scrollToPosition is only available in "flow" mode.';
+            }
+            options = options || {};
+            if (options.x === undefined && options.y === undefined) {
+                throw 'ScrollList#scrollToPosition: x or y is required.';
+            }
+
+            // Get the target x/y from the options or defaults.
+            var listMap = this.getListMap();
+            var currentState = listMap.getCurrentTransformState();
+            var currentScale = currentState.scale;
+            var x = options.x === undefined ? -currentState.translateX : options.x * currentScale;
+            var y = options.y === undefined ? -currentState.translateY : options.y * currentScale;
+
+            // Constrain position to within bounds.
+            var layout = this.getLayout();
+            var listSize = layout.getSize();
+            var viewportSize = layout.getViewportSize();
+            x = constrain(x, 0, listSize.width * currentScale - viewportSize.width);
+            y = constrain(y, 0, listSize.height * currentScale - viewportSize.height);
+
+            // Ensure placeholders exist at target position to prevent flash of
+            // emptiness upon scrolling to target position.
+            var renderedPosition = layout.getPositionToRender();
+            if (!renderedPosition ||
+                !between(x, renderedPosition.left, renderedPosition.right) ||
+                !between(y, renderedPosition.top, renderedPosition.bottom)
+            ) {
+                layout.setScrollPosition({ top: y, left: x });
+                layout.render();
+            }
+
+            // If in flow mode, go to the position:
+            this._listMap.panTo({
+                x: -x,
+                y: -y,
+                done: options.done
+            });
+        },
+
+        /**
          * Zooms to the specified scale.
          * @method ScrollList#zoomTo
-         * @param {number} scale - The target scale.
-         * @param {number} [duration] - The animation duration, in ms.
-         * @param {Function} [done] - Callback invoked when the zoom is complete.
+         * @param {Object} options
+         * @param {number} options.scale - The target scale.
+         * @param {number} [options.duration] - The animation duration, in ms.
+         * @param {Function} [options.done] - Callback invoked when the zoom is complete.
          */
-        zoomTo: function(scale, duration, done) {
+        zoomTo: function(options) {
+            if (options.scale === undefined) {
+                throw new Error('ScrollList#zoomToScale: scale is required.');
+            }
             (this.getCurrentItemMap() || this._listMap).zoomTo({
-                scale: this._scaleTranslator.toMapScale(scale),
-                duration: duration,
-                done: done
+                scale: this._scaleTranslator.toMapScale(options.scale),
+                duration: options.duration,
+                done: options.done
             });
         },
 

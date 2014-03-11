@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/WebFilings/wf-uicomponents.png)](https://travis-ci.org/WebFilings/wf-uicomponents)
+
 WebFilings JavaScript UI Components
 ================================================================================
 

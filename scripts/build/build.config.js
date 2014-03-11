@@ -4,7 +4,7 @@ requirejs.config({
         hammerjs: '../bower_components/hammerjs/dist/hammer',
         lodash: '../bower_components/lodash/dist/lodash',
         modernizr: '../bower_components/modernizr/modernizr',
-        'wf-js-common': '../bower_components/wf-js-common/src/',
+        'wf-js-common': '../bower_components/wf-common/src/',
         'wf-js-uicomponents': '.'
     },
     shim: {

@@ -94,7 +94,7 @@ define(function(require) {
      * @param {string|{x: string, y: string}} [options.mode='stop']
      *        Determines how to handle boundary violations during interactions:
      *        'stop' disallows dragging beyond the boundaries and
-     *        'slow' slows the drag effect once boundaries are violated.
+     *        'slow' limits drag and swipe effects beyond boundaries.
      *        A different effect may be applied to each boundary.
      *
      * @example
@@ -184,6 +184,7 @@ define(function(require) {
             var event = args.event;
             var targetState = args.targetState;
             var eventType = event.type;
+            var originalState;
 
             switch (eventType) {
             case EventTypes.TOUCH:
@@ -202,7 +203,6 @@ define(function(require) {
                 else {
                     this._stopAtBoundaries(event, targetState, 'x');
                 }
-
                 if (!event.simulated && this._mode.y === Modes.SLOW) {
                     this._pullToBoundaries(event, targetState, 'y');
                 }
@@ -212,7 +212,6 @@ define(function(require) {
                 break;
 
             case EventTypes.MOUSE_WHEEL:
-            case EventTypes.SWIPE:
 
                 this._stopAtBoundaries(event, targetState);
                 break;
@@ -221,6 +220,32 @@ define(function(require) {
             case EventTypes.RESIZE:
 
                 this._snapToBoundaries(event, targetState);
+                break;
+
+            case EventTypes.SWIPE:
+
+                originalState = targetState.clone();
+                if (this._mode.x === Modes.SLOW) {
+                    this._bounceAtBoundaries(event, targetState, 'x');
+                }
+                else {
+                    this._stopAtBoundaries(event, targetState, 'x');
+                }
+                if (this._mode.y === Modes.SLOW) {
+                    this._bounceAtBoundaries(event, targetState, 'y');
+                }
+                else {
+                    this._stopAtBoundaries(event, targetState, 'y');
+                }
+                this._accelerateAnimationAtBoundaries(event, targetState, originalState);
+
+                break;
+
+            case EventTypes.TRANSFORM:
+
+                if (event.simulated) {
+                    this._stopAtBoundaries(event, targetState);
+                }
                 break;
             }
         },
@@ -265,9 +290,47 @@ define(function(require) {
                 durationFactorY = boundedDelta / originalDelta;
             }
 
-            // Apply acceleration up to the default animation duration.
+            // Apply acceleration. This effect should be relative to, but faster
+            // than other snap backs.
             acceleratedDuration = targetState.duration * Math.min(durationFactorX, durationFactorY);
-            targetState.duration = Math.max(this._animationDuration, acceleratedDuration);
+            targetState.duration = Math.max(this._animationDuration / 2, acceleratedDuration);
+        },
+
+        /**
+         * Allow event translation to move content slightly outside of boundaries
+         * so that when release event occurs the content will snap back to boundaries.
+         * @param {InteractionEvent} event
+         * @param {TransformState} targetState
+         * @param {string} [axis]
+         */
+        _bounceAtBoundaries: function(event, targetState, axis) {
+            var originalState = targetState.clone();
+            var viewportSize = this._awesomeMap.getViewportDimensions();
+
+            // Enforce the viewport boundaries.
+            var boundedPosition = this._getBoundedPosition(targetState);
+            var bounceDistance;
+            var direction;
+
+            // If the targetState ends up out of bounds, allow the translation to carry
+            // beyond the bounds by 10% of the relevant viewport dimension.
+            // On release event handling, the content will "bounce back".
+            // Switch the sign of the bounce distance to account for location:
+            // left/top has the distance added, right/bottom has the distance subtracted.
+            if (!axis || axis === 'x') {
+                if (boundedPosition.x !== originalState.translateX) {
+                    bounceDistance = 0.1 * viewportSize.width;
+                    direction = boundedPosition.x < originalState.translateX ? 1 : -1;
+                    targetState.translateX = boundedPosition.x + bounceDistance * direction;
+                }
+            }
+            if (!axis || axis === 'y') {
+                if (boundedPosition.y !== originalState.translateY) {
+                    bounceDistance = 0.1 * viewportSize.height;
+                    direction = boundedPosition.y < originalState.translateY ? 1 : -1;
+                    targetState.translateY = boundedPosition.y + bounceDistance * direction;
+                }
+            }
         },
 
         /**
@@ -426,10 +489,6 @@ define(function(require) {
          * @private
          */
         _stopAtBoundaries: function(event, targetState, axis) {
-            // Save off the original values.
-            var originalState = targetState.clone();
-
-            // Enforce the viewport boundaries.
             var boundedPosition = this._getBoundedPosition(targetState);
 
             if (!axis || axis === 'x') {
@@ -437,11 +496,6 @@ define(function(require) {
             }
             if (!axis || axis === 'y') {
                 targetState.translateY = boundedPosition.y;
-            }
-
-            // Modify the animation duration for swipe events.
-            if (event.type === EventTypes.SWIPE) {
-                this._accelerateAnimationAtBoundaries(event, targetState, originalState);
             }
         }
     };

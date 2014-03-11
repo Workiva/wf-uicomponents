@@ -9,6 +9,7 @@ require([
     'wf-js-common/BrowserInfo',
     'wf-js-common/Url',
     'wf-js-common/DOMUtil',
+    'wf-js-common/consoleDev',
     'hammerjs.fakemultitouch',
     'hammerjs.showtouches'
 ], function(
@@ -21,15 +22,10 @@ require([
     DeviceInfo,
     BrowserInfo,
     Url,
-    DOMUtil
+    DOMUtil,
+    console
 ) {
     'use strict';
-
-    //---------------------------------------------------------
-    // Logging
-    //---------------------------------------------------------
-
-    var DEBUG = false;
 
     //---------------------------------------------------------
     // Initialize ViewerComponent
@@ -134,46 +130,46 @@ require([
 
     scrollList.onContentRequested(function(sender, args) {
         var itemIndex = args.itemIndex;
-        if (DEBUG) {
-            console.log('content requested for', itemIndex);
-        }
+        console.log('content requested for', itemIndex);
         createPage(args.placeholder.contentContainer, itemIndex,
             args.scaleToFit, args.width, args.height);
     });
 
     scrollList.onContentRemoved(function(sender, args) {
-        if (DEBUG) {
-            console.log('content removed for', args.itemIndex);
-        }
+        console.log('content removed for', args.itemIndex);
     });
 
     scrollList.onCurrentItemChanged(function(sender, args) {
-        if (DEBUG) {
-            console.log('current item changed to', args.itemIndex);
-        }
+        console.log('current item changed to', args.itemIndex);
         $('#page').val(args.itemIndex + 1);
         updateZoomPercentage();
     });
 
     scrollList.onInteraction(function(sender, args) {
-        if (DEBUG) {
-            console.log(args.event.type, args);
-        }
+        console.log(args.event.type, args);
+    });
+
+    scrollList.onInteractionStarted(function(/*sender*/) {
+        console.log('interaction started');
+    });
+
+    scrollList.onInteractionFinished(function(/*sender*/) {
+        console.log('interaction finished');
     });
 
     scrollList.onPlaceholderRendered(function(sender, args) {
-        if (DEBUG) {
-            console.log('placeholder rendered for', args.itemIndex);
-        }
+        console.log('placeholder rendered for', args.itemIndex);
         // BEWARE: Doing big stuff here can interrupt swipe animations!
         args.placeholder.contentContainer.style.backgroundColor = '#fff';
     });
 
     scrollList.onScaleChanged(function(sender, args) {
-        if (DEBUG) {
-            console.log('scale changed to', args.scale);
-        }
+        console.log('scale changed to', args.scale);
         updateZoomPercentage();
+    });
+
+    scrollList.onScrollPositionChanged(function(sender, args) {
+        console.log('scroll position changed to', args.x, args.y);
     });
 
     scrollList.render();
@@ -216,7 +212,7 @@ require([
 
         $('#zoomToScale').submit(function() {
             var scale = parseInt(this.elements.zoomTo.value, 10) / 100;
-            scrollList.zoomTo(scale);
+            scrollList.zoomTo({ scale: scale });
             $(':focus').blur();
             return false;
         });

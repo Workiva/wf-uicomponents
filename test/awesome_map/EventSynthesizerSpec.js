@@ -38,7 +38,7 @@ define(function(require) {
             var dependencies = EventSynthesizer.dependencies;
 
             hammer = jasmine.createSpyObj('Hammer', ['on', 'off']);
-            mouseAdapter = jasmine.createSpyObj('MouseAdapter', ['onMouseWheel', 'dispose']);
+            mouseAdapter = jasmine.createSpyObj('MouseAdapter', ['onMouseWheel', 'onMouseWheelStart', 'onMouseWheelEnd', 'dispose']);
             window = jasmine.createSpyObj('window', ['addEventListener', 'removeEventListener']);
 
             spyOn(dependencies, 'getWindow').andReturn(window);
@@ -140,6 +140,20 @@ define(function(require) {
 
                 expect(handler).toBeDefined();
                 expect(mouseAdapter.onMouseWheel).toHaveBeenCalledWith(handler);
+            });
+
+            it('should register a mouse wheel start handler with mouse adapter', function() {
+                var handler = handlers[EventTypes.MOUSE_WHEEL_START];
+
+                expect(handler).toBeDefined();
+                expect(mouseAdapter.onMouseWheelStart).toHaveBeenCalledWith(handler);
+            });
+
+            it('should register a mouse wheel end handler with mouse adapter', function() {
+                var handler = handlers[EventTypes.MOUSE_WHEEL_END];
+
+                expect(handler).toBeDefined();
+                expect(mouseAdapter.onMouseWheelEnd).toHaveBeenCalledWith(handler);
             });
 
             it('should register a release handler with hammer', function() {
@@ -325,6 +339,28 @@ define(function(require) {
                 expect(dispatchEvent.calls[0].args[0]).toBe(eventType);
                 expect(dispatchEvent.calls[0].args[1].deltaX).toBe(3);
                 expect(dispatchEvent.calls[0].args[1].deltaY).toBe(5);
+            });
+
+            it('should dispatch mouse wheel start events', function() {
+                var eventType = EventTypes.MOUSE_WHEEL_START;
+
+                handlers[eventType]({ distance: { x: 0, y: 0 }, source: {} });
+
+                expect(dispatchEvent).toHaveBeenCalled();
+                expect(dispatchEvent.calls[0].args[0]).toBe(eventType);
+                expect(dispatchEvent.calls[0].args[1].deltaX).toBe(0);
+                expect(dispatchEvent.calls[0].args[1].deltaY).toBe(0);
+            });
+
+            it('should dispatch mouse wheel end events', function() {
+                var eventType = EventTypes.MOUSE_WHEEL_START;
+
+                handlers[eventType]({ distance: { x: 0, y: 0 }, source: {} });
+
+                expect(dispatchEvent).toHaveBeenCalled();
+                expect(dispatchEvent.calls[0].args[0]).toBe(eventType);
+                expect(dispatchEvent.calls[0].args[1].deltaX).toBe(0);
+                expect(dispatchEvent.calls[0].args[1].deltaY).toBe(0);
             });
 
             it('should dispatch release events', function() {

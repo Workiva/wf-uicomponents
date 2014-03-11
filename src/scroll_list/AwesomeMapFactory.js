@@ -68,12 +68,12 @@ define(function(require) {
             }
             map.addInterceptor(new BoundaryInterceptor({
                 centerContent: true,
-                mode: 'stop'
+                mode: { x: 'stop', y: 'slow' }
             }));
 
             // Wire up observables.
             map.onScaleChanged(function(source, args) {
-                scrollList.onScaleChanged.dispatch([this, {
+                scrollList.onScaleChanged.dispatch([scrollList, {
                     event: args.event,
                     scale: scrollList.getScale()
                 }]);
@@ -142,14 +142,19 @@ define(function(require) {
             map.onInteractionFinished(function() {
                 scrollList.onInteractionFinished.dispatch([scrollList]);
             });
-            map.onTranslationChanged(function(source, args) {
-                scrollList.getLayout().setScrollPosition({ top: args.y, left: args.x });
-            });
             map.onScaleChanged(function(source, args) {
                 scrollList.getLayout().setScale(args.scale);
-                scrollList.onScaleChanged.dispatch([this, {
+                scrollList.onScaleChanged.dispatch([scrollList, {
                     event: args.event,
                     scale: scrollList.getScale()
+                }]);
+            });
+            map.onTranslationChanged(function(source, args) {
+                scrollList.getLayout().setScrollPosition({ top: args.y, left: args.x });
+                scrollList.onScrollPositionChanged.dispatch([scrollList, {
+                    event: args.event,
+                    x: -args.x,
+                    y: -args.y
                 }]);
             });
 
