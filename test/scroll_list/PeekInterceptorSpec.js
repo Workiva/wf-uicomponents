@@ -172,6 +172,12 @@ define(function(require) {
                     interceptor.handleInteraction(null, { event: evt });
                     expect(interceptor._setPeekDeltaByCurrentPosition).toHaveBeenCalled();
                 });
+
+                it('should return undefined', function() {
+                    var evt = createEvent(EventTypes.TOUCH);
+                    var result = interceptor.handleInteraction(null, { event: evt });
+                    expect(result).toBe(undefined);
+                });
             });
 
             function testDrag() {
@@ -255,6 +261,19 @@ define(function(require) {
 
                     expect(result).toBe(true);
                     expectMostRecentTransformCallCalledWith(-100);
+                });
+
+                it('should modify event delta to prevent content from shifting out of bounds', function() {
+                    var evt = createEvent(eventType, { deltaY: 20 });
+                    var result;
+
+                    listState.translateY = -200;
+                    itemState.translateY = -10;
+
+                    result = interceptor.handleInteraction(null, { event: evt });
+
+                    expect(result).toBe(true);
+                    expect(evt.iterativeGesture.deltaY).toBe(10);
                 });
             }
 
@@ -345,6 +364,19 @@ define(function(require) {
                     expect(result).toBe(true);
                     expectMostRecentTransformCallCalledWith(-100);
                 });
+
+                it('should modify event delta to prevent content from shifting out of bounds', function() {
+                    var evt = createEvent(eventType, { deltaY: -20 });
+                    var result;
+
+                    listState.translateY = -200;
+                    itemState.translateY = 10;
+
+                    result = interceptor.handleInteraction(null, { event: evt });
+
+                    expect(result).toBe(true);
+                    expect(evt.iterativeGesture.deltaY).toBe(-10);
+                });
             }
 
             describe('drag up', function() {
@@ -384,9 +416,13 @@ define(function(require) {
                         // Start peeking, then swipe, then release
                         expect(interceptor.handleInteraction(null, { event: drag })).toBe(false);
                         expect(interceptor.handleInteraction(null, { event: swipe })).toBe(false);
-                        expect(interceptor.handleInteraction(null, { event: release })).toBe(true);
-
-                        expect(scrollList.scrollTo).toHaveBeenCalledWith({ index: 2, duration: duration });
+                        runs(function() {
+                            expect(interceptor.handleInteraction(null, { event: release })).toBe(true);
+                        });
+                        waits(1);
+                        runs(function() {
+                            expect(scrollList.scrollTo).toHaveBeenCalledWith({ index: 2, duration: duration });
+                        });
                     });
 
                     it('should scroll to current item on release if peeking at previous item', function() {
@@ -397,9 +433,13 @@ define(function(require) {
                         // Start peeking, then swipe, then release
                         expect(interceptor.handleInteraction(null, { event: drag })).toBe(false);
                         expect(interceptor.handleInteraction(null, { event: swipe })).toBe(false);
-                        expect(interceptor.handleInteraction(null, { event: release })).toBe(true);
-
-                        expect(scrollList.scrollTo).toHaveBeenCalledWith({ index: 2, duration: duration });
+                        runs(function() {
+                            expect(interceptor.handleInteraction(null, { event: release })).toBe(true);
+                        });
+                        waits(1);
+                        runs(function() {
+                            expect(scrollList.scrollTo).toHaveBeenCalledWith({ index: 2, duration: duration });
+                        });
                     });
                 });
 
@@ -413,9 +453,13 @@ define(function(require) {
                         // Start peeking, then swipe, then release
                         expect(interceptor.handleInteraction(null, { event: drag })).toBe(false);
                         expect(interceptor.handleInteraction(null, { event: swipe })).toBe(false);
-                        expect(interceptor.handleInteraction(null, { event: release })).toBe(true);
-
-                        expect(scrollList.scrollTo).toHaveBeenCalledWith({ index: 0, duration: duration });
+                        runs(function() {
+                            expect(interceptor.handleInteraction(null, { event: release })).toBe(true);
+                        });
+                        waits(1);
+                        runs(function() {
+                            expect(scrollList.scrollTo).toHaveBeenCalledWith({ index: 0, duration: duration });
+                        });
                     });
 
                     it('should scroll to current item on release if peeking at next item', function() {
@@ -426,9 +470,13 @@ define(function(require) {
                         // Start peeking, then swipe, then release
                         expect(interceptor.handleInteraction(null, { event: drag })).toBe(false);
                         expect(interceptor.handleInteraction(null, { event: swipe })).toBe(false);
-                        expect(interceptor.handleInteraction(null, { event: release })).toBe(true);
-
-                        expect(scrollList.scrollTo).toHaveBeenCalledWith({ index: 0, duration: duration });
+                        runs(function() {
+                            expect(interceptor.handleInteraction(null, { event: release })).toBe(true);
+                        });
+                        waits(1);
+                        runs(function() {
+                            expect(scrollList.scrollTo).toHaveBeenCalledWith({ index: 0, duration: duration });
+                        });
                     });
                 });
 
@@ -465,11 +513,15 @@ define(function(require) {
 
                     // Start peeking and then release
                     interceptor.handleInteraction(null, { event: drag });
-                    interceptor.handleInteraction(null, { event: release });
-
-                    expect(scrollList.scrollTo).toHaveBeenCalledWith({
-                        index: index,
-                        duration: 250
+                    runs(function() {
+                        interceptor.handleInteraction(null, { event: release });
+                    });
+                    waits(1);
+                    runs(function() {
+                        expect(scrollList.scrollTo).toHaveBeenCalledWith({
+                            index: index,
+                            duration: 250
+                        });
                     });
                 }
 

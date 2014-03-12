@@ -63,6 +63,18 @@ define(function() {
         MOUSE_WHEEL: 'mousewheel',
 
         /**
+         * User began spinning the mouse wheel.
+         * @type {string}
+         */
+        MOUSE_WHEEL_START: 'mousewheelstart',
+
+        /**
+         * User has finished spinning the mouse wheel.
+         * @type {string}
+         */
+        MOUSE_WHEEL_END: 'mousewheelend',
+
+        /**
          * User releases all fingers on touch or releases mouse-clicks on desktop.
          * @type {string}
          */

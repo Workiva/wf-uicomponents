@@ -581,8 +581,12 @@ define(function(require) {
             var done = function() {
                 // Let consumers know that an interaction is complete
                 // when a release event is finished processing.
-                if (eventType === EventTypes.RELEASE) {
+                if (eventType === EventTypes.RELEASE || eventType === EventTypes.MOUSE_WHEEL_END) {
                     self.onInteractionFinished.dispatch([self]);
+                    if (self._deferInteractionStarted) {
+                        self.onInteractionStarted.dispatch([self]);
+                        self._deferInteractionStarted = false;
+                    }
                 }
                 if (args.done) {
                     args.done();
@@ -591,12 +595,18 @@ define(function(require) {
 
             // If this is a touch event, cancel the current transformation
             // and notify the consumer that an interaction has started.
-            if (eventType === EventTypes.TOUCH) {
+            if (eventType === EventTypes.TOUCH || eventType === EventTypes.MOUSE_WHEEL_START) {
                 var cancelledState = queue.cancelCurrentTransformation();
                 if (cancelledState) {
                     this.setCurrentTransformState(cancelledState);
+                    // To preserve logical ordering of events when cancelling
+                    // transforms via touch events, dispatch onInteractionStarted
+                    // after the previous interaction's release event is handled.
+                    this._deferInteractionStarted = true;
                 }
-                this.onInteractionStarted.dispatch([this]);
+                else {
+                    this.onInteractionStarted.dispatch([this]);
+                }
             }
             // If resizing, invalidate the viewport dimensions.
             else if (eventType === EventTypes.RESIZE) {

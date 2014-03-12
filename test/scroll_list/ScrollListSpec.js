@@ -19,6 +19,7 @@ define(function(require) {
 
     var $ = require('jquery');
     var _ = require('lodash');
+    var AwesomeMap = require('wf-js-uicomponents/awesome_map/AwesomeMap');
     var DestroyUtil = require('wf-js-common/DestroyUtil');
     var ScrollList = require('wf-js-uicomponents/scroll_list/ScrollList');
 
@@ -98,7 +99,30 @@ define(function(require) {
 
             it('should get the current item map', function() {
                 testScrollList(function(scrollList) {
-                    expect(scrollList.getCurrentItemMap()).toBe(scrollList._itemMap);
+                    var currentIndex = 99;
+                    var map = {};
+                    spyOn(scrollList._layout, 'getCurrentItemIndex').andReturn(currentIndex);
+                    spyOn(scrollList, 'getItemMap').andReturn(map);
+
+                    var itemMap = scrollList.getCurrentItemMap();
+
+                    expect(scrollList.getItemMap).toHaveBeenCalledWith(currentIndex);
+                    expect(itemMap).toBe(map);
+                });
+            });
+
+            it('should get an item map', function() {
+                testScrollList(function(scrollList) {
+                    var renderer = scrollList._renderer;
+                    var placeholder = { map: 'foo' };
+                    var index = 1;
+
+                    spyOn(renderer, 'get').andReturn(placeholder);
+
+                    var itemMap = scrollList.getItemMap(index);
+
+                    expect(renderer.get).toHaveBeenCalledWith(index);
+                    expect(itemMap).toBe(placeholder.map);
                 });
             });
 
@@ -419,13 +443,13 @@ define(function(require) {
             });
         });
 
-        describe('when scrolling', function() {
+        describe('when scrolling to index', function() {
 
             it('should require an index', function() {
                 testScrollList(function(scrollList) {
                     expect(function() {
                         scrollList.scrollTo({});
-                    }).toThrow('ScrollList.scrollTo: index is required.');
+                    }).toThrow('ScrollList#scrollTo: index is required.');
                 });
             });
 
@@ -511,6 +535,58 @@ define(function(require) {
                 });
             });
 
+            describe('when scrolling in other than "flow" mode', function() {
+                it('should reset the zoom level of all out of view item maps when the scroll completes', function() {
+                    testScrollList({ mode: '!flow' }, function(scrollList) {
+                        var listMap = scrollList._listMap;
+
+                        // Expect that we panned the list map.
+                        spyOn(listMap, 'panTo');
+                        scrollList.scrollTo({ index: 2 });
+                        expect(listMap.panTo).toHaveBeenCalled();
+
+                        // Mock state during invocation of done and invoke.
+                        var itemRange = { startIndex: 0, endIndex: 4 };
+                        var itemMaps = [];
+                        (function() {
+                            for (var i = itemRange.startIndex; i <= itemRange.endIndex; i++) {
+                                var map = _.extend({}, AwesomeMap.prototype);
+                                spyOn(map, 'zoomTo');
+                                itemMaps.push(map);
+                            }
+                        }());
+                        var layout = scrollList.getLayout();
+                        var currentIndexAfterScroll = 2;
+                        var panToOptions = listMap.panTo.calls[0].args[0];
+
+                        spyOn(listMap, 'getCurrentTransformState').andReturn({
+                            translateX: panToOptions.x,
+                            translateY: panToOptions.y
+                        });
+                        spyOn(layout, 'getCurrentItemIndex').andReturn(currentIndexAfterScroll);
+                        spyOn(layout, 'getRenderedItemRange').andReturn(itemRange);
+                        spyOn(scrollList, 'getItemMap').andCallFake(function(index) {
+                            return itemMaps[index];
+                        });
+
+                        expect(panToOptions.done).toBeDefined();
+                        panToOptions.done();
+
+                        // Now assert.
+                        for (var i = itemRange.startIndex; i <= itemRange.endIndex; i++) {
+                            var itemMap = itemMaps[i];
+                            expect(itemMap).toBeDefined();
+                            if (i === currentIndexAfterScroll) {
+                                expect(itemMap.zoomTo).not.toHaveBeenCalled();
+                            }
+                            else {
+                                expect(itemMap.zoomTo).toHaveBeenCalledWith({ scale: 1 });
+                            }
+                        }
+                    });
+                });
+            });
+
             describe('when scrolling item position to center', function() {
 
                 it('should center list map in flow mode', function() {
@@ -578,8 +654,124 @@ define(function(require) {
                             x: -100,
                             y: -200,
                             duration: 0,
-                            done: undefined
+                            done: jasmine.any(Function)
                         });
+                    });
+                });
+            });
+        });
+
+        describe('when scrolling to position', function() {
+            var listMap;
+            var listState;
+            var layout;
+            var listSize;
+            var viewportSize;
+            function setup(scrollList) {
+                // Setup spy to return some value for current translateX.
+                listMap = scrollList.getListMap();
+                listState = { translateX: -100, translateY: -100, scale: 2 };
+                spyOn(listMap, 'getCurrentTransformState').andReturn(listState);
+                // Setup spies to return sizes used to calculate boundary positions.
+                layout = scrollList.getLayout();
+                listSize = { width: 1000, height: 1000 };
+                viewportSize = { width: 100, height: 100 };
+                spyOn(layout, 'getSize').andReturn(listSize);
+                spyOn(layout, 'getViewportSize').andReturn(viewportSize);
+                // Spy on the listMap.panTo; it's the target of the method.
+                spyOn(listMap, 'panTo');
+            }
+            it('should throw if not in "flow" mode', function() {
+                testScrollList({ mode: '!flow' }, function(scrollList) {
+                    expect(function() {
+                        scrollList.scrollToPosition();
+                    }).toThrow('ScrollList#scrollToPosition is only available in "flow" mode.');
+                });
+            });
+            it('should require either an x or y option', function() {
+                testScrollList({ mode: 'flow' }, function(scrollList) {
+                    expect(function() {
+                        scrollList.scrollToPosition({ x: 0, y: 0 });
+                    }).not.toThrow();
+                    expect(function() {
+                        scrollList.scrollToPosition({ x: 0 });
+                    }).not.toThrow();
+                    expect(function() {
+                        scrollList.scrollToPosition({ y: 0 });
+                    }).not.toThrow();
+                    expect(function() {
+                        scrollList.scrollToPosition();
+                    }).toThrow('ScrollList#scrollToPosition: x or y is required.');
+                });
+            });
+            it('should use to the current x if x is not specified', function() {
+                testScrollList({ mode: 'flow' }, function(scrollList) {
+                    setup(scrollList);
+                    scrollList.scrollToPosition({ y: 100 });
+                    expect(listMap.panTo.mostRecentCall.args[0].x).toBe(listState.translateX);
+                });
+            });
+            it('should use to the current y if y is not specified', function() {
+                testScrollList({ mode: 'flow' }, function(scrollList) {
+                    setup(scrollList);
+                    scrollList.scrollToPosition({ x: 100 });
+                    expect(listMap.panTo.mostRecentCall.args[0].y).toBe(listState.translateY);
+                });
+            });
+            it('should constrain x to valid values', function() {
+                testScrollList({ mode: 'flow' }, function(scrollList) {
+                    setup(scrollList);
+
+                    scrollList.scrollToPosition({ x: 2000 });
+                    expect(listMap.panTo.mostRecentCall.args[0].x)
+                        .toBe(viewportSize.width - listSize.width * listState.scale);
+
+                    scrollList.scrollToPosition({ x: -100 });
+                    expect(listMap.panTo.mostRecentCall.args[0].x).toBe(0);
+                });
+            });
+            it('should constrain y to valid values', function() {
+                testScrollList({ mode: 'flow' }, function(scrollList) {
+                    setup(scrollList);
+
+                    scrollList.scrollToPosition({ y: 1000 });
+                    expect(listMap.panTo.mostRecentCall.args[0].y)
+                        .toBe(viewportSize.height - listSize.height * listState.scale);
+
+                    scrollList.scrollToPosition({ y: -100 });
+                    expect(listMap.panTo.mostRecentCall.args[0].y).toBe(0);
+                });
+            });
+            it('should render placeholders at target position if not rendered', function() {
+                testScrollList({ mode: 'flow' }, function(scrollList) {
+                    setup(scrollList);
+
+                    // Need to spy on the layout since it will do the predictive rendering.
+                    var positionToRender = { top: 0, bottom: 100, left: 0, right: 100 };
+                    spyOn(layout, 'getPositionToRender').andReturn(positionToRender);
+                    spyOn(layout, 'setScrollPosition');
+                    spyOn(layout, 'render');
+
+                    // Vertical support:
+                    scrollList.scrollToPosition({ y: 200 });
+                    expect(layout.setScrollPosition.mostRecentCall.args[0].top).toBe(400);
+                    expect(layout.render.calls.length).toBe(1);
+
+                    // Horizontal support:
+                    scrollList.scrollToPosition({ x: 300 });
+                    expect(layout.setScrollPosition.mostRecentCall.args[0].left).toBe(600);
+                    expect(layout.render.calls.length).toBe(2);
+                });
+            });
+            it('should pan the list map', function() {
+                testScrollList({ mode: 'flow' }, function(scrollList) {
+                    setup(scrollList);
+                    var options = { x: 100, y: 100, done: function() {} };
+                    scrollList.scrollToPosition(options);
+                    expect(listMap.panTo).toHaveBeenCalledWith({
+                        x: -options.x * listState.scale,
+                        y: -options.y * listState.scale,
+                        done: options.done
                     });
                 });
             });
@@ -597,7 +789,7 @@ define(function(require) {
                 spyOn(translator, 'toMapScale').andReturn(translatedScale);
                 spyOn(targetMap, 'zoomTo');
 
-                scrollList.zoomTo(scale, duration, done);
+                scrollList.zoomTo({ scale: scale, duration: duration, done: done});
 
                 expect(translator.toMapScale).toHaveBeenCalledWith(scale);
                 expect(targetMap.zoomTo).toHaveBeenCalledWith({
