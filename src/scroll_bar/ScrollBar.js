@@ -16,15 +16,11 @@
 
 define(function(require) {
     'use strict';
-    
+
     var requestAnimFrame = require('wf-js-common/requestAnimationFrame');
 
     /**
      * Creates a new ScrollBar with the given ScrollList and options.
-     * ScrollBar expects the template for the scrollbar to follow this structure:
-     * <div id="scroll-bar-container">
-     *   <div id="scroll-bar"></div>
-     * </div>
      *
      * @classdesc
      *

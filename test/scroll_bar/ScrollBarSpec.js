@@ -24,38 +24,53 @@ define(function(require) {
 
     describe('ScrollBar', function () {
         var scrollList = _.extend({}, ScrollList.prototype);
-        var verticalOffset = 0;
         var scrollBar;
-        
-        var scrollBarTemplate = $('<div id="scroll-bar-container"><div id="scroll-bar"></div></div>');
-        
+        var parentEl;
+
+        var parent = $('<div id="scroll-bar-parent"></div>');
+        $('body').append(parent);
+
         var mockLayout = {
             getViewportSize: function () { return 100; },
             getSize: function () { return 700; },
             getVisiblePosition: function () { return { top: 0 };},
             getCurrentItemIndex: function () { return 0; }
         };
-        
+
+        var mockListMap = {
+            onTranslationChanged: function() {},
+            onScaleChanged: function() {}
+        };
+
+        var options = {};
+        options.scrollbarId = 'scroll-bar';
+        options.scrollbarContainerId = 'scroll-bar-container';
+
         beforeEach(function() {
-            scrollBarTemplate.appendTo('body');
-            
             scrollList._items = [{ height: 700 }];
-            
+
+            parentEl = document.getElementById('scroll-bar-parent');
+
             spyOn(scrollList, 'getLayout').andReturn(mockLayout);
-            spyOn(scrollList, 'getListMap').andReturn({onTranslationChanged: function() {}});
-            scrollBar = new ScrollBar(scrollList, verticalOffset);
+            spyOn(scrollList, 'getListMap').andReturn(mockListMap);
+            scrollBar = new ScrollBar(scrollList, parentEl, options);
         });
-        
+
         afterEach(function() {
             $('body').empty();
         });
-        
+
         it('should scroll to position when the scrollBar is moved', function() {
-            var scrollBarEl = $('#scroll-bar');
+            var scrollBarEl = document.getElementById('scroll-bar');
+            var e1 = document.createEvent('Event');
+            e1.initEvent('mousedown', true, false);
+            var e2 = document.createEvent('Event');
+            e2.initEvent('mousemove', true, false);
             spyOn(scrollList, 'scrollTo');
-            
-            scrollBarEl.trigger('mousedown', function() {});
-            scrollBarEl.trigger('mousemove', function() {});
+
+            scrollBarEl.dispatchEvent(e1);
+            scrollBarEl.dispatchEvent(e2);
+
             expect(scrollList.scrollTo).toHaveBeenCalled();
         });
     });
