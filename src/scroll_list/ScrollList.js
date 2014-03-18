@@ -246,6 +246,8 @@ define(function(require) {
          */
         this.onScrollPositionChanged = Observable.newObservable();
 
+        this.onItemsInserted = Observable.newObservable();
+
         //---------------------------------------------------------
         // Private properties
         //---------------------------------------------------------
@@ -448,9 +450,62 @@ define(function(require) {
         //---------------------------------------------------------
 
         /**
+         * Insert items into the list and re-render immediately.
+         *
+         * @method ScrollList#insertItems
+         * @param {number} index
+         * @param {Array.<{width: number, height: number}>} itemMetadata
+         */
+        insertItems: function(index, itemMetadata) {
+            var listMap = this._listMap;
+            var currentScale = listMap.getScale();
+            var currentTranslation = listMap.getTranslation();
+
+            // Guard against invalid startIndex value
+            var layout = this._layout;
+            var currentItemsCount = layout.getItemMetadata().length;
+            index = Math.max(0, Math.min(currentItemsCount, index));
+
+            // Track the current item's top position so we can keep it
+            // in its current position after inserting new items.
+            var currentItemIndex = layout.getCurrentItemIndex();
+            var currentItemLayout = layout.getItemLayout(currentItemIndex);
+            var currentItemTop = 0;
+            var currentItemLeft = 0;
+            if (currentItemLayout) {
+                currentItemTop = currentItemLayout.top;
+                currentItemLeft = currentItemLayout.left;
+            }
+
+            // Insert items into the layout and update the currently rendered items
+            // to account for changes to item position.
+            this._layout.insertItems(index, itemMetadata);
+            this._renderer.update(index, itemMetadata.length);
+
+            // Keep the currently rendered items in the same position.
+            var adjustedItemIndex = currentItemIndex + (index <= currentItemIndex ? itemMetadata.length : 0);
+            var adjustedItemLayout = layout.getItemLayout(adjustedItemIndex);
+            var adjustedItemTop = adjustedItemLayout.top;
+            var adjustedItemLeft = adjustedItemLayout.left;
+            listMap.setContentDimensions(layout.getSize());
+            listMap.transform({
+                x: currentTranslation.x + (currentItemLeft - adjustedItemLeft) * currentScale,
+                y: currentTranslation.y + (currentItemTop - adjustedItemTop) * currentScale,
+                scale: currentScale
+            });
+
+            // Notify consumers that items have been inserted.
+            this.onItemsInserted.dispatch([this, {
+                count: itemMetadata.length
+            }]);
+
+            this.render();
+        },
+
+        /**
          * Disables direct interaction with the scroll list.
          *
-         * @method  ScrollList#disable
+         * @method ScrollList#disable
          */
         disable: function() {
             this._listMap.disable();

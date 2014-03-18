@@ -648,6 +648,18 @@ define(function(require) {
         },
 
         /**
+         * Insert new items into the layout at the given index.
+         *
+         * @param {number} index
+         * @param {Array.<{width: number, height: number}>} itemMetadata
+         */
+        insertItems: function(index, itemMetadata) {
+            var args = [index, 0].concat(itemMetadata);
+            [].splice.apply(this._itemMetadata, args);
+            this.measure();
+        },
+
+        /**
          * Loads content into rendered placeholders.
          *
          * @method VerticalLayout#loadContent

@@ -156,7 +156,7 @@ define(function(require) {
          * @param {ItemLayout} itemLayout
          * @param {Object} placeholder
          */
-        appendPlaceholderToScrollList: function(itemLayout, placeholder) {
+        appendPlaceholderToScrollList: function(itemLayout, placeholder, update) {
             var scrollList = this._scrollList;
             var listMap = scrollList.getListMap();
 
@@ -180,9 +180,15 @@ define(function(require) {
                 }
                 var element = placeholder.element;
                 element.style.left = adjustedLeft + 'px';
-                listMap.appendContent(element);
+                if (!update) {
+                    listMap.appendContent(element);
+                }
             }
-            else {
+            // Only need to handle peek/single modes if not updating an item
+            // that is currently rendered. As items in these modes are hosted inside
+            // of item maps that fill the viewport, and more or less are rendered
+            // independently of each other, there's no need to modify the placeholder.
+            else if (!update) {
                 // As we are appending content in other modes to a separate map,
                 // need to negate the default positional styles and let the map
                 // apply position by transforming its content.
@@ -215,7 +221,7 @@ define(function(require) {
                 }
                 // Set the static content dimensions and transform to center.
                 itemMap.setContentDimensions({ width: itemWidth, height: itemHeight });
-                itemMap.transform({ x: transformX, y: transformY, scale: 1 });
+                itemMap.transform({ x: transformX, y: transformY, scale: itemMap.getScale() });
                 // Remove positional styles from the content container and append to map.
                 var contentContainer = placeholder.contentContainer;
                 contentContainer.style.top = null;
@@ -432,6 +438,40 @@ define(function(require) {
             placeholder.hasContent = false;
 
             return true;
+        },
+
+        /**
+         * Update the currently rendered items to account for the insertion
+         * of items in the layout. Placeholders for items after the given startIndex
+         * have their top and left positions adjusted to accommodate new items
+         * inserted before them. These placeholder are also remapped to reflect
+         * the change to the index of the items they represent.
+         *
+         * @param {number} startIndex
+         * @param {number} newIndexOffset
+         */
+        update: function(startIndex, newIndexOffset) {
+            var layout = this._scrollList.getLayout();
+            var placeholders = this._placeholders;
+            var newRenderedItems = {};
+            for (var itemIndex in placeholders) {
+                if (!placeholders.hasOwnProperty(itemIndex)) {
+                    continue;
+                }
+                var placeholder = placeholders[itemIndex];
+                if (+itemIndex < startIndex) {
+                    newRenderedItems[+itemIndex] = placeholder;
+                }
+                else {
+                    var newItemIndex = +itemIndex + newIndexOffset;
+                    newRenderedItems[newItemIndex] = placeholder;
+                    var newItemLayout = layout.getItemLayout(newItemIndex);
+                    placeholder.element.style.top = newItemLayout.top + 'px';
+                    placeholder.element.style.left = newItemLayout.left + 'px';
+                    this.appendPlaceholderToScrollList(newItemLayout, placeholder, true);
+                }
+            }
+            this._placeholders = newRenderedItems;
         },
 
         //---------------------------------------------------------
