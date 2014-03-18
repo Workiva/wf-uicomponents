@@ -43,16 +43,8 @@ define(function(require) {
      */
 
     var ScrollBar = function (scrollList, parent, options) {
-        var clickOffset, offset;
-        var MIN_HEIGHT = '16';
-        
+        var offset;        
         var that = this;
-
-        function calculateScrollBarHeight ( viewportHeight, virtualHeight ) {
-            // Calculate the size of the scrollbar depending on the virtual height
-            // The scrollbar shouldn't be shorter than MIN_HEIGHT
-            return Math.max(MIN_HEIGHT, ((viewportHeight/(virtualHeight)) * viewportHeight));
-        }
         
         // Set the scrollList
         if (scrollList === undefined) {
@@ -84,9 +76,6 @@ define(function(require) {
         
         // Set the virtualHeight
         this._virtualHeight = this._layout.getSize().height;
-        
-        // Set the initial scrollbar height
-        this._scrollbarHeight = calculateScrollBarHeight(this._viewportHeight, this._virtualHeight);
 
         // Set up the DOM and set the scrollbar and scrollbarContainer elements
         this._elements = this.setUpDOM();
@@ -97,6 +86,23 @@ define(function(require) {
         // Set scrollbarScrolling to initially false
         this._scrollbarScrolling = false;
         
+        // Set clickOffset to null
+        this._clickOffset = null;
+        
+        // Set the initial scale
+        this._scale = this._scrollList._scaleTranslator._map.getCurrentTransformState().scale;
+
+        // Set the effective viewport. 
+        // This is an expression of a relatioinship between the height of the viewport
+        // and the height of the document that you see through the viewport
+        this._effectiveViewport = this._viewportHeight * (1 / this._scale);
+        
+        // Set the effective virtual height.
+        this._effectiveVirtualHeight = this._virtualHeight * (1 / this._scale);
+        
+        // Set the initial scrollbar height
+        this._scrollbarHeight = this.calculateScrollBarHeight(that);
+        
         // Get the initial position, in case it's not at 0, and set the scrollbar position and page number
         requestAnimFrame(function() {
             that.placeScrollBar(that, that._elements.scrollbar);
@@ -104,7 +110,7 @@ define(function(require) {
 
         // Match the scroll bar positioning to the users scrolling
         this._scrollList.getListMap().onTranslationChanged(function() {
-            if (this._scrollbarScrolling) {
+            if (that._scrollbarScrolling) {
                 return;
             }
             requestAnimFrame(function() {
@@ -114,16 +120,18 @@ define(function(require) {
 
         // Make necessary adjustments when the users zooms in or out
         this._scrollList.getListMap().onScaleChanged(function() {
-            that._virtualHeight = that._layout.getSize().height * scrollList._scaleTranslator._map.getCurrentTransformState().scale;
-            that._scrollbarHeight = calculateScrollBarHeight(that._viewportHeight, that._virtualHeight);
+            that._scale = that._scrollList._scaleTranslator._map.getCurrentTransformState().scale;
+            that._effectiveVirtualHeight = that._layout.getSize().height * that._scale;
+            that._effectiveViewport = that._viewportHeight * (1 / that._scale);
+            that._scrollbarHeight = that.calculateScrollBarHeight(that);
             that._elements.scrollbar.style.height = that._scrollbarHeight + 'px';
-            that._avgObjHeight = that._virtualHeight/that._TOTAL_ITEMS;
+            that._effectiveViewport = that._viewportHeight * (1 / that._scrollList._scaleTranslator._map.getCurrentTransformState().scale);
         });
 
         // Attach handlers for scrolling the ScrollBar
         this._elements.scrollbar.addEventListener('mousedown', function(event) {
             offset = that._elements.scrollbar.offsetTop + that._elements.scrollbarContainer.offsetTop;
-            clickOffset = event.clientY - offset + that._elements.scrollbarContainer.offsetTop;
+            that._clickOffset = event.clientY - offset + that._elements.scrollbarContainer.offsetTop;
             that._scrollbarScrolling = true;
             
             that._mouseupHandler = function () {
@@ -131,7 +139,7 @@ define(function(require) {
             };
             
             that._mousemoveHandler = function (e) {
-                that.updateScrollBar(e, that, clickOffset);
+                that.updateScrollBar(e, that, that._clickOffset);
             };
             
             document.addEventListener('mousemove', that._mousemoveHandler);
@@ -173,10 +181,11 @@ define(function(require) {
             return {scrollbar: scrollbarEL, scrollbarContainer: scrollbarContainerEL};
         },
         
+        // Position the scrollbar based on the current position of the ScrollList
         placeScrollBar: function (that) {
             var currentPosition = that._layout.getVisiblePosition().top;
             var availableScrollbarHeight = that._viewportHeight - that._scrollbarHeight;
-            var scrollableVirtualHeight = this._virtualHeight - that._viewportHeight;
+            var scrollableVirtualHeight = that._virtualHeight - that._effectiveViewport;
             var translatedPosition = availableScrollbarHeight / scrollableVirtualHeight * currentPosition;
             that._elements.scrollbar.style.top = translatedPosition + 'px';
         },
@@ -190,30 +199,20 @@ define(function(require) {
 
             // Use the ratio of scrollbar position inside the scrolling area to calculate
             // the current item we should be interested in.
-            var positionOfInterest = ((scrollbarPos) / (that._viewportHeight - that._scrollbarHeight)) * (that._TOTAL_ITEMS - offset) + offset;
+            var positionOfInterest = ((scrollbarPos) / (that._viewportHeight - that._scrollbarHeight)) * (that._virtualHeight);
+            
             // Ensure that positionOfInterest isn't undefined.
             if (!positionOfInterest) {
                 positionOfInterest = 0;
             }
-            // We can't allow scrolling past the document height
-            if ( positionOfInterest === that._TOTAL_ITEMS ) {
-                positionOfInterest = that._TOTAL_ITEMS - 0.1;
-            }
-
-            var indexOfItem = Math.floor(positionOfInterest);
-            var remainder = positionOfInterest - indexOfItem;
-
-            var objHeight = that._scrollList._items[indexOfItem].height;
-
-            var y = objHeight * remainder;
-
-            that._scrollList.scrollTo({
-                index: indexOfItem,
-                center: {x: 0, y: y}
+            console.log(positionOfInterest);
+            that._scrollList.scrollToPosition({
+                y: positionOfInterest
             });
         },
         
         stopUpdatingScrollbar: function (that) {
+            that._clickOffset = undefined;
             document.removeEventListener('mousemove', that._mousemoveHandler);
             that._scrollbarScrolling = false;
             that.removeDocumentEventWatching(that);
@@ -221,6 +220,14 @@ define(function(require) {
         
         removeDocumentEventWatching: function (that) {
             document.removeEventListener('mouseup', that._mouseupHandler);
+        },
+        
+        calculateScrollBarHeight: function (that) {
+            // Calculate the size of the scrollbar depending on the virtual height
+            // The scrollbar shouldn't be shorter than MIN_HEIGHT
+            var MIN_HEIGHT = 16;
+            var height =  Math.max(MIN_HEIGHT, (that._effectiveViewport / that._effectiveVirtualHeight) * that._effectiveViewport);
+            return height;
         }
     };
 
