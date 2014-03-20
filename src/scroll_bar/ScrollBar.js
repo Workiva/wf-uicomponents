@@ -40,12 +40,16 @@ define(function(require) {
      *        An object with optional classes and ids to be placed on the
      *        scrollbarEL and scrollbarContainerEL.
      *
+     * @param {number} options.min_height
+     *        The minimum height, in pixes, of the ScrollBar
+     *        If not provided, the min_height will default to 16px
+     *
      */
 
     var ScrollBar = function (scrollList, parent, options) {
         var offset;        
         var that = this;
-        
+
         // Set the scrollList
         if (scrollList === undefined) {
             throw new Error('ScrollBar#ScrollBar: scrollList is required');
@@ -91,11 +95,6 @@ define(function(require) {
         
         // Set the initial scale
         this._scale = this._scrollList._scaleTranslator._map.getCurrentTransformState().scale;
-
-        // Set the effective viewport. 
-        // This is an expression of a relatioinship between the height of the viewport
-        // and the height of the document that you see through the viewport
-        this._effectiveViewport = this._viewportHeight * (1 / this._scale);
         
         // Set the effective virtual height.
         this._effectiveVirtualHeight = this._virtualHeight * (1 / this._scale);
@@ -122,10 +121,8 @@ define(function(require) {
         this._scrollList.getListMap().onScaleChanged(function() {
             that._scale = that._scrollList._scaleTranslator._map.getCurrentTransformState().scale;
             that._effectiveVirtualHeight = that._layout.getSize().height * that._scale;
-            that._effectiveViewport = that._viewportHeight * (1 / that._scale);
             that._scrollbarHeight = that.calculateScrollBarHeight(that);
             that._elements.scrollbar.style.height = that._scrollbarHeight + 'px';
-            that._effectiveViewport = that._viewportHeight * (1 / that._scrollList._scaleTranslator._map.getCurrentTransformState().scale);
         });
 
         // Attach handlers for scrolling the ScrollBar
@@ -154,7 +151,7 @@ define(function(require) {
             // Create the scrollbar's container
             var scrollbarContainerEL = document.createElement('div');
             var scrollbarEL = document.createElement('div');
-
+            
             // Set the given classes and ids scrollbar and it's container
             if ( this._options.scrollbarId ) {
                 scrollbarEL.setAttribute('id', this._options.scrollbarId);
@@ -185,7 +182,7 @@ define(function(require) {
         placeScrollBar: function (that) {
             var currentPosition = that._layout.getVisiblePosition().top;
             var availableScrollbarHeight = that._viewportHeight - that._scrollbarHeight;
-            var scrollableVirtualHeight = that._virtualHeight - that._effectiveViewport;
+            var scrollableVirtualHeight = that._virtualHeight - (that._layout.getVisiblePosition().bottom - that._layout.getVisiblePosition().top);
             var translatedPosition = availableScrollbarHeight / scrollableVirtualHeight * currentPosition;
             that._elements.scrollbar.style.top = translatedPosition + 'px';
         },
@@ -205,7 +202,7 @@ define(function(require) {
             if (!positionOfInterest) {
                 positionOfInterest = 0;
             }
-            console.log(positionOfInterest);
+
             that._scrollList.scrollToPosition({
                 y: positionOfInterest
             });
@@ -225,8 +222,8 @@ define(function(require) {
         calculateScrollBarHeight: function (that) {
             // Calculate the size of the scrollbar depending on the virtual height
             // The scrollbar shouldn't be shorter than MIN_HEIGHT
-            var MIN_HEIGHT = 16;
-            var height =  Math.max(MIN_HEIGHT, (that._effectiveViewport / that._effectiveVirtualHeight) * that._effectiveViewport);
+            var MIN_HEIGHT = that._options.min_height || 16;
+            var height =  Math.max(MIN_HEIGHT, (that._viewportHeight / that._effectiveVirtualHeight) * that._viewportHeight);
             return height;
         }
     };
