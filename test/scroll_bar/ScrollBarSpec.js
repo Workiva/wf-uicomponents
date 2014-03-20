@@ -88,8 +88,13 @@ define(function(require) {
         
         it('should adjust the position of the scrollbar when the scrollList translation changes', function () {
             spyOn(scrollBar, 'placeScrollBar');
-            scrollList.scrollToPosition({y: 400});
-            expect(scrollBar.placeScrollBar).toHaveBeenCalled();
+            runs(function() {
+                scrollList.scrollToPosition({y: 400});
+            });
+            waits(16 + 1);
+            runs(function() {
+                expect(scrollBar.placeScrollBar).toHaveBeenCalled();
+            });
         });
         
         it('should adjust the scrollbar size and the scale variables when the scale changes', function () {
