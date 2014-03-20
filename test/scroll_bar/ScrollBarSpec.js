@@ -22,9 +22,9 @@ define(function(require) {
     var ScrollBar = require('wf-js-uicomponents/scroll_bar/ScrollBar');
     // var requestAnimFrame = require('wf-js-common/requestAnimationFrame');
 
-    describe('ScrollBar', function () {
+    describe('ScrollBar', function() {
         
-        var items = [{ width: 400, height: 600 }, { width: 600, height: 400 }];
+        var items = [{width: 400, height: 600}, {width: 600, height: 400}];
     
         document.body.style.height = '500px';
         var scrollList = new ScrollList(document.body, items, {
@@ -38,33 +38,30 @@ define(function(require) {
         var scrollBar;
         var parentEl;
 
-        var parent = $('<div id="scroll-bar-parent"></div>');
+        var $parent = $('<div id="scroll-bar-parent"></div>');
+        $('body').append($parent);
         
         var options = {};
         options.scrollbarId = 'scroll-bar';
         options.scrollbarContainerId = 'scroll-bar-container';
 
         beforeEach(function() {
-            $('body').append(parent);
-                    
-            scrollList._items = [{ height: 700 }];
-
             parentEl = document.getElementById('scroll-bar-parent');
                         
             scrollBar = new ScrollBar(scrollList, parentEl, options);
         });
 
         afterEach(function() {
-            $('body').empty();
+            $parent.empty();
         });
         
-        it('should initialize the ScrollBar with the given parameters', function () {
+        it('should initialize the ScrollBar with the given parameters', function() {
             expect(scrollBar._parent).toEqual(parentEl);
             expect(scrollBar._scrollList).toEqual(scrollList);
             expect(scrollBar._options).toEqual(options);
         });
         
-        it('should set up the DOM with the scrollbar and container with the given ids', function () {
+        it('should set up the DOM with the scrollbar and container with the given ids', function() {
             var scrollBarEl =  document.getElementById(options.scrollbarId);
             var scrollBarContainerEl = document.getElementById(options.scrollbarContainerId);
             
@@ -86,7 +83,7 @@ define(function(require) {
             expect(scrollList.scrollToPosition).toHaveBeenCalled();
         });
         
-        it('should adjust the position of the scrollbar when the scrollList translation changes', function () {
+        it('should adjust the position of the scrollbar when the scrollList translation changes', function() {
             spyOn(scrollBar, 'placeScrollBar');
             runs(function() {
                 scrollList.scrollToPosition({y: 400});
@@ -97,11 +94,12 @@ define(function(require) {
             });
         });
         
-        it('should adjust the scrollbar size and the scale variables when the scale changes', function () {
+        it('should adjust the scrollbar size and the scale variables when the scale changes', function() {
             spyOn(scrollBar, 'adjustScale');
             scrollList.zoomTo({scale: 1.2});
             expect(scrollBar.adjustScale).toHaveBeenCalled();
         });
+        
     });
 
 });
