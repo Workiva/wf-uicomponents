@@ -18,46 +18,58 @@ define(function(require) {
     'use strict';
 
     var $ = require('jquery');
-    var _ = require('lodash');
     var ScrollList = require('wf-js-uicomponents/scroll_list/ScrollList');
     var ScrollBar = require('wf-js-uicomponents/scroll_bar/ScrollBar');
+    // var requestAnimFrame = require('wf-js-common/requestAnimationFrame');
 
     describe('ScrollBar', function () {
-        var scrollList = _.extend({}, ScrollList.prototype);
+        
+        var items = [{ width: 400, height: 600 }, { width: 600, height: 400 }];
+    
+        document.body.style.height = '500px';
+        var scrollList = new ScrollList(document.body, items, {
+            mode: 'flow',
+            fit: 'auto',
+            padding: 10,
+            gap: 10,
+            concurrentContentLimit: 3
+        });
+        
         var scrollBar;
         var parentEl;
 
         var parent = $('<div id="scroll-bar-parent"></div>');
-        $('body').append(parent);
-
-        var mockLayout = {
-            getViewportSize: function () { return 100; },
-            getSize: function () { return 700; },
-            getVisiblePosition: function () { return { top: 0 };},
-            getCurrentItemIndex: function () { return 0; }
-        };
-
-        var mockListMap = {
-            onTranslationChanged: function() {},
-            onScaleChanged: function() {}
-        };
-
+        
         var options = {};
         options.scrollbarId = 'scroll-bar';
         options.scrollbarContainerId = 'scroll-bar-container';
 
         beforeEach(function() {
+            $('body').append(parent);
+                    
             scrollList._items = [{ height: 700 }];
 
             parentEl = document.getElementById('scroll-bar-parent');
-
-            spyOn(scrollList, 'getLayout').andReturn(mockLayout);
-            spyOn(scrollList, 'getListMap').andReturn(mockListMap);
+                        
             scrollBar = new ScrollBar(scrollList, parentEl, options);
         });
 
         afterEach(function() {
             $('body').empty();
+        });
+        
+        it('should initialize the ScrollBar with the given parameters', function () {
+            expect(scrollBar._parent).toEqual(parentEl);
+            expect(scrollBar._scrollList).toEqual(scrollList);
+            expect(scrollBar._options).toEqual(options);
+        });
+        
+        it('should set up the DOM with the scrollbar and container with the given ids', function () {
+            var scrollBarEl =  document.getElementById(options.scrollbarId);
+            var scrollBarContainerEl = document.getElementById(options.scrollbarContainerId);
+            
+            expect(scrollBarEl).not.toBe(undefined);
+            expect(scrollBarContainerEl).not.toBe(undefined);
         });
 
         it('should scroll to position when the scrollBar is moved', function() {
@@ -66,12 +78,24 @@ define(function(require) {
             e1.initEvent('mousedown', true, false);
             var e2 = document.createEvent('Event');
             e2.initEvent('mousemove', true, false);
-            spyOn(scrollList, 'scrollTo');
+            spyOn(scrollList, 'scrollToPosition');
 
             scrollBarEl.dispatchEvent(e1);
             scrollBarEl.dispatchEvent(e2);
 
-            expect(scrollList.scrollTo).toHaveBeenCalled();
+            expect(scrollList.scrollToPosition).toHaveBeenCalled();
+        });
+        
+        it('should adjust the position of the scrollbar when the scrollList translation changes', function () {
+            spyOn(scrollBar, 'placeScrollBar');
+            scrollList.scrollToPosition({y: 400});
+            expect(scrollBar.placeScrollBar).toHaveBeenCalled();
+        });
+        
+        it('should adjust the scrollbar size and the scale variables when the scale changes', function () {
+            spyOn(scrollBar, 'adjustScale');
+            scrollList.zoomTo({scale: 1.2});
+            expect(scrollBar.adjustScale).toHaveBeenCalled();
         });
     });
 
