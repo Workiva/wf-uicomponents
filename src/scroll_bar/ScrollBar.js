@@ -40,14 +40,14 @@ define(function(require) {
      *        An object with optional classes and ids to be placed on the
      *        scrollbarEL and scrollbarContainerEL.
      *
-     * @param {number} options.min_height
+     * @param {number} options.minHeight
      *        The minimum height, in pixes, of the ScrollBar
-     *        If not provided, the min_height will default to 16px
+     *        If not provided, the minHeight will default to 16px
      *
      */
 
     var ScrollBar = function (scrollList, parent, options) {
-        var offset;        
+        var offset;
         var that = this;
 
         // Set the scrollList
@@ -119,10 +119,7 @@ define(function(require) {
 
         // Make necessary adjustments when the users zooms in or out
         this._scrollList.getListMap().onScaleChanged(function() {
-            that._scale = that._scrollList._scaleTranslator._map.getCurrentTransformState().scale;
-            that._effectiveVirtualHeight = that._layout.getSize().height * that._scale;
-            that._scrollbarHeight = that.calculateScrollBarHeight(that);
-            that._elements.scrollbar.style.height = that._scrollbarHeight + 'px';
+            that.adjustScale(that);
         });
 
         // Attach handlers for scrolling the ScrollBar
@@ -192,7 +189,6 @@ define(function(require) {
             var scrollbarPos = Math.max(0, event.clientY - clickOffset);
             scrollbarPos = Math.min(scrollbarPos, that._viewportHeight - that._scrollbarHeight);
             that._elements.scrollbar.style.top = scrollbarPos + 'px';
-            var offset = (that._viewportHeight/that._avgObjHeight)/2;
 
             // Use the ratio of scrollbar position inside the scrolling area to calculate
             // the current item we should be interested in.
@@ -222,9 +218,16 @@ define(function(require) {
         calculateScrollBarHeight: function (that) {
             // Calculate the size of the scrollbar depending on the virtual height
             // The scrollbar shouldn't be shorter than MIN_HEIGHT
-            var MIN_HEIGHT = that._options.min_height || 16;
+            var MIN_HEIGHT = that._options.minHeight || 16;
             var height =  Math.max(MIN_HEIGHT, (that._viewportHeight / that._effectiveVirtualHeight) * that._viewportHeight);
             return height;
+        },
+        
+        adjustScale: function (that) {
+            that._scale = that._scrollList._scaleTranslator._map.getCurrentTransformState().scale;
+            that._effectiveVirtualHeight = that._layout.getSize().height * that._scale;
+            that._scrollbarHeight = that.calculateScrollBarHeight(that);
+            that._elements.scrollbar.style.height = that._scrollbarHeight + 'px';
         }
     };
 
