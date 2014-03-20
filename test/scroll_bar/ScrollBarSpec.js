@@ -84,20 +84,20 @@ define(function(require) {
         });
         
         it('should adjust the position of the scrollbar when the scrollList translation changes', function() {
-            spyOn(scrollBar, 'placeScrollBar');
+            spyOn(scrollBar, '_placeScrollBar');
             runs(function() {
                 scrollList.scrollToPosition({y: 400});
             });
             waits(16 + 1);
             runs(function() {
-                expect(scrollBar.placeScrollBar).toHaveBeenCalled();
+                expect(scrollBar._placeScrollBar).toHaveBeenCalled();
             });
         });
         
         it('should adjust the scrollbar size and the scale variables when the scale changes', function() {
-            spyOn(scrollBar, 'adjustScale');
+            spyOn(scrollBar, '_adjustScale');
             scrollList.zoomTo({scale: 1.2});
-            expect(scrollBar.adjustScale).toHaveBeenCalled();
+            expect(scrollBar._adjustScale).toHaveBeenCalled();
         });
         
     });
