@@ -50,7 +50,6 @@ define(function(require) {
         var offset;
         var that = this;
 
-        // Set the scrollList
         if (scrollList === undefined) {
             throw new Error('ScrollBar#ScrollBar: scrollList is required');
         }
@@ -58,7 +57,6 @@ define(function(require) {
             this._scrollList = scrollList;
         }
             
-        // Set the parent
         if (parent === undefined) {
             throw new Error('ScrollBar#ScrollBar: parent is required.');
         }
@@ -66,43 +64,33 @@ define(function(require) {
             this._parent = parent;
         }
         
-        // Set the options
         this._options = options;
 
-        // Set the layout
         this._layout = scrollList.getLayout();
         
-        // Set the number of items
-        this._TOTAL_ITEMS = scrollList._items.length;
+        this._TOTAL_ITEMS = scrollList.getItemMetadata().length;
         
-        // Set the viewportHeight
         this._viewportHeight = this._layout.getViewportSize().height;
         
-        // Set the virtualHeight
         this._virtualHeight = this._layout.getSize().height;
 
-        // Set up the DOM
         this._setUpDOM();
-
-        // Set the average object height
-        this._avgObjHeight = this._virtualHeight/this._TOTAL_ITEMS;
         
         // Set scrollbarScrolling to initially false
         this._scrollbarScrolling = false;
         
-        // Set clickOffset to null
         this._clickOffset = null;
         
         // Set the initial scale
-        this._scale = this._scrollList._scaleTranslator._map.getCurrentTransformState().scale;
+        this._scale = this._scrollList.getScale();
         
         // Set the effective virtual height.
+        // This is a scaled version of the height of the scrollList
         this._effectiveVirtualHeight = this._virtualHeight * (1 / this._scale);
         
-        // Set the initial scrollbar height
         this._scrollbarHeight = this._calculateScrollBarHeight(that);
         
-        // Get the initial position, in case it's not at 0, and set the scrollbar position and page number
+        // Get the initial position, in case it's not at 0, and set the scrollbar position
         requestAnimFrame(function() {
             that._placeScrollBar(that, that._elements.scrollbar);
         });
@@ -265,7 +253,7 @@ define(function(require) {
          * Scale the virtual height and re-calculate the scroll bar height
          */
         _adjustScale: function(that) {
-            that._scale = that._scrollList._scaleTranslator._map.getCurrentTransformState().scale;
+            that._scale = that._scrollList.getScale();
             that._effectiveVirtualHeight = that._layout.getSize().height * that._scale;
             that._scrollbarHeight = that._calculateScrollBarHeight(that);
             that._elements.scrollbar.style.height = that._scrollbarHeight + 'px';
