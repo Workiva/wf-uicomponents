@@ -37,7 +37,7 @@ define(function(require) {
      * @param {HTMLElement} viewport
      *        The viewport that acts as a container for the layout.
      *
-     * @param {Array.<{width: number, height: number}>} itemMetadata
+     * @param {ItemMetadata} itemMetadata
      *        Metadata describing the number and size of the items in this layout.
      *
      * @param {PlaceholderRenderer} renderer
@@ -126,7 +126,7 @@ define(function(require) {
         /**
          * The item metadata used to construct this layout.
          *
-         * @type {Array.<{ width: number, height: number }>}
+         * @type {ItemMetadata}
          */
         this._itemMetadata = itemMetadata;
 
@@ -222,7 +222,7 @@ define(function(require) {
          * Gets the item metadata for the layout.
          *
          * @method VerticalLayout#getItemMetadata
-         * @return {Array.<{ width: number, height: number }>}
+         * @return {ItemMetadata}
          */
         getItemMetadata: function() {
             return this._itemMetadata;
@@ -347,7 +347,7 @@ define(function(require) {
                 return;
             }
 
-            var numberOfItems = this._itemMetadata.length;
+            var numberOfItems = this._itemMetadata.count;
             var itemsToAdd = minNumberOfVirtualItems - numberOfItemsToRender;
 
             // First need to determine how to weigh the distribution of extra items.
@@ -430,18 +430,14 @@ define(function(require) {
                 endIndex: 0
             };
 
-            var numberOfItems = this.getItemMetadata().length;
-            var i;
-            var position;
-
+            var numberOfItems = this._itemMetadata.count;
             if (numberOfItems <= this._options.minNumberOfVirtualItems) {
                 result.endIndex = numberOfItems - 1;
             }
             else {
                 // Find the item range based on position to render.
-                position = this.getPositionToRender(targetScrollPosition);
-
-                i = 0;
+                var position = this.getPositionToRender(targetScrollPosition);
+                var i = 0;
                 while (i < numberOfItems && this.getItemLayout(i).bottom <= position.top) {
                     i++;
                 }
@@ -592,7 +588,7 @@ define(function(require) {
             var itemLayout;
             var i;
 
-            var startIndex = -1;
+            var startIndex = 0;
             var endIndex = -1;
             var result;
 
@@ -651,11 +647,10 @@ define(function(require) {
          * Insert new items into the layout at the given index.
          *
          * @param {number} index
-         * @param {Array.<{width: number, height: number}>} itemMetadata
+         * @param {Array.<{width: number, height: number}>} itemSizes
          */
-        insertItems: function(index, itemMetadata) {
-            var args = [index, 0].concat(itemMetadata);
-            [].splice.apply(this._itemMetadata, args);
+        insertItems: function(index, itemSizes) {
+            this._itemMetadata.insert(index, itemSizes);
             this.measure();
         },
 
@@ -788,15 +783,15 @@ define(function(require) {
             var padding = options.padding;
 
             // Loop through the items.
-            var items = this.getItemMetadata();
-            var numberOfItems = items.length;
+            var itemMetadata = this._itemMetadata;
+            var numberOfItems = itemMetadata.count;
             var i;
 
             // Build layouts.
             var layouts = new Array(numberOfItems);
             var layout;
-            var item;
-            var cachedScaleToFit;
+            var size;
+            var cachedScaleToFit = null;
             var scaleToFit;
             var maxWidth = 0;
             var totalHeight = 0;
@@ -808,7 +803,10 @@ define(function(require) {
                 }
                 // If flowing, scale all the items at once.
                 if (flow) {
-                    return cachedScaleToFit || (cachedScaleToFit = fit(items));
+                    return cachedScaleToFit || (cachedScaleToFit = fit({
+                        width: itemMetadata.maxWidth,
+                        height: itemMetadata.maxHeight
+                    }));
                 }
                 return fit(item);
             }
@@ -819,15 +817,15 @@ define(function(require) {
             }
 
             for (i = 0; i < numberOfItems; i++) {
-                item = items[i];
-                scaleToFit = getScaleToFit(item);
+                size = itemMetadata.itemSizes[i];
+                scaleToFit = getScaleToFit(size);
 
                 layout = new ItemLayout({
                     itemIndex: i,
                     top: totalHeight,
                     scaleToFit: scaleToFit,
-                    width: Math.floor(item.width * scaleToFit),
-                    height: Math.floor(item.height * scaleToFit),
+                    width: Math.floor(size.width * scaleToFit),
+                    height: Math.floor(size.height * scaleToFit),
                     paddingLeft: padding,
                     paddingRight: padding
                 });
@@ -872,7 +870,10 @@ define(function(require) {
 
             // Cache the item layouts and total layout size.
             this._cache.itemLayouts = layouts;
-            this._cache.size = { width: maxWidth, height: totalHeight };
+            this._cache.size = {
+                width: (flow) ? itemMetadata.maxWidth * cachedScaleToFit : maxWidth,
+                height: totalHeight
+            };
         },
 
         /**

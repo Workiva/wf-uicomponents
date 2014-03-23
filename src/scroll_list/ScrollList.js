@@ -52,7 +52,7 @@ define(function(require) {
      * @param {HTMLElement} host
      *        The DOM element that hosts the scroll list.
      *
-     * @param {{width: number, height: number}} items
+     * @param {ItemMetadata} itemMetadata
      *        Metadata about the content items.
      *
      * @param {Object} [options]
@@ -127,7 +127,7 @@ define(function(require) {
      * // Render when you're ready
      * scrollList.render();
      */
-    var ScrollList = function(host, items, options) {
+    var ScrollList = function(host, itemMetadata, options) {
 
         //---------------------------------------------------------
         // Observables
@@ -266,9 +266,9 @@ define(function(require) {
 
         /**
          * Metadata about the content items.
-         * @type {Array.<{width: number, height: number}>}
+         * @type {ItemMetadata}
          */
-        this._items = items;
+        this._itemMetadata = itemMetadata;
 
         /**
          * The layout.
@@ -380,10 +380,10 @@ define(function(require) {
          * Gets the item metadata.
          *
          * @method ScrollList#getItemMetadata
-         * @return {Array.<{width: number, height: number}>}
+         * @return {ItemMetadata}
          */
         getItemMetadata: function() {
-            return this._items;
+            return this._itemMetadata;
         },
 
         /**
@@ -450,59 +450,6 @@ define(function(require) {
         //---------------------------------------------------------
 
         /**
-         * Insert items into the list and re-render immediately.
-         *
-         * @method ScrollList#insertItems
-         * @param {number} index
-         * @param {Array.<{width: number, height: number}>} itemMetadata
-         */
-        insertItems: function(index, itemMetadata) {
-            var listMap = this._listMap;
-            var currentScale = listMap.getScale();
-            var currentTranslation = listMap.getTranslation();
-
-            // Guard against invalid startIndex value
-            var layout = this._layout;
-            var currentItemsCount = layout.getItemMetadata().length;
-            index = Math.max(0, Math.min(currentItemsCount, index));
-
-            // Track the current item's top position so we can keep it
-            // in its current position after inserting new items.
-            var currentItemIndex = layout.getCurrentItemIndex();
-            var currentItemLayout = layout.getItemLayout(currentItemIndex);
-            var currentItemTop = 0;
-            var currentItemLeft = 0;
-            if (currentItemLayout) {
-                currentItemTop = currentItemLayout.top;
-                currentItemLeft = currentItemLayout.left;
-            }
-
-            // Insert items into the layout and update the currently rendered items
-            // to account for changes to item position.
-            this._layout.insertItems(index, itemMetadata);
-            this._renderer.update(index, itemMetadata.length);
-
-            // Keep the currently rendered items in the same position.
-            var adjustedItemIndex = currentItemIndex + (index <= currentItemIndex ? itemMetadata.length : 0);
-            var adjustedItemLayout = layout.getItemLayout(adjustedItemIndex);
-            var adjustedItemTop = adjustedItemLayout.top;
-            var adjustedItemLeft = adjustedItemLayout.left;
-            listMap.setContentDimensions(layout.getSize());
-            listMap.transform({
-                x: currentTranslation.x + (currentItemLeft - adjustedItemLeft) * currentScale,
-                y: currentTranslation.y + (currentItemTop - adjustedItemTop) * currentScale,
-                scale: currentScale
-            });
-
-            // Notify consumers that items have been inserted.
-            this.onItemsInserted.dispatch([this, {
-                count: itemMetadata.length
-            }]);
-
-            this.render();
-        },
-
-        /**
          * Disables direct interaction with the scroll list.
          *
          * @method ScrollList#disable
@@ -550,6 +497,59 @@ define(function(require) {
             if (itemMap) {
                 itemMap.enable();
             }
+        },
+
+        /**
+         * Insert items into the list and re-render immediately.
+         *
+         * @method ScrollList#insertItems
+         * @param {number} index
+         * @param {Array.<{width: number, height: number}>} itemSizes
+         */
+        insertItems: function(index, itemSizes) {
+            var listMap = this._listMap;
+            var currentScale = listMap.getScale();
+            var currentTranslation = listMap.getTranslation();
+
+            // Guard against invalid startIndex value
+            var layout = this._layout;
+            var currentItemsCount = layout.getItemMetadata().count;
+            index = Math.max(0, Math.min(currentItemsCount, index));
+
+            // Track the current item's top position so we can keep it
+            // in its current position after inserting new items.
+            var currentItemIndex = layout.getCurrentItemIndex();
+            var currentItemLayout = layout.getItemLayout(currentItemIndex);
+            var currentItemTop = 0;
+            var currentItemLeft = 0;
+            if (currentItemLayout) {
+                currentItemTop = currentItemLayout.top;
+                currentItemLeft = currentItemLayout.left;
+            }
+
+            // Insert items into the layout and update the currently rendered items
+            // to account for changes to item position.
+            this._layout.insertItems(index, itemSizes);
+            this._renderer.update(index, itemSizes.length);
+
+            // Keep the currently rendered items in the same position.
+            var adjustedItemIndex = currentItemIndex + (index <= currentItemIndex ? itemSizes.length : 0);
+            var adjustedItemLayout = layout.getItemLayout(adjustedItemIndex);
+            var adjustedItemTop = adjustedItemLayout.top;
+            var adjustedItemLeft = adjustedItemLayout.left;
+            listMap.setContentDimensions(layout.getSize());
+            listMap.transform({
+                x: currentTranslation.x + (currentItemLeft - adjustedItemLeft) * currentScale,
+                y: currentTranslation.y + (currentItemTop - adjustedItemTop) * currentScale,
+                scale: currentScale
+            });
+
+            // Notify consumers that items have been inserted.
+            this.onItemsInserted.dispatch([this, {
+                count: itemSizes.length
+            }]);
+
+            this.render();
         },
 
         /**
@@ -645,7 +645,7 @@ define(function(require) {
 
             // Calculate the left and top of the target content.
             var currentIndex = layout.getCurrentItemIndex();
-            var targetIndex = Math.max(0, Math.min(options.index || 0, this._items.length - 1));
+            var targetIndex = Math.max(0, Math.min(options.index || 0, this._itemMetadata.count - 1));
             var itemLayout = layout.getItemLayout(targetIndex);
             var listState = this._listMap.getCurrentTransformState();
             panToOptions.x = listState.translateX;
@@ -793,7 +793,7 @@ define(function(require) {
             var options = this._options;
             var isFlow = options.mode === ScrollModes.FLOW;
 
-            this._layout = new VerticalLayout(this._host, this._items, this._renderer, {
+            this._layout = new VerticalLayout(this._host, this._itemMetadata, this._renderer, {
                 minNumberOfVirtualItems: options.minNumberOfVirtualItems,
                 eagerRenderingFactor: isFlow ? 2 : 1,
                 fit: options.fit,
@@ -861,8 +861,8 @@ define(function(require) {
             if (!this._host) {
                 throw new Error('ScrollList configuration: host is required.');
             }
-            if (!this._items) {
-                throw new Error('ScrollList configuration: items is required.');
+            if (!this._itemMetadata) {
+                throw new Error('ScrollList configuration: itemMetadata is required.');
             }
         }
     };

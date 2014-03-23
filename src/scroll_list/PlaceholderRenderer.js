@@ -395,7 +395,7 @@ define(function(require) {
             element.style.width = itemLayout.right - itemLayout.left + 'px';
             element.style.height = itemLayout.bottom - itemLayout.top + 'px';
             // Ensure that placeholders are composited individually so that
-            // the browser rendering engine doesn't generate enourmous layers
+            // the browser rendering engine doesn't generate enormous layers
             // for the container when transitioning.
             if (BrowserInfo.hasCssTransforms3d) {
                 element.style[BrowserInfo.cssTransformProperty] = 'translateZ(0px)';
@@ -441,11 +441,8 @@ define(function(require) {
         },
 
         /**
-         * Update the currently rendered items to account for the insertion
-         * of items in the layout. Placeholders for items after the given startIndex
-         * have their top and left positions adjusted to accommodate new items
-         * inserted before them. These placeholder are also remapped to reflect
-         * the change to the index of the items they represent.
+         * Update the position of currently rendered items to account for changes
+         * to items in a layout.
          *
          * @param {number} startIndex
          * @param {number} newIndexOffset

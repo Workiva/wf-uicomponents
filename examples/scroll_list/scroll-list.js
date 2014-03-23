@@ -2,6 +2,7 @@ require([
     'hammerjs',
     'jquery',
     'wf-js-uicomponents/scroll_list/ScrollList',
+    'wf-js-uicomponents/layouts/ItemMetadata',
     'wf-js-uicomponents/awesome_map/BoundaryInterceptor',
     'wf-js-uicomponents/awesome_map/ScaleInterceptor',
     'wf-js-uicomponents/awesome_map/SwipeInterceptor',
@@ -16,6 +17,7 @@ require([
     Hammer,
     $,
     ScrollList,
+    ItemMetadata,
     BoundaryInterceptor,
     ScaleInterceptor,
     SwipeInterceptor,
@@ -31,7 +33,7 @@ require([
     // Initialize ViewerComponent
     //---------------------------------------------------------
 
-    function generateItemMetadata(length) {
+    function generateItemSizes(length) {
         // NOTE: Interested in retina canvas performance?
         // See: http://www.scirra.com/forum/retina-ios-performance-problem-fix-please-test_topic58742.html
         var tallItem = { height: 1022, width: 766 };
@@ -116,9 +118,14 @@ require([
     var fitMode = urlParams.fit || 'auto';
     var totalPages = +urlParams.totalPages || 100;
     var minNumberOfVirtualItems = scrollMode === 'flow' ? (DeviceInfo.desktop ? 15 : 9) : (DeviceInfo.desktop ? 5 : 3);
-    var items = generateItemMetadata(totalPages);
 
-    var scrollList = window.scrollList = new ScrollList($('#document')[0], items, {
+    var itemMetadata = new ItemMetadata({
+        maxWidth: 1022,
+        maxHeight: 1022,
+        itemSizes: generateItemSizes(totalPages)
+    });
+
+    var scrollList = window.scrollList = new ScrollList($('#document')[0], itemMetadata, {
         gap: 2,
         mode: scrollMode,
         fit: fitMode,
