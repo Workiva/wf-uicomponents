@@ -576,6 +576,31 @@ define(function(require) {
             });
         });
 
+        describe('inserting items', function() {
+            var itemSizeCollection;
+            beforeEach(function() {
+                layout = createVerticalLayout();
+                itemSizeCollection = layout.getItemSizeCollection();
+            });
+            it('should constrain the given sizes to the maximums defined by the ItemSizeCollection', function() {
+                spyOn(itemSizeCollection, 'constrain');
+                var items = [{}];
+                layout.insertItems(0, items);
+                expect(itemSizeCollection.constrain).toHaveBeenCalledWith(items);
+            });
+            it('should insert the given sizes into the ItemSizeCollection', function() {
+                spyOn(itemSizeCollection, 'insert');
+                var items = [{}];
+                layout.insertItems(0, items);
+                expect(itemSizeCollection.insert).toHaveBeenCalledWith(0, items);
+            });
+            it('should measure the layout', function() {
+                spyOn(layout, 'measure');
+                layout.insertItems(0, [{}]);
+                expect(layout.measure).toHaveBeenCalled();
+            });
+        });
+
         describe('when loading content', function() {
 
             beforeEach(function() {
@@ -650,13 +675,13 @@ define(function(require) {
                     spyOn(ScaleStrategies, 'height').andReturn(1);
                     spyOn(ScaleStrategies, 'width').andReturn(1);
 
-                    layout = createVerticalLayout({ fit: 'auto' });
+                    createVerticalLayout({ fit: 'auto' });
                     expect(ScaleStrategies.auto).toHaveBeenCalled();
 
-                    layout = createVerticalLayout({ fit: 'height' });
+                    createVerticalLayout({ fit: 'height' });
                     expect(ScaleStrategies.height).toHaveBeenCalled();
 
-                    layout = createVerticalLayout({ fit: 'width' });
+                    createVerticalLayout({ fit: 'width' });
                     expect(ScaleStrategies.width).toHaveBeenCalled();
                 });
 

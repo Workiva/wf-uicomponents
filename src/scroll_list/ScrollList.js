@@ -529,7 +529,7 @@ define(function(require) {
 
             // Guard against invalid startIndex value
             var layout = this._layout;
-            var currentItemsCount = layout.getItemSizeCollection().length;
+            var currentItemsCount = layout.getItemSizeCollection().getLength();
             index = Math.max(0, Math.min(currentItemsCount, index));
 
             // Track the current item's top position so we can keep it
@@ -661,7 +661,7 @@ define(function(require) {
 
             // Calculate the left and top of the target content.
             var currentIndex = layout.getCurrentItemIndex();
-            var targetIndex = Math.max(0, Math.min(options.index || 0, this._itemSizesCollection.length - 1));
+            var targetIndex = Math.max(0, Math.min(options.index || 0, this._itemSizesCollection.getLength() - 1));
             var itemLayout = layout.getItemLayout(targetIndex);
             var listState = this._listMap.getCurrentTransformState();
             panToOptions.x = listState.translateX;

@@ -25,9 +25,10 @@ define(function() {
      * @param {Object} configuration
      * @param {number} configuration.maxWidth
      * @param {number} configuration.maxHeight
-     * @param {Array.<{ width: number, height: number }>} configuration.items
+     * @param {Array.<{ width: number, height: number }>} [configuration.items]
      */
     var ItemSizeCollection = function(configuration) {
+        configuration = configuration || {};
         if (!configuration.maxWidth) {
             throw 'ItemSizeCollection configuration: maxWidth is required.';
         }
@@ -56,17 +57,22 @@ define(function() {
          *
          * @type {Array.<{ width: number, height: number }>}
          */
-        this.items = configuration.items || [];
-
-        /**
-         * The number of items.
-         *
-         * @type {number}
-         */
-        this.length = this.items.length;
+        this._items = configuration.items || [];
     };
 
     ItemSizeCollection.prototype = {
+
+        //---------------------------------------------------------
+        // Public properties
+        //---------------------------------------------------------
+
+        getItem: function(index) {
+            return this._items[index];
+        },
+
+        getLength: function() {
+            return this._items.length;
+        },
 
         //---------------------------------------------------------
         // Public methods
@@ -75,7 +81,8 @@ define(function() {
         /**
          * Constrain item sizes to the maximum width and/or height.
          *
-         * @param  {{ width: number, height: number }} items]
+         * @method ItemSizeCollection#constrain
+         * @param {{ width: number, height: number }} items
          */
         constrain: function(items) {
             for (var i = 0, n = items.length; i < n; i++) {
@@ -103,8 +110,7 @@ define(function() {
          */
         insert: function(index, items) {
             var args = [index, 0].concat(items);
-            [].splice.apply(this.items, args);
-            this.length = this.items.length;
+            [].splice.apply(this._items, args);
         }
     };
 

@@ -21,6 +21,7 @@ define(function(require) {
     var EventTypes = require('wf-js-uicomponents/awesome_map/EventTypes');
     var Gesture = require('wf-js-uicomponents/awesome_map/Gesture');
     var InteractionEvent = require('wf-js-uicomponents/awesome_map/InteractionEvent');
+    var ItemSizeCollection = require('wf-js-uicomponents/layouts/ItemSizeCollection');
     var ScrollList = require('wf-js-uicomponents/scroll_list/ScrollList');
     var SwipeNavigationInterceptor = require('wf-js-uicomponents/scroll_list/SwipeNavigationInterceptor');
     var TransformState = require('wf-js-uicomponents/awesome_map/TransformState');
@@ -49,8 +50,10 @@ define(function(require) {
             viewportDimensions = { height: 100 };
             itemDimensions = { height: 100 };
             itemState = new TransformState();
+            var itemSizeCollection = Object.create(ItemSizeCollection.prototype);
 
-            spyOn(scrollList, 'getItemSizeCollection').andReturn({ length: 3 });
+            spyOn(itemSizeCollection, 'getLength').andReturn(3);
+            spyOn(scrollList, 'getItemSizeCollection').andReturn(itemSizeCollection);
             spyOn(scrollList, 'getCurrentItemMap').andReturn(map);
             spyOn(map, 'getViewportDimensions').andReturn(viewportDimensions);
             spyOn(map, 'getContentDimensions').andReturn(itemDimensions);

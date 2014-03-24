@@ -28,7 +28,8 @@ define(function(require) {
 
         var defaultOptions;
         var $host = $('<div>').css({ position: 'absolute', top: -10000, width: 400, height: 400 });
-        var items = (function() {
+
+        function createItemSizeCollection() {
             var itemSizes = [];
             for (var i = 0; i < 20; i++) {
                 itemSizes.push({ width: 200, height: 200 });
@@ -39,7 +40,7 @@ define(function(require) {
                 items: itemSizes
             });
             return collection;
-        }());
+        }
 
         function testScrollList(options, callback) {
             var scrollList;
@@ -51,8 +52,9 @@ define(function(require) {
             }
 
             options = _.extend(defaultOptions, options);
+            var itemSizeCollection = createItemSizeCollection();
 
-            scrollList = new ScrollList($host[0], items, options);
+            scrollList = new ScrollList($host[0], itemSizeCollection, options);
             scrollList.render();
 
             callback(scrollList);
@@ -74,7 +76,7 @@ define(function(require) {
 
             it('should require a host in the constructor', function() {
                 expect(function() {
-                    return new ScrollList(null, items);
+                    return new ScrollList(null, new ItemSizeCollection({ maxWidth: 1, maxHeight: 1 }));
                 }).toThrow({
                     message: 'ScrollList configuration: host is required.'
                 });
@@ -135,12 +137,6 @@ define(function(require) {
             it('should get the list map', function() {
                 testScrollList(function(scrollList) {
                     expect(scrollList.getListMap()).toBe(scrollList._listMap);
-                });
-            });
-
-            it('should get the configured item size collection', function() {
-                testScrollList(function(scrollList) {
-                    expect(scrollList.getItemSizeCollection()).toBe(items);
                 });
             });
 
@@ -298,6 +294,78 @@ define(function(require) {
                     scrollList.enable();
 
                     expect(map.enable).toHaveBeenCalled();
+                });
+            });
+        });
+
+        describe('when inserting items', function() {
+            it('should insert items into the layout', function() {
+                testScrollList(function(scrollList) {
+                    var layout = scrollList.getLayout();
+                    spyOn(layout, 'insertItems');
+                    var itemSizes = [{}];
+                    scrollList.insertItems(0, itemSizes);
+                    expect(layout.insertItems).toHaveBeenCalledWith(0, itemSizes);
+                });
+            });
+            it('should update the rendered items', function() {
+                testScrollList(function(scrollList) {
+                    var renderer = scrollList.getRenderer();
+                    spyOn(renderer, 'update');
+                    var itemSizes = [{}];
+                    scrollList.insertItems(0, itemSizes);
+                    expect(renderer.update).toHaveBeenCalledWith(0, itemSizes.length);
+                });
+            });
+            it('should set the content dimensions of the list map', function() {
+                testScrollList(function(scrollList) {
+                    var listMap = scrollList.getListMap();
+                    spyOn(listMap, 'setContentDimensions');
+                    var layout = scrollList.getLayout();
+                    var layoutSize = {};
+                    spyOn(layout, 'getSize').andReturn(layoutSize);
+                    scrollList.insertItems(0, [{}]);
+                    expect(listMap.setContentDimensions).toHaveBeenCalledWith(layoutSize);
+                });
+            });
+            it('should transform the list map to keep the current items stationary', function() {
+                testScrollList(function(scrollList) {
+                    // Setup the layout to return a change in position for the current item.
+                    var layout = scrollList.getLayout();
+                    spyOn(layout, 'getCurrentItemIndex').andReturn(0);
+                    var originalLayout = { top: 100, left: 10 };
+                    var adjustedLayout = { top: 200, left: 20 };
+                    spyOn(layout, 'getItemLayout').andCallFake(function(index) {
+                        return (index === 0) ? originalLayout : adjustedLayout;
+                    });
+                    // Setup list map to return current transformation state
+                    var listMap = scrollList.getListMap();
+                    spyOn(listMap, 'transform');
+                    var scale = 2;
+                    spyOn(listMap, 'getScale').andReturn(scale);
+                    var translation = { x: 10, y: 20 };
+                    spyOn(listMap, 'getTranslation').andReturn(translation);
+                    // Act and assert
+                    scrollList.insertItems(0, [{}]);
+                    expect(listMap.transform).toHaveBeenCalledWith({
+                        x: translation.x + (originalLayout.left - adjustedLayout.left) * scale,
+                        y: translation.y + (originalLayout.top - adjustedLayout.top) * scale,
+                        scale: scale
+                    });
+                });
+            });
+            it('should dispatch "onItemsInserted"', function() {
+                testScrollList(function(scrollList) {
+                    spyOn(scrollList.onItemsInserted, 'dispatch');
+                    scrollList.insertItems(0, [{}]);
+                    expect(scrollList.onItemsInserted.dispatch).toHaveBeenCalledWith([scrollList, { count: 1 }]);
+                });
+            });
+            it('should render the list', function() {
+                testScrollList(function(scrollList) {
+                    spyOn(scrollList, 'render');
+                    scrollList.insertItems(0, [{}]);
+                    expect(scrollList.render).toHaveBeenCalled();
                 });
             });
         });
@@ -470,7 +538,7 @@ define(function(require) {
 
             it('should guard against index greater than the number of items', function() {
                 testScrollList(function(scrollList) {
-                    var numberOfItems = scrollList.getItemSizeCollection().length;
+                    var numberOfItems = scrollList.getItemSizeCollection().getLength();
 
                     spyOn(scrollList._layout, 'getItemLayout').andReturn({ top: 0 });
                     scrollList.scrollTo({ index: numberOfItems });

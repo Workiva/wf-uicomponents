@@ -101,7 +101,7 @@ define(function(require) {
          */
         _getContentIndex: function(direction) {
             var currentContentIndex = this._scrollList.getCurrentItem().index;
-            var numberOfItems = this._scrollList.getItemSizeCollection().length;
+            var numberOfItems = this._scrollList.getItemSizeCollection().getLength();
 
             if (direction === 'up' && currentContentIndex < numberOfItems - 1) {
                 return currentContentIndex + 1;

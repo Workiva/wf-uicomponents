@@ -347,7 +347,7 @@ define(function(require) {
                 return;
             }
 
-            var numberOfItems = this._itemSizeCollection.length;
+            var numberOfItems = this._itemSizeCollection.getLength();
             var itemsToAdd = minNumberOfVirtualItems - numberOfItemsToRender;
 
             // First need to determine how to weigh the distribution of extra items.
@@ -430,7 +430,7 @@ define(function(require) {
                 endIndex: 0
             };
 
-            var numberOfItems = this._itemSizeCollection.length;
+            var numberOfItems = this._itemSizeCollection.getLength();
             if (numberOfItems <= this._options.minNumberOfVirtualItems) {
                 result.endIndex = numberOfItems - 1;
             }
@@ -709,7 +709,7 @@ define(function(require) {
             var range = this.getItemRangeToRender(targetScrollPosition);
             var lastRange = this._cache.lastRenderedItemRange;
 
-            var numberOfItems = this.getItemSizeCollection().length;
+            var numberOfItems = this.getItemSizeCollection().getLength();
             var i;
 
             // We check if the current item has changed and dispatch if true.
@@ -785,7 +785,7 @@ define(function(require) {
 
             // Loop through the items.
             var itemSizeCollection = this._itemSizeCollection;
-            var numberOfItems = itemSizeCollection.length;
+            var numberOfItems = itemSizeCollection.getLength();
             var i;
 
             // Build layouts.
@@ -818,7 +818,7 @@ define(function(require) {
             }
 
             for (i = 0; i < numberOfItems; i++) {
-                size = itemSizeCollection.items[i];
+                size = itemSizeCollection.getItem(i);
                 scaleToFit = getScaleToFit(size);
 
                 layout = new ItemLayout({
