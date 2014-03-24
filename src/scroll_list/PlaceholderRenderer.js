@@ -221,7 +221,7 @@ define(function(require) {
                 }
                 // Set the static content dimensions and transform to center.
                 itemMap.setContentDimensions({ width: itemWidth, height: itemHeight });
-                itemMap.transform({ x: transformX, y: transformY, scale: itemMap.getScale() });
+                itemMap.transform({ x: transformX, y: transformY, scale: 1 });
                 // Remove positional styles from the content container and append to map.
                 var contentContainer = placeholder.contentContainer;
                 contentContainer.style.top = null;
@@ -452,20 +452,19 @@ define(function(require) {
             var placeholders = this._placeholders;
             var newRenderedItems = {};
             for (var itemIndex in placeholders) {
-                if (!placeholders.hasOwnProperty(itemIndex)) {
-                    continue;
-                }
-                var placeholder = placeholders[itemIndex];
-                if (+itemIndex < startIndex) {
-                    newRenderedItems[+itemIndex] = placeholder;
-                }
-                else {
-                    var newItemIndex = +itemIndex + newIndexOffset;
-                    newRenderedItems[newItemIndex] = placeholder;
-                    var newItemLayout = layout.getItemLayout(newItemIndex);
-                    placeholder.element.style.top = newItemLayout.top + 'px';
-                    placeholder.element.style.left = newItemLayout.left + 'px';
-                    this.appendPlaceholderToScrollList(newItemLayout, placeholder, true);
+                if (placeholders.hasOwnProperty(itemIndex)) {
+                    var placeholder = placeholders[itemIndex];
+                    if (+itemIndex < startIndex) {
+                        newRenderedItems[+itemIndex] = placeholder;
+                    }
+                    else {
+                        var newItemIndex = +itemIndex + newIndexOffset;
+                        newRenderedItems[newItemIndex] = placeholder;
+                        var newItemLayout = layout.getItemLayout(newItemIndex);
+                        placeholder.element.style.top = newItemLayout.top + 'px';
+                        placeholder.element.style.left = newItemLayout.left + 'px';
+                        this.appendPlaceholderToScrollList(newItemLayout, placeholder, true);
+                    }
                 }
             }
             this._placeholders = newRenderedItems;

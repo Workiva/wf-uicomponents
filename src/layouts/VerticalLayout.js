@@ -37,7 +37,7 @@ define(function(require) {
      * @param {HTMLElement} viewport
      *        The viewport that acts as a container for the layout.
      *
-     * @param {ItemMetadata} itemMetadata
+     * @param {ItemSizeCollection} itemSizeCollection
      *        Metadata describing the number and size of the items in this layout.
      *
      * @param {PlaceholderRenderer} renderer
@@ -83,7 +83,7 @@ define(function(require) {
      * @param {string} [options.verticalAlign='middle']
      *        The vertical alignment of the items when flow=false.
      */
-    var VerticalLayout = function(viewport, itemMetadata, renderer, options) {
+    var VerticalLayout = function(viewport, itemSizeCollection, renderer, options) {
 
         //---------------------------------------------------------
         // Observables
@@ -128,7 +128,7 @@ define(function(require) {
          *
          * @type {ItemMetadata}
          */
-        this._itemMetadata = itemMetadata;
+        this._itemSizeCollection = itemSizeCollection;
 
         /**
          * The layout options.
@@ -221,11 +221,11 @@ define(function(require) {
         /**
          * Gets the item metadata for the layout.
          *
-         * @method VerticalLayout#getItemMetadata
+         * @method VerticalLayout#getItemSizeCollection
          * @return {ItemMetadata}
          */
-        getItemMetadata: function() {
-            return this._itemMetadata;
+        getItemSizeCollection: function() {
+            return this._itemSizeCollection;
         },
 
         /**
@@ -347,7 +347,7 @@ define(function(require) {
                 return;
             }
 
-            var numberOfItems = this._itemMetadata.count;
+            var numberOfItems = this._itemSizeCollection.length;
             var itemsToAdd = minNumberOfVirtualItems - numberOfItemsToRender;
 
             // First need to determine how to weigh the distribution of extra items.
@@ -417,7 +417,7 @@ define(function(require) {
          * range will contain at least the configured number of concurrent items.
          *
          * @method VerticalLayout#getItemRangeToRender
-         * @param {Position} [targetScrollPosition]
+         * @param {{ top: number, left: number }} [targetScrollPosition]
          * @return {{ startIndex: number, endIndex: number }}
          */
         getItemRangeToRender: function(targetScrollPosition) {
@@ -430,7 +430,7 @@ define(function(require) {
                 endIndex: 0
             };
 
-            var numberOfItems = this._itemMetadata.count;
+            var numberOfItems = this._itemSizeCollection.length;
             if (numberOfItems <= this._options.minNumberOfVirtualItems) {
                 result.endIndex = numberOfItems - 1;
             }
@@ -462,7 +462,7 @@ define(function(require) {
          * the range will span between the distance the current and target positions.
          *
          * @method VerticalLayout#getPositionToRender
-         * @param {{ top: number, bottom: number }} [targetScrollPosition]
+         * @param {{ top: number, left: number }} [targetScrollPosition]
          * @return {{ top: number, bottom: number }}
          */
         getPositionToRender: function(targetScrollPosition) {
@@ -588,7 +588,7 @@ define(function(require) {
             var itemLayout;
             var i;
 
-            var startIndex = 0;
+            var startIndex = -1;
             var endIndex = -1;
             var result;
 
@@ -647,10 +647,11 @@ define(function(require) {
          * Insert new items into the layout at the given index.
          *
          * @param {number} index
-         * @param {Array.<{width: number, height: number}>} itemSizes
+         * @param {Array.<{ width: number, height: number }>} itemSizes
          */
         insertItems: function(index, itemSizes) {
-            this._itemMetadata.insert(index, itemSizes);
+            this._itemSizeCollection.constrain(itemSizes);
+            this._itemSizeCollection.insert(index, itemSizes);
             this.measure();
         },
 
@@ -708,7 +709,7 @@ define(function(require) {
             var range = this.getItemRangeToRender(targetScrollPosition);
             var lastRange = this._cache.lastRenderedItemRange;
 
-            var numberOfItems = this.getItemMetadata().length;
+            var numberOfItems = this.getItemSizeCollection().length;
             var i;
 
             // We check if the current item has changed and dispatch if true.
@@ -783,8 +784,8 @@ define(function(require) {
             var padding = options.padding;
 
             // Loop through the items.
-            var itemMetadata = this._itemMetadata;
-            var numberOfItems = itemMetadata.count;
+            var itemSizeCollection = this._itemSizeCollection;
+            var numberOfItems = itemSizeCollection.length;
             var i;
 
             // Build layouts.
@@ -804,8 +805,8 @@ define(function(require) {
                 // If flowing, scale all the items at once.
                 if (flow) {
                     return cachedScaleToFit || (cachedScaleToFit = fit({
-                        width: itemMetadata.maxWidth,
-                        height: itemMetadata.maxHeight
+                        width: itemSizeCollection.maxWidth,
+                        height: itemSizeCollection.maxHeight
                     }));
                 }
                 return fit(item);
@@ -817,7 +818,7 @@ define(function(require) {
             }
 
             for (i = 0; i < numberOfItems; i++) {
-                size = itemMetadata.itemSizes[i];
+                size = itemSizeCollection.items[i];
                 scaleToFit = getScaleToFit(size);
 
                 layout = new ItemLayout({
@@ -868,12 +869,17 @@ define(function(require) {
                 totalHeight = layout.bottom;
             }
 
+            // Ensure when in flow mode, where items are scaled together,
+            // that the layout size accommodates the maximum possible item width.
+            // If this is not done, then positioning will change and shift if
+            // newer, wider items are added dynamically.
+            if (flow) {
+                maxWidth = (itemSizeCollection.maxWidth + 2 * padding) * cachedScaleToFit;
+            }
+
             // Cache the item layouts and total layout size.
             this._cache.itemLayouts = layouts;
-            this._cache.size = {
-                width: (flow) ? itemMetadata.maxWidth * cachedScaleToFit : maxWidth,
-                height: totalHeight
-            };
+            this._cache.size = { width: maxWidth, height: totalHeight };
         },
 
         /**
@@ -904,8 +910,8 @@ define(function(require) {
             if (!this._viewport) {
                 throw new Error('VerticalLayout configuration: viewport is required.');
             }
-            if (!this._itemMetadata) {
-                throw new Error('VerticalLayout configuration: itemMetadata is required.');
+            if (!this._itemSizeCollection) {
+                throw new Error('VerticalLayout configuration: itemSizeCollection is required.');
             }
             if (!this._renderer) {
                 throw new Error('VerticalLayout configuration: renderer is required.');

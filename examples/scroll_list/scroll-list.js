@@ -2,7 +2,7 @@ require([
     'hammerjs',
     'jquery',
     'wf-js-uicomponents/scroll_list/ScrollList',
-    'wf-js-uicomponents/layouts/ItemMetadata',
+    'wf-js-uicomponents/layouts/ItemSizeCollection',
     'wf-js-uicomponents/awesome_map/BoundaryInterceptor',
     'wf-js-uicomponents/awesome_map/ScaleInterceptor',
     'wf-js-uicomponents/awesome_map/SwipeInterceptor',
@@ -17,7 +17,7 @@ require([
     Hammer,
     $,
     ScrollList,
-    ItemMetadata,
+    ItemSizeCollection,
     BoundaryInterceptor,
     ScaleInterceptor,
     SwipeInterceptor,
@@ -91,15 +91,18 @@ require([
         patternCanvas.height = squareHeight * 2;
         patternCanvas.width = squareWidth * 2;
 
-        var patternCtx = patternCanvas.getContext('2d');
-        patternCtx.fillStyle = (pageIndex % 2 === 0) ? '#69c' : '#c96';
-        patternCtx.fillRect(0, 0, squareWidth, squareHeight);
-        patternCtx.fillRect(squareWidth, squareHeight, squareWidth, squareHeight);
+        // Draw if we have non-zero dimensions to draw.
+        if (squareWidth && squareHeight) {
+            var patternCtx = patternCanvas.getContext('2d');
+            patternCtx.fillStyle = (pageIndex % 2 === 0) ? '#69c' : '#c96';
+            patternCtx.fillRect(0, 0, squareWidth, squareHeight);
+            patternCtx.fillRect(squareWidth, squareHeight, squareWidth, squareHeight);
 
-        var pattern = ctx.createPattern(patternCanvas, 'repeat');
-        ctx.fillStyle = pattern;
-        ctx.translate(patternLeft, patternTop);
-        ctx.fillRect(0, 0, patternWidth, patternHeight);
+            var pattern = ctx.createPattern(patternCanvas, 'repeat');
+            ctx.fillStyle = pattern;
+            ctx.translate(patternLeft, patternTop);
+            ctx.fillRect(0, 0, patternWidth, patternHeight);
+        }
 
         // Append to the container.
         container.appendChild(canvas);
@@ -119,13 +122,13 @@ require([
     var totalPages = +urlParams.totalPages || 100;
     var minNumberOfVirtualItems = scrollMode === 'flow' ? (DeviceInfo.desktop ? 15 : 9) : (DeviceInfo.desktop ? 5 : 3);
 
-    var itemMetadata = new ItemMetadata({
+    var itemSizeCollection = new ItemSizeCollection({
         maxWidth: 1022,
         maxHeight: 1022,
-        itemSizes: generateItemSizes(totalPages)
+        items: generateItemSizes(totalPages)
     });
 
-    var scrollList = window.scrollList = new ScrollList($('#document')[0], itemMetadata, {
+    var scrollList = window.scrollList = new ScrollList($('#document')[0], itemSizeCollection, {
         gap: 2,
         mode: scrollMode,
         fit: fitMode,

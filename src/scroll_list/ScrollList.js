@@ -52,8 +52,8 @@ define(function(require) {
      * @param {HTMLElement} host
      *        The DOM element that hosts the scroll list.
      *
-     * @param {ItemMetadata} itemMetadata
-     *        Metadata about the content items.
+     * @param {ItemSizeCollection} itemSizeCollection
+     *        Metadata about the item sizes.
      *
      * @param {Object} [options]
      *
@@ -90,9 +90,16 @@ define(function(require) {
      * @example
      *
      * var host = document.getElementById('host');
-     * var items = [{ width: 400, height: 600 }, { width: 600, height: 400 }];
+     * var itemSizeCollection = new ItemSizeCollection({
+     *     maxWidth: 600,
+     *     maxHeight: 600,
+     *     items: [
+     *         { width: 400, height: 600 },
+     *         { width: 600, height: 400 }
+     *     ]
+     * });
      *
-     * var scrollList = new ScrollList(host, items, {
+     * var scrollList = new ScrollList(host, itemSizeCollection, {
      *     mode: 'flow',
      *     fit: 'auto',
      *     padding: 10,
@@ -101,7 +108,7 @@ define(function(require) {
      * });
      *
      * scrollList.onContentRequested(function(sender, args) {
-     *     // Return content....
+     *     // Put content into args.placeholder.contentContainer....
      * });
      *
      * scrollList.onContentRemoved(function(sender, args) {
@@ -127,7 +134,7 @@ define(function(require) {
      * // Render when you're ready
      * scrollList.render();
      */
-    var ScrollList = function(host, itemMetadata, options) {
+    var ScrollList = function(host, itemSizeCollection, options) {
 
         //---------------------------------------------------------
         // Observables
@@ -246,6 +253,15 @@ define(function(require) {
          */
         this.onScrollPositionChanged = Observable.newObservable();
 
+        /**
+         * Observable for subscribing to the insertion of new items.
+         *
+         * @method ScrollList#onItemsInserted
+         * @param {Function} callback
+         *        Invoked with (sender, {
+         *            count: {number}
+         *        })
+         */
         this.onItemsInserted = Observable.newObservable();
 
         //---------------------------------------------------------
@@ -266,9 +282,9 @@ define(function(require) {
 
         /**
          * Metadata about the content items.
-         * @type {ItemMetadata}
+         * @type {ItemSizeCollection}
          */
-        this._itemMetadata = itemMetadata;
+        this._itemSizesCollection = itemSizeCollection;
 
         /**
          * The layout.
@@ -379,11 +395,11 @@ define(function(require) {
         /**
          * Gets the item metadata.
          *
-         * @method ScrollList#getItemMetadata
-         * @return {ItemMetadata}
+         * @method ScrollList#getItemSizeCollection
+         * @return {ItemSizeCollection}
          */
-        getItemMetadata: function() {
-            return this._itemMetadata;
+        getItemSizeCollection: function() {
+            return this._itemSizesCollection;
         },
 
         /**
@@ -504,7 +520,7 @@ define(function(require) {
          *
          * @method ScrollList#insertItems
          * @param {number} index
-         * @param {Array.<{width: number, height: number}>} itemSizes
+         * @param {Array.<{ width: number, height: number }>} itemSizes
          */
         insertItems: function(index, itemSizes) {
             var listMap = this._listMap;
@@ -513,7 +529,7 @@ define(function(require) {
 
             // Guard against invalid startIndex value
             var layout = this._layout;
-            var currentItemsCount = layout.getItemMetadata().count;
+            var currentItemsCount = layout.getItemSizeCollection().length;
             index = Math.max(0, Math.min(currentItemsCount, index));
 
             // Track the current item's top position so we can keep it
@@ -645,7 +661,7 @@ define(function(require) {
 
             // Calculate the left and top of the target content.
             var currentIndex = layout.getCurrentItemIndex();
-            var targetIndex = Math.max(0, Math.min(options.index || 0, this._itemMetadata.count - 1));
+            var targetIndex = Math.max(0, Math.min(options.index || 0, this._itemSizesCollection.length - 1));
             var itemLayout = layout.getItemLayout(targetIndex);
             var listState = this._listMap.getCurrentTransformState();
             panToOptions.x = listState.translateX;
@@ -793,7 +809,7 @@ define(function(require) {
             var options = this._options;
             var isFlow = options.mode === ScrollModes.FLOW;
 
-            this._layout = new VerticalLayout(this._host, this._itemMetadata, this._renderer, {
+            this._layout = new VerticalLayout(this._host, this._itemSizesCollection, this._renderer, {
                 minNumberOfVirtualItems: options.minNumberOfVirtualItems,
                 eagerRenderingFactor: isFlow ? 2 : 1,
                 fit: options.fit,
@@ -861,8 +877,8 @@ define(function(require) {
             if (!this._host) {
                 throw new Error('ScrollList configuration: host is required.');
             }
-            if (!this._itemMetadata) {
-                throw new Error('ScrollList configuration: itemMetadata is required.');
+            if (!this._itemSizesCollection) {
+                throw new Error('ScrollList configuration: itemSizeCollection is required.');
             }
         }
     };

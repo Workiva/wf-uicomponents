@@ -21,6 +21,7 @@ define(function(require) {
     var _ = require('lodash');
     var AwesomeMap = require('wf-js-uicomponents/awesome_map/AwesomeMap');
     var DestroyUtil = require('wf-js-common/DestroyUtil');
+    var ItemSizeCollection = require('wf-js-uicomponents/layouts/ItemSizeCollection');
     var ScrollList = require('wf-js-uicomponents/scroll_list/ScrollList');
 
     describe('ScrollList', function() {
@@ -28,11 +29,16 @@ define(function(require) {
         var defaultOptions;
         var $host = $('<div>').css({ position: 'absolute', top: -10000, width: 400, height: 400 });
         var items = (function() {
-            var result = [];
+            var itemSizes = [];
             for (var i = 0; i < 20; i++) {
-                result.push({ width: 200, height: 200 });
+                itemSizes.push({ width: 200, height: 200 });
             }
-            return result;
+            var collection = new ItemSizeCollection({
+                maxWidth: 200,
+                maxHeight: 200,
+                items: itemSizes
+            });
+            return collection;
         }());
 
         function testScrollList(options, callback) {
@@ -78,7 +84,7 @@ define(function(require) {
                 expect(function() {
                     return new ScrollList($host[0], null);
                 }).toThrow({
-                    message: 'ScrollList configuration: items is required.'
+                    message: 'ScrollList configuration: itemSizeCollection is required.'
                 });
             });
         });
@@ -132,9 +138,9 @@ define(function(require) {
                 });
             });
 
-            it('should get the configured item metadata', function() {
+            it('should get the configured item size collection', function() {
                 testScrollList(function(scrollList) {
-                    expect(scrollList.getItemMetadata()).toBe(items);
+                    expect(scrollList.getItemSizeCollection()).toBe(items);
                 });
             });
 
@@ -464,7 +470,7 @@ define(function(require) {
 
             it('should guard against index greater than the number of items', function() {
                 testScrollList(function(scrollList) {
-                    var numberOfItems = scrollList.getItemMetadata().length;
+                    var numberOfItems = scrollList.getItemSizeCollection().length;
 
                     spyOn(scrollList._layout, 'getItemLayout').andReturn({ top: 0 });
                     scrollList.scrollTo({ index: numberOfItems });

@@ -50,7 +50,7 @@ define(function(require) {
             itemDimensions = { height: 100 };
             itemState = new TransformState();
 
-            spyOn(scrollList, 'getItemMetadata').andReturn([{}, {}, {}]);
+            spyOn(scrollList, 'getItemSizeCollection').andReturn({ length: 3 });
             spyOn(scrollList, 'getCurrentItemMap').andReturn(map);
             spyOn(map, 'getViewportDimensions').andReturn(viewportDimensions);
             spyOn(map, 'getContentDimensions').andReturn(itemDimensions);

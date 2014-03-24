@@ -638,7 +638,7 @@ define(function(require) {
 
         /**
          * Invalidates the cached viewport dimensions.
-         * @private
+         * @method AwesomeMap#invalidateViewportDimensions
          */
         invalidateViewportDimensions: function() {
             this._viewportDimensions = null;

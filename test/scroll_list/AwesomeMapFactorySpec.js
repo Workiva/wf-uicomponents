@@ -3,6 +3,7 @@ define(function(require) {
 
     var $ = require('jquery');
     var AwesomeMapFactory = require('wf-js-uicomponents/scroll_list/AwesomeMapFactory');
+    var ItemSizeCollection = require('wf-js-uicomponents/layouts/ItemSizeCollection');
     var ScrollList = require('wf-js-uicomponents/scroll_list/ScrollList');
 
     describe('AwesomeMapFactory', function() {
@@ -17,7 +18,12 @@ define(function(require) {
             describe('when translation changes', function() {
                 it('should dispatch scroll list "onScrollPositionChanged"', function() {
                     // Setup scroll list
-                    var scrollList = new ScrollList($host[0], [{ width: 100, height: 100 }]);
+                    var itemSizeCollection = new ItemSizeCollection({
+                        maxWidth: 100,
+                        maxHeight: 100,
+                        items: [{ width: 100, height: 100 }]
+                    });
+                    var scrollList = new ScrollList($host[0], itemSizeCollection);
                     spyOn(scrollList.onScrollPositionChanged, 'dispatch');
 
                     // Setup list map.
