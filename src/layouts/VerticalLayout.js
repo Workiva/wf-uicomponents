@@ -24,6 +24,17 @@ define(function(require) {
     var Observable = require('wf-js-common/Observable');
     var ScaleStrategies = require('wf-js-uicomponents/layouts/ScaleStrategies');
 
+    function getDistanceToViewportCenter(itemLayout, visibleCenter) {
+        var distance = 0;
+        if (itemLayout.bottom < visibleCenter) {
+            distance = visibleCenter - itemLayout.bottom;
+        }
+        else if (itemLayout.top > visibleCenter) {
+            distance = itemLayout.top - visibleCenter;
+        }
+        return distance;
+    }
+
     /**
      * Creates a new VerticalLayout.
      *
@@ -392,16 +403,27 @@ define(function(require) {
             var itemRange = this.getItemRangeToRender();
             var startIndex = itemRange.startIndex;
             var endIndex = itemRange.endIndex;
-            var layout;
+            var itemLayout;
             var i;
             var result = -1;
+            var distanceToVisibleCenter;
+            var minimumDistance = Number.MAX_VALUE;
 
             for (i = startIndex; i <= endIndex; i++) {
-                layout = this.getItemLayout(i);
+                itemLayout = this.getItemLayout(i);
 
-                if (layout.top <= visibleCenter && layout.bottom >= visibleCenter) {
+                // If the layout intersects the visible center, we have our item.
+                if (itemLayout.top <= visibleCenter && itemLayout.bottom >= visibleCenter) {
                     result = i;
                     break;
+                }
+                // Track the item nearest the viewport center, in case none intersect.
+                else {
+                    distanceToVisibleCenter = getDistanceToViewportCenter(itemLayout, visibleCenter);
+                    if (distanceToVisibleCenter < minimumDistance) {
+                        minimumDistance = distanceToVisibleCenter;
+                        result = i;
+                    }
                 }
             }
 
@@ -458,6 +480,50 @@ define(function(require) {
             // Cache and return the item index range.
             this._cache.itemRangeToRender = result;
             return result;
+        },
+
+        /**
+         * Gets the indexes of the last item range rendered,
+         * ordered by distance from the visible center position.
+         *
+         * @method VerticalLayout#getOrderedRenderedItemIndexes
+         * @return {Array.<number>}
+         */
+        getOrderedRenderedItemIndexes: function() {
+            // Need to know some things about the current state of the layout.
+            var visibleCenter = this.getVisiblePosition().center;
+            var renderedRange = this._cache.lastRenderedItemRange;
+
+            // Going to load items in order from the visible center out.
+            var itemDistancesFromCenter = [];
+            var itemLayout;
+            var distance;
+            var i;
+
+            if (!renderedRange) {
+                throw new Error('VerticalLayout: the layout has not been rendered.');
+            }
+
+            // Calculate distances from the visible center.
+            for (i = renderedRange.startIndex; i <= renderedRange.endIndex; i++) {
+                itemLayout = this.getItemLayout(i);
+                distance = getDistanceToViewportCenter(itemLayout, visibleCenter);
+                itemDistancesFromCenter.push({ index: i, distance: distance });
+            }
+
+            // Sort by the distance from center.
+            itemDistancesFromCenter.sort(function(a, b) {
+                if (a.distance < b.distance) {
+                    return -1;
+                }
+                if (a.distance > b.distance) {
+                    return 1;
+                }
+                return 0;
+            });
+
+            // Return the item indexes.
+            return itemDistancesFromCenter.map(function(item) { return item.index; });
         },
 
         /**
@@ -523,61 +589,6 @@ define(function(require) {
             // Cache and return the position.
             this._cache.positionToRender = result;
             return result;
-        },
-
-        /**
-         * Gets the indexes of the last item range rendered,
-         * ordered by distance from the visible center position.
-         *
-         * @method VerticalLayout#getOrderedRenderedItemIndexes
-         * @return {Array.<number>}
-         */
-        getOrderedRenderedItemIndexes: function() {
-            // Need to know some things about the current state of the layout.
-            var visibleCenter = this.getVisiblePosition().center;
-            var currentItemIndex = this.getCurrentItemIndex();
-            var renderedRange = this._cache.lastRenderedItemRange;
-
-            // Going to load items in order from the visible center out.
-            var itemDistancesFromCenter = [];
-            var itemLayout;
-            var distance;
-            var i;
-
-            if (!renderedRange) {
-                throw new Error('VerticalLayout: the layout has not been rendered.');
-            }
-
-            // Calculate distances from the visible center.
-            for (i = renderedRange.startIndex; i <= renderedRange.endIndex; i++) {
-                itemLayout = this.getItemLayout(i);
-
-                if (i < currentItemIndex) {
-                    distance = Math.abs(visibleCenter - itemLayout.bottom);
-                }
-                else if (i === currentItemIndex) {
-                    distance = 0;
-                }
-                else { // i > currentItemIndex
-                    distance = Math.abs(visibleCenter - itemLayout.top);
-                }
-
-                itemDistancesFromCenter.push({ index: i, distance: distance });
-            }
-
-            // Sort by the distance from center.
-            itemDistancesFromCenter.sort(function(a, b) {
-                if (a.distance < b.distance) {
-                    return -1;
-                }
-                if (a.distance > b.distance) {
-                    return 1;
-                }
-                return 0;
-            });
-
-            // Return the item indexes.
-            return itemDistancesFromCenter.map(function(item) { return item.index; });
         },
 
         /**

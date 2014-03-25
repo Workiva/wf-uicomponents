@@ -25,6 +25,7 @@ define(function(require) {
 
     describe('VerticalLayout', function() {
 
+        var viewportSize = { width: 200, height: 500 };
         var $viewport = $('<div>').css({ position: 'absolute', top: -10000 });
         var itemMetadata = [];
 
@@ -36,7 +37,7 @@ define(function(require) {
         }
 
         beforeEach(function() {
-            $viewport.empty().appendTo('body').css({ width: 200, height: 500 });
+            $viewport.empty().appendTo('body').css(viewportSize);
 
             itemMetadata = [
                 { width: 100, height: 200 },
@@ -259,6 +260,16 @@ define(function(require) {
                 layout = createVerticalLayout();
 
                 expect(layout.getCurrentItemIndex()).toBe(1);
+            });
+            
+            it('should return the item nearest the viewport center if none intersects', function() {
+                itemMetadata = [{
+                    width: viewportSize.width,
+                    height: viewportSize.height / 4
+                }];
+                layout = createVerticalLayout({ flow: true });
+
+                expect(layout.getCurrentItemIndex()).toBe(0);
             });
         });
 
