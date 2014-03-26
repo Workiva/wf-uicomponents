@@ -2,6 +2,7 @@ require([
     'hammerjs',
     'jquery',
     'wf-js-uicomponents/scroll_list/ScrollList',
+    'wf-js-uicomponents/layouts/ItemSizeCollection',
     'wf-js-uicomponents/awesome_map/BoundaryInterceptor',
     'wf-js-uicomponents/awesome_map/ScaleInterceptor',
     'wf-js-uicomponents/awesome_map/SwipeInterceptor',
@@ -9,13 +10,14 @@ require([
     'wf-js-common/BrowserInfo',
     'wf-js-common/Url',
     'wf-js-common/DOMUtil',
-    'wf-js-common/consoleDev',
+    'wf-js-common/console',
     'hammerjs.fakemultitouch',
     'hammerjs.showtouches'
 ], function(
     Hammer,
     $,
     ScrollList,
+    ItemSizeCollection,
     BoundaryInterceptor,
     ScaleInterceptor,
     SwipeInterceptor,
@@ -31,22 +33,19 @@ require([
     // Initialize ViewerComponent
     //---------------------------------------------------------
 
-    var pages = (function() {
+    function generateItemSizes(length) {
         // NOTE: Interested in retina canvas performance?
         // See: http://www.scirra.com/forum/retina-ios-performance-problem-fix-please-test_topic58742.html
-        var tallPage = { height: 1022, width: 766 };
-        var widePage = { height: 766, width: 1022 };
-        var pages = [];
-
-        for (var i = 0; i < 250; i++) {
-            pages.push(tallPage);
-            pages.push(tallPage);
-            pages.push(widePage);
-            pages.push(widePage);
+        var tallItem = { height: 1022, width: 766 };
+        var wideItem = { height: 766, width: 1022 };
+        var result = [];
+        for (var i = 0; i < length; i++) {
+            var item = (i % 2 === 0) ? tallItem : wideItem;
+            result.push(item);
         }
 
-        return pages;
-    }());
+        return result;
+    }
 
     function createPage(container, pageIndex, scale, width, height) {
         var pixelRatio = DeviceInfo.devicePixelRatio;
@@ -92,15 +91,18 @@ require([
         patternCanvas.height = squareHeight * 2;
         patternCanvas.width = squareWidth * 2;
 
-        var patternCtx = patternCanvas.getContext('2d');
-        patternCtx.fillStyle = (pageIndex % 2 === 0) ? '#69c' : '#c96';
-        patternCtx.fillRect(0, 0, squareWidth, squareHeight);
-        patternCtx.fillRect(squareWidth, squareHeight, squareWidth, squareHeight);
+        // Draw if we have non-zero dimensions to draw.
+        if (squareWidth && squareHeight) {
+            var patternCtx = patternCanvas.getContext('2d');
+            patternCtx.fillStyle = (pageIndex % 2 === 0) ? '#69c' : '#c96';
+            patternCtx.fillRect(0, 0, squareWidth, squareHeight);
+            patternCtx.fillRect(squareWidth, squareHeight, squareWidth, squareHeight);
 
-        var pattern = ctx.createPattern(patternCanvas, 'repeat');
-        ctx.fillStyle = pattern;
-        ctx.translate(patternLeft, patternTop);
-        ctx.fillRect(0, 0, patternWidth, patternHeight);
+            var pattern = ctx.createPattern(patternCanvas, 'repeat');
+            ctx.fillStyle = pattern;
+            ctx.translate(patternLeft, patternTop);
+            ctx.fillRect(0, 0, patternWidth, patternHeight);
+        }
 
         // Append to the container.
         container.appendChild(canvas);
@@ -117,9 +119,16 @@ require([
     var urlParams = url.getParams();
     var scrollMode = urlParams.scroll || (DeviceInfo.desktop ? 'flow' : 'peek');
     var fitMode = urlParams.fit || 'auto';
+    var totalPages = +urlParams.totalPages || 100;
     var minNumberOfVirtualItems = scrollMode === 'flow' ? (DeviceInfo.desktop ? 15 : 9) : (DeviceInfo.desktop ? 5 : 3);
 
-    var scrollList = window.scrollList = new ScrollList($('#document')[0], pages, {
+    var itemSizeCollection = new ItemSizeCollection({
+        maxWidth: 1022,
+        maxHeight: 1022,
+        items: generateItemSizes(totalPages)
+    });
+
+    var scrollList = window.scrollList = new ScrollList($('#document')[0], itemSizeCollection, {
         gap: 2,
         mode: scrollMode,
         fit: fitMode,
@@ -172,6 +181,11 @@ require([
         console.log('scroll position changed to', args.x, args.y);
     });
 
+    scrollList.onItemsInserted(function(sender, args) {
+        totalPages += args.count;
+        $('#totalPages').val(totalPages);
+    });
+
     scrollList.render();
 
     //---------------------------------------------------------
@@ -197,17 +211,11 @@ require([
         DOMUtil.preventIOS7WindowScroll();
 
         $('#scrollMode').val(scrollMode).change(function() {
-            window.location = url
-                .addParam('scroll', this.value)
-                .addParam('fit', fitMode)
-                .toString();
+            window.location = url.addParam('scroll', this.value).toString();
         });
 
         $('#fitMode').val(fitMode).change(function() {
-            window.location = url
-                .addParam('scroll', scrollMode)
-                .addParam('fit', this.value)
-                .toString();
+            window.location = url.addParam('fit', this.value).toString();
         });
 
         $('#zoomToScale').submit(function() {
@@ -234,7 +242,9 @@ require([
             return false;
         });
 
-        $('#totalPages').text(pages.length);
+        $('#totalPages').val(totalPages).change(function() {
+            window.location = url.addParam('totalPages', this.value).toString();
+        });
 
         // Hide iOS browser chrome
         $('body').scrollTop(0);

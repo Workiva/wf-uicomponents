@@ -19,6 +19,7 @@ define(function(require) {
 
     var $ = require('jquery');
     var DestroyUtil = require('wf-js-common/DestroyUtil');
+    var ItemSizeCollection = require('wf-js-uicomponents/layouts/ItemSizeCollection');
     var Renderer = require('wf-js-uicomponents/scroll_list/PlaceholderRenderer');
     var ScaleStrategies = require('wf-js-uicomponents/layouts/ScaleStrategies');
     var VerticalLayout = require('wf-js-uicomponents/layouts/VerticalLayout');
@@ -31,8 +32,22 @@ define(function(require) {
         var renderer = Renderer.prototype;
         var layout;
 
+        function createItemSizeCollection(items) {
+            var maxWidth = Number.MIN_VALUE;
+            var maxHeight = Number.MIN_VALUE;
+            items.forEach(function(item) {
+                maxWidth = Math.max(maxWidth, item.width);
+                maxHeight = Math.max(maxHeight, item.height);
+            });
+            return new ItemSizeCollection({
+                maxWidth: maxWidth,
+                maxHeight: maxHeight,
+                items: items
+            });
+        }
         function createVerticalLayout(options) {
-            return new VerticalLayout($viewport[0], itemMetadata, renderer, options);
+            var itemSizeCollection = createItemSizeCollection(itemMetadata);
+            return new VerticalLayout($viewport[0], itemSizeCollection, renderer, options);
         }
 
         beforeEach(function() {
@@ -55,7 +70,7 @@ define(function(require) {
 
             it('should require a viewport', function() {
                 var ctor = function() {
-                    return new VerticalLayout(null, itemMetadata, renderer);
+                    return new VerticalLayout(null, createItemSizeCollection(itemMetadata), renderer);
                 };
                 expect(ctor).toThrow('VerticalLayout configuration: viewport is required.');
             });
@@ -64,12 +79,12 @@ define(function(require) {
                 var ctor = function() {
                     return new VerticalLayout($viewport[0], null, renderer);
                 };
-                expect(ctor).toThrow('VerticalLayout configuration: itemMetadata is required.');
+                expect(ctor).toThrow('VerticalLayout configuration: itemSizeCollection is required.');
             });
 
             it('should require a renderer', function() {
                 var ctor = function() {
-                    return new VerticalLayout($viewport[0], itemMetadata, null);
+                    return new VerticalLayout($viewport[0], createItemSizeCollection(itemMetadata), null);
                 };
                 expect(ctor).toThrow('VerticalLayout configuration: renderer is required.');
             });
@@ -561,6 +576,31 @@ define(function(require) {
             });
         });
 
+        describe('inserting items', function() {
+            var itemSizeCollection;
+            beforeEach(function() {
+                layout = createVerticalLayout();
+                itemSizeCollection = layout.getItemSizeCollection();
+            });
+            it('should constrain the given sizes to the maximums defined by the ItemSizeCollection', function() {
+                spyOn(itemSizeCollection, 'constrain');
+                var items = [{}];
+                layout.insertItems(0, items);
+                expect(itemSizeCollection.constrain).toHaveBeenCalledWith(items);
+            });
+            it('should insert the given sizes into the ItemSizeCollection', function() {
+                spyOn(itemSizeCollection, 'insert');
+                var items = [{}];
+                layout.insertItems(0, items);
+                expect(itemSizeCollection.insert).toHaveBeenCalledWith(0, items);
+            });
+            it('should measure the layout', function() {
+                spyOn(layout, 'measure');
+                layout.insertItems(0, [{}]);
+                expect(layout.measure).toHaveBeenCalled();
+            });
+        });
+
         describe('when loading content', function() {
 
             beforeEach(function() {
@@ -635,13 +675,13 @@ define(function(require) {
                     spyOn(ScaleStrategies, 'height').andReturn(1);
                     spyOn(ScaleStrategies, 'width').andReturn(1);
 
-                    layout = createVerticalLayout({ fit: 'auto' });
+                    createVerticalLayout({ fit: 'auto' });
                     expect(ScaleStrategies.auto).toHaveBeenCalled();
 
-                    layout = createVerticalLayout({ fit: 'height' });
+                    createVerticalLayout({ fit: 'height' });
                     expect(ScaleStrategies.height).toHaveBeenCalled();
 
-                    layout = createVerticalLayout({ fit: 'width' });
+                    createVerticalLayout({ fit: 'width' });
                     expect(ScaleStrategies.width).toHaveBeenCalled();
                 });
 
@@ -658,7 +698,7 @@ define(function(require) {
 
                 describe('flow: true', function() {
 
-                    it('should fit all the items to the viewport once', function() {
+                    it('should fit the maximum size of items to the viewport', function() {
                         var viewportSize;
                         var padding;
 
@@ -669,7 +709,14 @@ define(function(require) {
                         padding = layout.getOptions().padding;
 
                         expect(ScaleStrategies.auto.calls.length).toBe(1);
-                        expect(ScaleStrategies.auto).toHaveBeenCalledWith(viewportSize, itemMetadata, padding);
+                        var scaleArgs = ScaleStrategies.auto.calls[0].args;
+                        var itemSizeCollection = layout.getItemSizeCollection();
+                        expect(scaleArgs[0]).toBe(viewportSize);
+                        expect(scaleArgs[1]).toEqual({
+                            width: itemSizeCollection.maxWidth,
+                            height: itemSizeCollection.maxHeight
+                        });
+                        expect(scaleArgs[2]).toBe(padding);
 
                         layout.getItemLayouts().forEach(function(item, index) {
                             expect(item.scaleToFit).toBe(0.5);

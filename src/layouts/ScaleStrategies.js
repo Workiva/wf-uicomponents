@@ -18,7 +18,8 @@ define(function() {
     'use strict';
 
     /**
-     * Utility to offset a scale to accomodate contentmargins.
+     * Utility to offset a scale to accommodate content margins.
+     *
      * @param {number} dimension - The value of the dimension to offset.
      * @param {number} margin - The margin around the dimensions.
      * @return {number}
@@ -30,90 +31,87 @@ define(function() {
     /**
      * @classdesc
      *
-     * ScaleStrategies calculate the scale required to fit content within a viewport.
+     * ScaleStrategies calculate the scale required to fit items within a viewport.
      *
      * @exports ScaleStrategies
      */
     var ScaleStrategies = {
 
         /**
-         * Calculates the scale required to fit content inside the viewport.
+         * Calculates the scale required to fit items inside the viewport.
+         *
          * @method
-         * @param {{width: number, height: number}} viewportDimensions
-         *        The dimensions of the viewport.
-         * @param {Array.<{width: number, height: number}>|{width: number, height: number}} contentOrContents
-         *        The dimensions of the content or contents to fit.
-         * @param {number} contentMargin
-         *        The margin around the content.
+         * @param {{width: number, height: number}} viewportSize
+         *        The size of the viewport.
+         * @param {Array.<{width: number, height: number}>|{width: number, height: number}} itemSizeOrSizes
+         *        The size of the item or items to fit.
+         * @param {number} margin
+         *        The margin around the item.
          * @returns {number}
          */
-        auto: function(viewportDimensions, contentOrContents, contentMargin) {
-            var widthScale = ScaleStrategies.width(viewportDimensions, contentOrContents, contentMargin);
-            var heightScale = ScaleStrategies.height(viewportDimensions, contentOrContents, contentMargin);
+        auto: function(viewportSize, itemSizeOrSizes, margin) {
+            var widthScale = ScaleStrategies.width(viewportSize, itemSizeOrSizes, margin);
+            var heightScale = ScaleStrategies.height(viewportSize, itemSizeOrSizes, margin);
 
             return Math.min(widthScale, heightScale);
         },
 
         /**
          * Gets the scale required to fit the height of the viewport.
+         *
          * @method
-         * @param {{height: number}} viewportDimensions
-         *        The dimensions of the viewport.
-         * @param {Array.<{height: number}>|{height: number}} contentOrContents
-         *        The dimensions of the content or contents to fit.
-         * @param {number} contentMargin
-         *        The margin around the content.
+         * @param {{height: number}} viewportSize
+         *        The size of the viewport.
+         * @param {Array.<{height: number}>|{height: number}} itemSizeOrSizes
+         *        The size of the item or items to fit.
+         * @param {number} margin
+         *        The margin around the item.
          * @returns {number}
          */
-        height: function(viewportDimensions, contentOrContents, contentMargin) {
-            var viewportHeight = viewportDimensions.height;
+        height: function(viewportSize, itemSizeOrSizes, margin) {
+            var viewportHeight = viewportSize.height;
             var maxPageHeight = 0;
-            var items = Array.isArray(contentOrContents) ? contentOrContents : [contentOrContents];
-            var numberOfItems = items.length;
-            var i;
-            var page;
+            var sizes = Array.isArray(itemSizeOrSizes) ? itemSizeOrSizes : [itemSizeOrSizes];
 
             // Get the maximum page height.
-            for (i = 0; i < numberOfItems; i++) {
-                page = items[i];
-                if (page.height > maxPageHeight) {
-                    maxPageHeight = page.height;
+            for (var i = 0, n = sizes.length; i < n; i++) {
+                var size = sizes[i];
+                if (size.height > maxPageHeight) {
+                    maxPageHeight = size.height;
                 }
             }
 
             // Return the scale to fit height, accounting for page margins.
-            return viewportHeight / maxPageHeight * marginScaleOffset(viewportHeight, contentMargin);
+            return viewportHeight / maxPageHeight * marginScaleOffset(viewportHeight, margin);
         },
 
         /**
          * Gets the scale required to fit the width of the viewport.
+         *
          * @method
-         * @param {{width: number}} viewportDimensions
-         *        The dimensions of the viewport.
-         * @param {Array.<{width: number}>|{width: number}} contentOrContents
-         *        The dimensions of the content or contents to fit.
-         * @param {number} contentMargin
-         *        The margin around the content.
+         * @param {{width: number}} viewportSize
+         *        The size of the viewport.
+         * @param {Array.<{width: number}>|{width: number}} itemSizeOrSizes
+         *        The size of the item or items to fit.
+         * @param {number} margin
+         *        The margin around the item.
          * @returns {number}
          */
-        width: function(viewportDimensions, contentOrContents, contentMargin) {
-            var viewportWidth = viewportDimensions.width;
-            var items = Array.isArray(contentOrContents) ? contentOrContents : [contentOrContents];
-            var numberOfItems = items.length;
+        width: function(viewportSize, itemSizeOrSizes, margin) {
+            var viewportWidth = viewportSize.width;
+            var sizes = Array.isArray(itemSizeOrSizes) ? itemSizeOrSizes : [itemSizeOrSizes];
             var maxPageWidth = 0;
-            var i;
-            var page;
 
             // Get the maximum page width.
-            for (i = 0; i < numberOfItems; i++) {
-                page = items[i];
-                if (page.width > maxPageWidth) {
-                    maxPageWidth = page.width;
+            for (var i = 0, n = sizes.length; i < n; i++) {
+                var size = sizes[i];
+                if (size.width > maxPageWidth) {
+                    maxPageWidth = size.width;
                 }
             }
 
             // Return the scale to fit width, accounting for page margins.
-            return viewportWidth / maxPageWidth * marginScaleOffset(viewportWidth, contentMargin);
+            return viewportWidth / maxPageWidth * marginScaleOffset(viewportWidth, margin);
         }
     };
 
