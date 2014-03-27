@@ -24,6 +24,17 @@ define(function(require) {
     var Observable = require('wf-js-common/Observable');
     var ScaleStrategies = require('wf-js-uicomponents/layouts/ScaleStrategies');
 
+    function getDistanceToViewportCenter(itemLayout, visibleCenter) {
+        var distance = 0;
+        if (itemLayout.bottom < visibleCenter) {
+            distance = visibleCenter - itemLayout.bottom;
+        }
+        else if (itemLayout.top > visibleCenter) {
+            distance = itemLayout.top - visibleCenter;
+        }
+        return distance;
+    }
+
     /**
      * Creates a new VerticalLayout.
      *
@@ -37,7 +48,7 @@ define(function(require) {
      * @param {HTMLElement} viewport
      *        The viewport that acts as a container for the layout.
      *
-     * @param {Array.<{width: number, height: number}>} itemMetadata
+     * @param {ItemSizeCollection} itemSizeCollection
      *        Metadata describing the number and size of the items in this layout.
      *
      * @param {PlaceholderRenderer} renderer
@@ -83,7 +94,7 @@ define(function(require) {
      * @param {string} [options.verticalAlign='middle']
      *        The vertical alignment of the items when flow=false.
      */
-    var VerticalLayout = function(viewport, itemMetadata, renderer, options) {
+    var VerticalLayout = function(viewport, itemSizeCollection, renderer, options) {
 
         //---------------------------------------------------------
         // Observables
@@ -126,9 +137,9 @@ define(function(require) {
         /**
          * The item metadata used to construct this layout.
          *
-         * @type {Array.<{ width: number, height: number }>}
+         * @type {ItemMetadata}
          */
-        this._itemMetadata = itemMetadata;
+        this._itemSizeCollection = itemSizeCollection;
 
         /**
          * The layout options.
@@ -221,11 +232,11 @@ define(function(require) {
         /**
          * Gets the item metadata for the layout.
          *
-         * @method VerticalLayout#getItemMetadata
-         * @return {Array.<{ width: number, height: number }>}
+         * @method VerticalLayout#getItemSizeCollection
+         * @return {ItemMetadata}
          */
-        getItemMetadata: function() {
-            return this._itemMetadata;
+        getItemSizeCollection: function() {
+            return this._itemSizeCollection;
         },
 
         /**
@@ -347,7 +358,7 @@ define(function(require) {
                 return;
             }
 
-            var numberOfItems = this._itemMetadata.length;
+            var numberOfItems = this._itemSizeCollection.getLength();
             var itemsToAdd = minNumberOfVirtualItems - numberOfItemsToRender;
 
             // First need to determine how to weigh the distribution of extra items.
@@ -392,16 +403,27 @@ define(function(require) {
             var itemRange = this.getItemRangeToRender();
             var startIndex = itemRange.startIndex;
             var endIndex = itemRange.endIndex;
-            var layout;
+            var itemLayout;
             var i;
             var result = -1;
+            var distanceToVisibleCenter;
+            var minimumDistance = Number.MAX_VALUE;
 
             for (i = startIndex; i <= endIndex; i++) {
-                layout = this.getItemLayout(i);
+                itemLayout = this.getItemLayout(i);
 
-                if (layout.top <= visibleCenter && layout.bottom >= visibleCenter) {
+                // If the layout intersects the visible center, we have our item.
+                if (itemLayout.top <= visibleCenter && itemLayout.bottom >= visibleCenter) {
                     result = i;
                     break;
+                }
+                // Track the item nearest the viewport center, in case none intersect.
+                else {
+                    distanceToVisibleCenter = getDistanceToViewportCenter(itemLayout, visibleCenter);
+                    if (distanceToVisibleCenter < minimumDistance) {
+                        minimumDistance = distanceToVisibleCenter;
+                        result = i;
+                    }
                 }
             }
 
@@ -417,7 +439,7 @@ define(function(require) {
          * range will contain at least the configured number of concurrent items.
          *
          * @method VerticalLayout#getItemRangeToRender
-         * @param {Position} [targetScrollPosition]
+         * @param {{ top: number, left: number }} [targetScrollPosition]
          * @return {{ startIndex: number, endIndex: number }}
          */
         getItemRangeToRender: function(targetScrollPosition) {
@@ -430,18 +452,14 @@ define(function(require) {
                 endIndex: 0
             };
 
-            var numberOfItems = this.getItemMetadata().length;
-            var i;
-            var position;
-
+            var numberOfItems = this._itemSizeCollection.getLength();
             if (numberOfItems <= this._options.minNumberOfVirtualItems) {
                 result.endIndex = numberOfItems - 1;
             }
             else {
                 // Find the item range based on position to render.
-                position = this.getPositionToRender(targetScrollPosition);
-
-                i = 0;
+                var position = this.getPositionToRender(targetScrollPosition);
+                var i = 0;
                 while (i < numberOfItems && this.getItemLayout(i).bottom <= position.top) {
                     i++;
                 }
@@ -461,12 +479,56 @@ define(function(require) {
         },
 
         /**
+         * Gets the indexes of the last item range rendered,
+         * ordered by distance from the visible center position.
+         *
+         * @method VerticalLayout#getOrderedRenderedItemIndexes
+         * @return {Array.<number>}
+         */
+        getOrderedRenderedItemIndexes: function() {
+            // Need to know some things about the current state of the layout.
+            var visibleCenter = this.getVisiblePosition().center;
+            var renderedRange = this._cache.lastRenderedItemRange;
+
+            // Going to load items in order from the visible center out.
+            var itemDistancesFromCenter = [];
+            var itemLayout;
+            var distance;
+            var i;
+
+            if (!renderedRange) {
+                throw new Error('VerticalLayout: the layout has not been rendered.');
+            }
+
+            // Calculate distances from the visible center.
+            for (i = renderedRange.startIndex; i <= renderedRange.endIndex; i++) {
+                itemLayout = this.getItemLayout(i);
+                distance = getDistanceToViewportCenter(itemLayout, visibleCenter);
+                itemDistancesFromCenter.push({ index: i, distance: distance });
+            }
+
+            // Sort by the distance from center.
+            itemDistancesFromCenter.sort(function(a, b) {
+                if (a.distance < b.distance) {
+                    return -1;
+                }
+                if (a.distance > b.distance) {
+                    return 1;
+                }
+                return 0;
+            });
+
+            // Return the item indexes.
+            return itemDistancesFromCenter.map(function(item) { return item.index; });
+        },
+
+        /**
          * Gets the top and bottom position of the range to render, based on
          * current scroll position and scale. If given a target scroll position,
          * the range will span between the distance the current and target positions.
          *
          * @method VerticalLayout#getPositionToRender
-         * @param {{ top: number, bottom: number }} [targetScrollPosition]
+         * @param {{ top: number, left: number }} [targetScrollPosition]
          * @return {{ top: number, bottom: number }}
          */
         getPositionToRender: function(targetScrollPosition) {
@@ -523,61 +585,6 @@ define(function(require) {
             // Cache and return the position.
             this._cache.positionToRender = result;
             return result;
-        },
-
-        /**
-         * Gets the indexes of the last item range rendered,
-         * ordered by distance from the visible center position.
-         *
-         * @method VerticalLayout#getOrderedRenderedItemIndexes
-         * @return {Array.<number>}
-         */
-        getOrderedRenderedItemIndexes: function() {
-            // Need to know some things about the current state of the layout.
-            var visibleCenter = this.getVisiblePosition().center;
-            var currentItemIndex = this.getCurrentItemIndex();
-            var renderedRange = this._cache.lastRenderedItemRange;
-
-            // Going to load items in order from the visible center out.
-            var itemDistancesFromCenter = [];
-            var itemLayout;
-            var distance;
-            var i;
-
-            if (!renderedRange) {
-                throw new Error('VerticalLayout: the layout has not been rendered.');
-            }
-
-            // Calculate distances from the visible center.
-            for (i = renderedRange.startIndex; i <= renderedRange.endIndex; i++) {
-                itemLayout = this.getItemLayout(i);
-
-                if (i < currentItemIndex) {
-                    distance = Math.abs(visibleCenter - itemLayout.bottom);
-                }
-                else if (i === currentItemIndex) {
-                    distance = 0;
-                }
-                else { // i > currentItemIndex
-                    distance = Math.abs(visibleCenter - itemLayout.top);
-                }
-
-                itemDistancesFromCenter.push({ index: i, distance: distance });
-            }
-
-            // Sort by the distance from center.
-            itemDistancesFromCenter.sort(function(a, b) {
-                if (a.distance < b.distance) {
-                    return -1;
-                }
-                if (a.distance > b.distance) {
-                    return 1;
-                }
-                return 0;
-            });
-
-            // Return the item indexes.
-            return itemDistancesFromCenter.map(function(item) { return item.index; });
         },
 
         /**
@@ -648,6 +655,18 @@ define(function(require) {
         },
 
         /**
+         * Insert new items into the layout at the given index.
+         *
+         * @param {number} index
+         * @param {Array.<{ width: number, height: number }>} itemSizes
+         */
+        insertItems: function(index, itemSizes) {
+            this._itemSizeCollection.constrain(itemSizes);
+            this._itemSizeCollection.insert(index, itemSizes);
+            this.measure();
+        },
+
+        /**
          * Loads content into rendered placeholders.
          *
          * @method VerticalLayout#loadContent
@@ -701,7 +720,7 @@ define(function(require) {
             var range = this.getItemRangeToRender(targetScrollPosition);
             var lastRange = this._cache.lastRenderedItemRange;
 
-            var numberOfItems = this.getItemMetadata().length;
+            var numberOfItems = this.getItemSizeCollection().getLength();
             var i;
 
             // We check if the current item has changed and dispatch if true.
@@ -776,15 +795,15 @@ define(function(require) {
             var padding = options.padding;
 
             // Loop through the items.
-            var items = this.getItemMetadata();
-            var numberOfItems = items.length;
+            var itemSizeCollection = this._itemSizeCollection;
+            var numberOfItems = itemSizeCollection.getLength();
             var i;
 
             // Build layouts.
             var layouts = new Array(numberOfItems);
             var layout;
-            var item;
-            var cachedScaleToFit;
+            var size;
+            var cachedScaleToFit = null;
             var scaleToFit;
             var maxWidth = 0;
             var totalHeight = 0;
@@ -796,7 +815,10 @@ define(function(require) {
                 }
                 // If flowing, scale all the items at once.
                 if (flow) {
-                    return cachedScaleToFit || (cachedScaleToFit = fit(items));
+                    return cachedScaleToFit || (cachedScaleToFit = fit({
+                        width: itemSizeCollection.maxWidth,
+                        height: itemSizeCollection.maxHeight
+                    }));
                 }
                 return fit(item);
             }
@@ -807,15 +829,15 @@ define(function(require) {
             }
 
             for (i = 0; i < numberOfItems; i++) {
-                item = items[i];
-                scaleToFit = getScaleToFit(item);
+                size = itemSizeCollection.getItem(i);
+                scaleToFit = getScaleToFit(size);
 
                 layout = new ItemLayout({
                     itemIndex: i,
                     top: totalHeight,
                     scaleToFit: scaleToFit,
-                    width: Math.floor(item.width * scaleToFit),
-                    height: Math.floor(item.height * scaleToFit),
+                    width: Math.floor(size.width * scaleToFit),
+                    height: Math.floor(size.height * scaleToFit),
                     paddingLeft: padding,
                     paddingRight: padding
                 });
@@ -858,6 +880,14 @@ define(function(require) {
                 totalHeight = layout.bottom;
             }
 
+            // Ensure when in flow mode, where items are scaled together,
+            // that the layout size accommodates the maximum possible item width.
+            // If this is not done, then positioning will change and shift if
+            // newer, wider items are added dynamically.
+            if (flow) {
+                maxWidth = (itemSizeCollection.maxWidth + 2 * padding) * cachedScaleToFit;
+            }
+
             // Cache the item layouts and total layout size.
             this._cache.itemLayouts = layouts;
             this._cache.size = { width: maxWidth, height: totalHeight };
@@ -891,8 +921,8 @@ define(function(require) {
             if (!this._viewport) {
                 throw new Error('VerticalLayout configuration: viewport is required.');
             }
-            if (!this._itemMetadata) {
-                throw new Error('VerticalLayout configuration: itemMetadata is required.');
+            if (!this._itemSizeCollection) {
+                throw new Error('VerticalLayout configuration: itemSizeCollection is required.');
             }
             if (!this._renderer) {
                 throw new Error('VerticalLayout configuration: renderer is required.');

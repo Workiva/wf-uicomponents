@@ -156,7 +156,7 @@ define(function(require) {
          * @param {ItemLayout} itemLayout
          * @param {Object} placeholder
          */
-        appendPlaceholderToScrollList: function(itemLayout, placeholder) {
+        appendPlaceholderToScrollList: function(itemLayout, placeholder, update) {
             var scrollList = this._scrollList;
             var listMap = scrollList.getListMap();
 
@@ -180,9 +180,15 @@ define(function(require) {
                 }
                 var element = placeholder.element;
                 element.style.left = adjustedLeft + 'px';
-                listMap.appendContent(element);
+                if (!update) {
+                    listMap.appendContent(element);
+                }
             }
-            else {
+            // Only need to handle peek/single modes if not updating an item
+            // that is currently rendered. As items in these modes are hosted inside
+            // of item maps that fill the viewport, and more or less are rendered
+            // independently of each other, there's no need to modify the placeholder.
+            else if (!update) {
                 // As we are appending content in other modes to a separate map,
                 // need to negate the default positional styles and let the map
                 // apply position by transforming its content.
@@ -389,7 +395,7 @@ define(function(require) {
             element.style.width = itemLayout.right - itemLayout.left + 'px';
             element.style.height = itemLayout.bottom - itemLayout.top + 'px';
             // Ensure that placeholders are composited individually so that
-            // the browser rendering engine doesn't generate enourmous layers
+            // the browser rendering engine doesn't generate enormous layers
             // for the container when transitioning.
             if (BrowserInfo.hasCssTransforms3d) {
                 element.style[BrowserInfo.cssTransformProperty] = 'translateZ(0px)';
@@ -432,6 +438,36 @@ define(function(require) {
             placeholder.hasContent = false;
 
             return true;
+        },
+
+        /**
+         * Update the position of currently rendered items to account for changes
+         * to items in a layout.
+         *
+         * @param {number} startIndex
+         * @param {number} newIndexOffset
+         */
+        update: function(startIndex, newIndexOffset) {
+            var layout = this._scrollList.getLayout();
+            var placeholders = this._placeholders;
+            var newRenderedItems = {};
+            for (var itemIndex in placeholders) {
+                if (placeholders.hasOwnProperty(itemIndex)) {
+                    var placeholder = placeholders[itemIndex];
+                    if (+itemIndex < startIndex) {
+                        newRenderedItems[+itemIndex] = placeholder;
+                    }
+                    else {
+                        var newItemIndex = +itemIndex + newIndexOffset;
+                        newRenderedItems[newItemIndex] = placeholder;
+                        var newItemLayout = layout.getItemLayout(newItemIndex);
+                        placeholder.element.style.top = newItemLayout.top + 'px';
+                        placeholder.element.style.left = newItemLayout.left + 'px';
+                        this.appendPlaceholderToScrollList(newItemLayout, placeholder, true);
+                    }
+                }
+            }
+            this._placeholders = newRenderedItems;
         },
 
         //---------------------------------------------------------

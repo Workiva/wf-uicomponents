@@ -31,8 +31,8 @@ define(function(require) {
     describe('PlaceholderRenderer', function() {
 
         var listMap = _.extend({}, AwesomeMap.prototype);
-        var layout = VerticalLayout.prototype;
-        var scrollList = ScrollList.prototype;
+        var layout = _.extend({}, VerticalLayout.prototype);
+        var scrollList = _.extend({}, ScrollList.prototype);
 
         var viewportSize;
         var layoutSize;
@@ -653,6 +653,58 @@ define(function(require) {
 
                 renderer.unload(0);
                 expect(placeholder.hasContent).toBe(false);
+            });
+        });
+
+        describe('when updating', function() {
+            describe('placeholders before the start index', function() {
+                it('should not update the key associated with the placeholder', function() {
+                    spyOn(renderer, 'appendPlaceholderToScrollList');
+                    renderer.render(new ItemLayout({ itemIndex: 0 }));
+                    var placeholder = renderer.get(0);
+                    renderer.update(1, 1);
+                    expect(renderer.get(0)).toBe(placeholder);
+                });
+            });
+            describe('placeholders after the start index', function() {
+                var itemLayouts;
+                beforeEach(function() {
+                    itemLayouts = [
+                        new ItemLayout({ itemIndex: 0, top: 0, left: 1 }),
+                        new ItemLayout({ itemIndex: 1, top: 10, left: 11 }),
+                        new ItemLayout({ itemIndex: 2, top: 20, left: 21 })
+                    ];
+                    spyOn(layout, 'getItemLayout').andCallFake(function(index) {
+                        return itemLayouts[index];
+                    });
+                    spyOn(renderer, 'appendPlaceholderToScrollList');
+                    renderer.render(itemLayouts[0]);
+                    renderer.render(itemLayouts[1]);
+                });
+                it('should update the key associated with the placeholder', function() {
+                    var originalPlaceholders = [
+                        renderer.get(0),
+                        renderer.get(1)
+                    ];
+                    renderer.update(0, 1);
+                    expect(renderer.get(1)).toBe(originalPlaceholders[0]);
+                    expect(renderer.get(2)).toBe(originalPlaceholders[1]);
+                });
+                it('should update the top position of the placeholder', function() {
+                    renderer.update(0, 1);
+                    expect(renderer.get(1).element.style.top).toBe(itemLayouts[1].top + 'px');
+                    expect(renderer.get(2).element.style.top).toBe(itemLayouts[2].top + 'px');
+                });
+                it('should update the left position of the placeholder', function() {
+                    renderer.update(0, 1);
+                    expect(renderer.get(1).element.style.left).toBe(itemLayouts[1].left + 'px');
+                    expect(renderer.get(2).element.style.left).toBe(itemLayouts[2].left + 'px');
+                });
+                it('should append the placeholder to the scroll list', function() {
+                    renderer.update(0, 1);
+                    expect(renderer.appendPlaceholderToScrollList).toHaveBeenCalledWith(itemLayouts[1], renderer.get(1), true);
+                    expect(renderer.appendPlaceholderToScrollList).toHaveBeenCalledWith(itemLayouts[2], renderer.get(2), true);
+                });
             });
         });
     });
