@@ -56,40 +56,40 @@ define(function(require) {
         else {
             this._scrollList = scrollList;
         }
-            
+
         if (parent === undefined) {
             throw new Error('ScrollBar#ScrollBar: parent is required.');
         }
         else {
             this._parent = parent;
         }
-        
+
         this._options = options;
 
         this._layout = scrollList.getLayout();
-        
-        this._TOTAL_ITEMS = scrollList.getItemMetadata().length;
-        
+
+        this._TOTAL_ITEMS = scrollList.getItemSizeCollection()._items.length;
+
         this._viewportHeight = this._layout.getViewportSize().height;
-        
+
         this._virtualHeight = this._layout.getSize().height;
 
         this._setUpDOM();
-        
+
         // Set scrollbarScrolling to initially false
         this._scrollbarScrolling = false;
-        
+
         this._clickOffset = null;
-        
+
         // Set the initial scale
         this._scale = this._scrollList.getScale();
-        
+
         // Set the effective virtual height.
         // This is a scaled version of the height of the scrollList
         this._effectiveVirtualHeight = this._virtualHeight * (1 / this._scale);
-        
+
         this._scrollbarHeight = this._calculateScrollBarHeight();
-        
+
         // Get the initial position, in case it's not at 0, and set the scrollbar position
         requestAnimFrame(function() {
             that._placeScrollBar(that, that._elements.scrollbar);
@@ -110,33 +110,39 @@ define(function(require) {
             that._adjustScale();
         });
 
+        this._scrollList.onItemsInserted(function() {
+            that._TOTAL_ITEMS = scrollList.getItemSizeCollection()._items.length;
+            that._adjustScale();
+            that._placeScrollBar();
+        });
+
         // Attach handlers for scrolling the ScrollBar
         this._elements.scrollbar.addEventListener('mousedown', function(event) {
             offset = that._elements.scrollbar.offsetTop + that._elements.scrollbarContainer.offsetTop;
             that._clickOffset = event.clientY - offset + that._elements.scrollbarContainer.offsetTop;
             that._scrollbarScrolling = true;
-            
+
             that._mouseupHandler = function() {
                 that._stopUpdatingScrollbar();
             };
-            
+
             that._mousemoveHandler = function(e) {
                 that._updateScrollBar(e, that._clickOffset);
             };
-            
+
             document.addEventListener('mousemove', that._mousemoveHandler);
-            
+
             document.addEventListener('mouseup', that._mouseupHandler);
         });
 
     };
 
     ScrollBar.prototype = {
-    
+
         //---------------------------------------------------------
         // Public methods
         //---------------------------------------------------------
-        
+
         /**
          * Destruct the ScrollBar created HTML elements
          * @method ScrollBar#deinitialize
@@ -145,11 +151,11 @@ define(function(require) {
             this._elements.scrollbarContainer.removeChild(this._elements.scrollbar);
             this._parent.removeChild(this._elements.scrollbarContainer);
         },
-        
+
         //---------------------------------------------------------
         // Private methods
         //---------------------------------------------------------
-        
+
         /**
          * Initialize the HTML elements used by this instance of ScrollBar
          * @private
@@ -158,7 +164,7 @@ define(function(require) {
             // Create the scrollbar's container
             var scrollbarContainerEL = document.createElement('div');
             var scrollbarEL = document.createElement('div');
-            
+
             // Set the given classes and ids scrollbar and it's container
             if (this._options.scrollbarId) {
                 scrollbarEL.setAttribute('id', this._options.scrollbarId);
@@ -176,9 +182,9 @@ define(function(require) {
             // Append the scrollbar and it's parent container to the given parent element
             scrollbarContainerEL.appendChild(scrollbarEL);
             this._parent.appendChild(scrollbarContainerEL);
-            
+
             this._elements = {scrollbar: scrollbarEL, scrollbarContainer: scrollbarContainerEL};
-            
+
             this._adjustScale();
 
             // Set the container height to the viewport height
@@ -186,7 +192,7 @@ define(function(require) {
             // Set the scrollbar height
             scrollbarEL.style.height = this._scrollbarHeight + 'px';
         },
-        
+
         /**
          * Position the scrollbar based on the current position of the ScrollList
          */
@@ -197,7 +203,7 @@ define(function(require) {
             var translatedPosition = availableScrollbarHeight / scrollableVirtualHeight * currentPosition;
             this._elements.scrollbar.style.top = translatedPosition + 'px';
         },
-        
+
         /**
          * Position the scrollbar based on the position of a click event
          */
@@ -210,7 +216,7 @@ define(function(require) {
             // Use the ratio of scrollbar position inside the scrolling area to calculate
             // the current item we should be interested in.
             var positionOfInterest = ((scrollbarPos) / (this._viewportHeight - this._scrollbarHeight)) * (this._virtualHeight);
-            
+
             // Ensure that positionOfInterest isn't undefined.
             if (!positionOfInterest) {
                 positionOfInterest = 0;
@@ -220,7 +226,7 @@ define(function(require) {
                 y: positionOfInterest
             });
         },
-        
+
         /**
          * Remove the event listeners that update the scrollbar from the document
          */
@@ -230,14 +236,14 @@ define(function(require) {
             this._scrollbarScrolling = false;
             this._removeDocumentEventWatching(this);
         },
-        
+
         /**
          * Remove the mouseup listener from the document
          */
         _removeDocumentEventWatching: function() {
             document.removeEventListener('mouseup', this._mouseupHandler);
         },
-        
+
         /**
          * Calculate the scroll bar height based on the viewport height and the scaled virtual height
          */
@@ -245,10 +251,11 @@ define(function(require) {
             // Calculate the size of the scrollbar depending on the virtual height
             // The scrollbar shouldn't be shorter than MIN_HEIGHT
             var MIN_HEIGHT = this._options.minHeight || 16;
-            var height =  Math.max(MIN_HEIGHT, (this._viewportHeight / this._effectiveVirtualHeight) * this._viewportHeight);
+            var visibleArea = this._layout.getVisiblePosition().bottom - this._layout.getVisiblePosition().top;
+            var height =  Math.max(MIN_HEIGHT, (visibleArea / this._virtualHeight) * visibleArea);
             return height;
         },
-        
+
         /**
          * Scale the virtual height and re-calculate the scroll bar height
          */
@@ -258,7 +265,7 @@ define(function(require) {
             this._scrollbarHeight = this._calculateScrollBarHeight();
             this._elements.scrollbar.style.height = this._scrollbarHeight + 'px';
         }
-        
+
     };
 
     return ScrollBar;
