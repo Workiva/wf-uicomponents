@@ -730,7 +730,7 @@ define(function(require) {
                 !between(y, renderedPosition.top, renderedPosition.bottom)
             ) {
                 layout.setScrollPosition({ top: y, left: x });
-                layout.render({ top: y, left: x });
+                layout.render();
             }
 
             // If in flow mode, go to the position:
