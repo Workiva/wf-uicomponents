@@ -41,9 +41,22 @@ define(function(require) {
      *        scrollbarEL and scrollbarContainerEL.
      *
      * @param {number} options.minHeight
-     *        The minimum height, in pixes, of the ScrollBar
-     *        If not provided, the minHeight will default to 16px
+     *        The minimum height, in pixels, of the ScrollBar
+     *        If not provided, the minHeight will default to 16
      *
+     *
+     * @example
+     *
+     * var parent = getElementById('parent');
+     * var options = {};
+     *
+     * options.scrollbarId = "scrollbar";
+     * options.scrollbarClass = "scrollbar";
+     * options.scrollbarContainerId = "scrollbar-container";
+     * options.scrollbarContainerClass = "scrollbar-container";
+     * options.minHeight = 8;
+     *
+     * scrollBar = new ScrollBar(scrollList, parent, options);
      */
 
     var ScrollBar = function(scrollList, parent, options) {
