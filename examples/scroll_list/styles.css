@@ -85,6 +85,20 @@ body, input, button {
     background: #fff url('ajax-loader.gif') no-repeat 50% 50%;
 }
 
+#scrollbar {
+    width: 10px;
+    background-color: gray;
+    position: absolute;
+    z-index: 3;
+}
+
+#scrollbar-container {
+    width: 10px;
+    margin-top: 40px;
+    position: absolute;
+    right: 5px;
+}
+
 input[type=number]::-webkit-inner-spin-button,
 input[type=number]::-webkit-outer-spin-button {
     -webkit-appearance: none;
