@@ -40,7 +40,7 @@ define(function() {
          * @param {ScrollList} scrollList
          * @param {InteractionEvent} event - The interaction event under test.
          * @param {TransformState} state - The current transform state of the item map.
-         * @return {false|{ index: number, position: { x: number, y: number }}}
+         * @return {boolean|{ index: number, position: { x: number, y: number }}}
          */
         testItemMap: function(scrollList, event, currentState) {
             if (!event.position) {
@@ -48,7 +48,8 @@ define(function() {
             }
 
             var position = event.position;
-            var scale = currentState.scale;
+            var mapScale = currentState.scale;
+            var scrollListScale = scrollList.getScale();
 
             var layout = scrollList.getLayout();
             var currentItemIndex = layout.getCurrentItemIndex();
@@ -58,10 +59,10 @@ define(function() {
             // to center and position content, overriding the layout stuff.
             // Ideally this logic would live in the layout.
             var validBounds = {
-                top: currentState.translateY + itemLayout.paddingTop * scale,
-                right: currentState.translateX + (itemLayout.outerWidth - itemLayout.paddingRight) * scale,
-                bottom: currentState.translateY + (itemLayout.outerHeight - itemLayout.paddingBottom) * scale,
-                left: currentState.translateX + itemLayout.paddingLeft * scale
+                top: currentState.translateY + itemLayout.paddingTop * mapScale,
+                right: currentState.translateX + (itemLayout.outerWidth - itemLayout.paddingRight) * mapScale,
+                bottom: currentState.translateY + (itemLayout.outerHeight - itemLayout.paddingBottom) * mapScale,
+                left: currentState.translateX + itemLayout.paddingLeft * mapScale
             };
 
             if (position.x >= validBounds.left && position.x <= validBounds.right &&
@@ -70,8 +71,8 @@ define(function() {
                 return {
                     index: currentItemIndex,
                     position: {
-                        x: Math.floor((position.x - validBounds.left) / scale),
-                        y: Math.floor((position.y - validBounds.top) / scale)
+                        x: Math.floor((position.x - validBounds.left) / scrollListScale),
+                        y: Math.floor((position.y - validBounds.top) / scrollListScale)
                     }
                 };
             }
@@ -88,7 +89,7 @@ define(function() {
          * @param {ScrollList} scrollList
          * @param {InteractionEvent} event - The interaction event under test.
          * @param {TransformState} state - The current transform state of the item map.
-         * @return {false|{ index: number, position: { x: number, y: number }}}
+         * @return {boolean|{ index: number, position: { x: number, y: number }}}
          */
         testListMap: function(scrollList, event, state) {
             if (!event.position) {
@@ -96,7 +97,8 @@ define(function() {
             }
 
             var position = event.position;
-            var scale = state.scale;
+            var mapScale = state.scale;
+            var scrollListScale = scrollList.getScale();
 
             var layout = scrollList.getLayout();
             var undoLeftBy = (layout.getViewportSize().width - layout.getSize().width) / 2;
@@ -111,10 +113,10 @@ define(function() {
             for (i = visibleRange.startIndex; i <= visibleRange.endIndex; i++) {
                 itemLayout = layout.getItemLayout(i);
                 validBounds = {
-                    top: state.translateY + (itemLayout.top + itemLayout.paddingTop) * scale,
-                    right: state.translateX + (itemLayout.right - undoLeftBy - itemLayout.paddingRight) * scale,
-                    bottom: state.translateY + (itemLayout.bottom - itemLayout.paddingBottom) * scale,
-                    left: state.translateX + (itemLayout.left - undoLeftBy + itemLayout.paddingLeft) * scale
+                    top: state.translateY + (itemLayout.top + itemLayout.paddingTop) * mapScale,
+                    right: state.translateX + (itemLayout.right - undoLeftBy - itemLayout.paddingRight) * mapScale,
+                    bottom: state.translateY + (itemLayout.bottom - itemLayout.paddingBottom) * mapScale,
+                    left: state.translateX + (itemLayout.left - undoLeftBy + itemLayout.paddingLeft) * mapScale
                 };
 
                 if (position.x >= validBounds.left && position.x <= validBounds.right &&
@@ -123,8 +125,8 @@ define(function() {
                     return {
                         index: i,
                         position: {
-                            x: Math.floor((position.x - validBounds.left) / scale),
-                            y: Math.floor((position.y - validBounds.top) / scale)
+                            x: Math.floor((position.x - validBounds.left) / scrollListScale),
+                            y: Math.floor((position.y - validBounds.top) / scrollListScale)
                         }
                     };
                 }
