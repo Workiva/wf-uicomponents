@@ -27,6 +27,7 @@ define(function(require) {
     describe('EventSynthesizer', function() {
 
         var $host;
+        var host;
         var synthesizer;
         var handlers;
         var hammer;
@@ -41,11 +42,14 @@ define(function(require) {
             mouseAdapter = jasmine.createSpyObj('MouseAdapter', ['onMouseWheel', 'onMouseWheelStart', 'onMouseWheelEnd', 'dispose']);
             window = jasmine.createSpyObj('window', ['addEventListener', 'removeEventListener']);
 
+            $host = $('<div>').css({ position: 'absolute', top: -10000, left: -10000 }).appendTo('body');
+            host = $host[0];
+
             spyOn(dependencies, 'getWindow').andReturn(window);
             spyOn(dependencies, 'createHammerInstance').andReturn(hammer);
             spyOn(dependencies, 'createMouseAdapter').andReturn(mouseAdapter);
-
-            $host = $('<div>').css({ position: 'absolute', top: -10000, left: -10000 }).appendTo('body');
+            spyOn(host, 'addEventListener');
+            spyOn(host, 'removeEventListener');
 
             createSynthesizer = function() {
                 synthesizer = new EventSynthesizer({ host: $host[0] });
@@ -133,6 +137,13 @@ define(function(require) {
 
             it('should register a hold handler with hammer', function() {
                 expectHammerHandlerRegistration(EventTypes.HOLD);
+            });
+
+            it('should register a mousemove handler against the host object', function() {
+                var handler = handlers[EventTypes.MOUSE_MOVE];
+
+                expect(handler).toBeDefined();
+                expect(host.addEventListener).toHaveBeenCalledWith('mousemove', handler);
             });
 
             it('should register a mouse wheel handler with mouse adapter', function() {
@@ -248,11 +259,17 @@ define(function(require) {
                 synthesizer.dispose();
 
                 for (var type in handlers) {
-                    if (type !== EventTypes.MOUSE_WHEEL && type !== EventTypes.RESIZE) {
+                    if (type.indexOf('mouse') !== 0 && type !== EventTypes.RESIZE) {
                         handler = handlers[type];
                         expect(hammer.off).toHaveBeenCalledWith(type, handler);
                     }
                 }
+            });
+
+            it('should remove the host mousemove handler', function() {
+                var handler = handlers[EventTypes.MOUSE_MOVE];
+                synthesizer.dispose();
+                expect(host.removeEventListener).toHaveBeenCalledWith('mousemove', handler, false);
             });
 
             it('should dispose the mouse adapter', function() {
@@ -328,6 +345,47 @@ define(function(require) {
                 handlers[eventType](hammerEvent);
 
                 expect(dispatchEvent).toHaveBeenCalledWith(eventType, gesture);
+            });
+
+            it('should dispatch mousemove events', function() {
+                var eventType = EventTypes.MOUSE_MOVE;
+                var event = { pageX: 10, pageY: 20, source: {} };
+
+                handlers[eventType](event);
+
+                expect(dispatchEvent).toHaveBeenCalled();
+                expect(dispatchEvent.calls[0].args[0]).toBe(eventType);
+                expect(dispatchEvent.calls[0].args[1].center.pageX).toBe(event.pageX);
+                expect(dispatchEvent.calls[0].args[1].center.pageY).toBe(event.pageY);
+                expect(dispatchEvent.calls[0].args[1].srcEvent).toBe(event.source);
+            });
+
+            it('should not dispatch mousemove events if dragging', function() {
+                handlers[EventTypes.DRAG_START]({ gesture: {} });
+                expect(dispatchEvent.calls.length).toBe(1);
+
+                handlers[EventTypes.MOUSE_MOVE]({});
+                expect(dispatchEvent.calls.length).toBe(1);
+
+                handlers[EventTypes.DRAG_END]({ gesture: {} });
+                expect(dispatchEvent.calls.length).toBe(2);
+
+                handlers[EventTypes.MOUSE_MOVE]({});
+                expect(dispatchEvent.calls.length).toBe(3);
+            });
+
+            it('should not dispatch mousemove events if transforming', function() {
+                handlers[EventTypes.TRANSFORM_START]({});
+                expect(dispatchEvent.calls.length).toBe(1);
+
+                handlers[EventTypes.MOUSE_MOVE]({});
+                expect(dispatchEvent.calls.length).toBe(1);
+
+                handlers[EventTypes.TRANSFORM_END]({});
+                expect(dispatchEvent.calls.length).toBe(2);
+
+                handlers[EventTypes.MOUSE_MOVE]({});
+                expect(dispatchEvent.calls.length).toBe(3);
             });
 
             it('should dispatch mouse wheel events', function() {
