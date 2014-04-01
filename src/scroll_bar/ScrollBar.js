@@ -85,7 +85,7 @@ define(function(require) {
 
         this._viewportHeight = this._layout.getVisiblePosition().bottom - this._layout.getVisiblePosition().top;
 
-        this._virtualHeight = this._layout.getSize().height;
+        this._virtualHeight = this._layout.getSize().height - this._viewportHeight;
         
         this._scrollableVirtualHeight = this._layout.getSize().height;
 
@@ -236,6 +236,10 @@ define(function(require) {
             if (!positionOfInterest) {
                 positionOfInterest = 0;
             }
+            
+            if (positionOfInterest === this._virtualHeight) {
+                return;
+            }
 
             this._scrollList.scrollToPosition({
                 y: positionOfInterest
@@ -276,6 +280,8 @@ define(function(require) {
          */
         _adjustScale: function() {
             this._scale = this._scrollList.getScale();
+            this._viewportHeight = this._layout.getVisiblePosition().bottom - this._layout.getVisiblePosition().top;
+            this._virtualHeight = this._layout.getSize().height - this._viewportHeight;
             this._effectiveVirtualHeight = this._layout.getSize().height * this._scale;
             this._scrollbarHeight = this._calculateScrollBarHeight();
             this._elements.scrollbar.style.height = this._scrollbarHeight + 'px';
