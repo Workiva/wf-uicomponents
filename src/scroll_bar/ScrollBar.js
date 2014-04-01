@@ -158,9 +158,9 @@ define(function(require) {
 
         /**
          * Destruct the ScrollBar created HTML elements
-         * @method ScrollBar#deinitialize
+         * @method ScrollBar#dispose
          */
-        deinitialize: function() {
+        dispose: function() {
             this._elements.scrollbarContainer.removeChild(this._elements.scrollbar);
             this._parent.removeChild(this._elements.scrollbarContainer);
         },
