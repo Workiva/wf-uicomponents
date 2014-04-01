@@ -88,6 +88,8 @@ define(function(require) {
         this._virtualHeight = this._layout.getSize().height - this._viewportHeight;
         
         this._scrollableVirtualHeight = this._layout.getSize().height;
+        
+        this._listMap = this._scrollList.getListMap();
 
         this._setUpDOM();
 
@@ -111,7 +113,7 @@ define(function(require) {
         });
 
         // Match the scroll bar positioning to the users scrolling
-        this._scrollList.getListMap().onTranslationChanged(function() {
+        this._listMap.onTranslationChanged(function() {
             if (that._scrollbarScrolling) {
                 return;
             }
@@ -121,7 +123,7 @@ define(function(require) {
         });
 
         // Make necessary adjustments when the users zooms in or out
-        this._scrollList.getListMap().onScaleChanged(function() {
+        this._listMap.onScaleChanged(function() {
             that._adjustScale();
         });
 
@@ -237,13 +239,14 @@ define(function(require) {
                 positionOfInterest = 0;
             }
             
-            if (positionOfInterest === this._virtualHeight) {
-                return;
-            }
+            var x = -this._listMap.getCurrentTransformState().translateX;
 
-            this._scrollList.scrollToPosition({
-                y: positionOfInterest
+            this._listMap.transform({
+                x: x,
+                y: -positionOfInterest,
+                scale: 1
             });
+            this._scrollList.render();
         },
 
         /**
