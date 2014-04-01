@@ -83,9 +83,11 @@ define(function(require) {
 
         this._TOTAL_ITEMS = scrollList.getItemSizeCollection()._items.length;
 
-        this._viewportHeight = this._layout.getViewportSize().height;
+        this._viewportHeight = this._layout.getVisiblePosition().bottom - this._layout.getVisiblePosition().top;
 
         this._virtualHeight = this._layout.getSize().height;
+        
+        this._scrollableVirtualHeight = this._layout.getSize().height;
 
         this._setUpDOM();
 
@@ -212,7 +214,7 @@ define(function(require) {
         _placeScrollBar: function() {
             var currentPosition = this._layout.getVisiblePosition().top;
             var availableScrollbarHeight = this._viewportHeight - this._scrollbarHeight;
-            var scrollableVirtualHeight = this._virtualHeight - (this._layout.getVisiblePosition().bottom - this._layout.getVisiblePosition().top);
+            var scrollableVirtualHeight = this._scrollableVirtualHeight - (this._layout.getVisiblePosition().bottom - this._layout.getVisiblePosition().top);
             var translatedPosition = availableScrollbarHeight / scrollableVirtualHeight * currentPosition;
             this._elements.scrollbar.style.top = translatedPosition + 'px';
         },
@@ -263,7 +265,7 @@ define(function(require) {
         _calculateScrollBarHeight: function() {
             // Calculate the size of the scrollbar depending on the virtual height
             // The scrollbar shouldn't be shorter than MIN_HEIGHT
-            var MIN_HEIGHT = this._options.minHeight || 16;
+            var MIN_HEIGHT = this._options.minHeight || 8;
             var visibleArea = this._layout.getVisiblePosition().bottom - this._layout.getVisiblePosition().top;
             var height =  Math.max(MIN_HEIGHT, (visibleArea / this._virtualHeight) * visibleArea);
             return height;
