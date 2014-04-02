@@ -17,6 +17,16 @@
 define(function() {
     'use strict';
 
+    function getHitData(itemLayout, position, bounds) {
+        return {
+            index: itemLayout.itemIndex,
+            position: {
+                x: Math.floor((position.x - bounds.left) / itemLayout.scaleToFit),
+                y: Math.floor((position.y - bounds.top) / itemLayout.scaleToFit)
+            }
+        };
+    }
+
     /**
      * @classdesc
      *
@@ -42,15 +52,14 @@ define(function() {
          * @param {TransformState} state - The current transform state of the item map.
          * @return {boolean|{ index: number, position: { x: number, y: number }}}
          */
-        testItemMap: function(scrollList, event, currentState) {
+        testItemMap: function(scrollList, event, state) {
             if (!event.position) {
                 return false;
             }
 
             var position = event.position;
-            var mapScale = currentState.scale;
-            var scrollListScale = scrollList.getScale();
 
+            var mapScale = state.scale;
             var layout = scrollList.getLayout();
             var currentItemIndex = layout.getCurrentItemIndex();
             var itemLayout = layout.getItemLayout(currentItemIndex);
@@ -59,22 +68,16 @@ define(function() {
             // to center and position content, overriding the layout stuff.
             // Ideally this logic would live in the layout.
             var validBounds = {
-                top: currentState.translateY + itemLayout.paddingTop * mapScale,
-                right: currentState.translateX + (itemLayout.outerWidth - itemLayout.paddingRight) * mapScale,
-                bottom: currentState.translateY + (itemLayout.outerHeight - itemLayout.paddingBottom) * mapScale,
-                left: currentState.translateX + itemLayout.paddingLeft * mapScale
+                top: state.translateY + itemLayout.paddingTop * mapScale,
+                right: state.translateX + (itemLayout.outerWidth - itemLayout.paddingRight) * mapScale,
+                bottom: state.translateY + (itemLayout.outerHeight - itemLayout.paddingBottom) * mapScale,
+                left: state.translateX + itemLayout.paddingLeft * mapScale
             };
 
             if (position.x >= validBounds.left && position.x <= validBounds.right &&
                 position.y >= validBounds.top && position.y <= validBounds.bottom) {
 
-                return {
-                    index: currentItemIndex,
-                    position: {
-                        x: Math.floor((position.x - validBounds.left) / scrollListScale),
-                        y: Math.floor((position.y - validBounds.top) / scrollListScale)
-                    }
-                };
+                return getHitData(itemLayout, position, validBounds);
             }
 
             return false;
@@ -98,7 +101,6 @@ define(function() {
 
             var position = event.position;
             var mapScale = state.scale;
-            var scrollListScale = scrollList.getScale();
 
             var layout = scrollList.getLayout();
             var undoLeftBy = (layout.getViewportSize().width - layout.getSize().width) / 2;
@@ -122,13 +124,7 @@ define(function() {
                 if (position.x >= validBounds.left && position.x <= validBounds.right &&
                     position.y >= validBounds.top && position.y <= validBounds.bottom) {
 
-                    return {
-                        index: i,
-                        position: {
-                            x: Math.floor((position.x - validBounds.left) / scrollListScale),
-                            y: Math.floor((position.y - validBounds.top) / scrollListScale)
-                        }
-                    };
+                    return getHitData(itemLayout, position, validBounds);
                 }
             }
 
