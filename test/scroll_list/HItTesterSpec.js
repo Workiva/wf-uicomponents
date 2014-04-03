@@ -95,13 +95,13 @@ define(function(require) {
                 itemLayout.outerWidth = 100;
                 itemLayout.outerHeight = 100;
                 itemLayout.scaleToFit = 0.5;
-                event.position = { x: 50, y: 50 };
-                var state = new TransformState({ translateX: 0, translateY: 0, scale: 1 });
+                event.position = { x: 300, y: 300 };
+                var state = new TransformState({ translateX: 100, translateY: 100, scale: 2 });
                 var result = HitTester.testItemMap(scrollList, event, state);
 
                 expect(result).toEqual({
                     index: itemLayout.itemIndex,
-                    position: { x: 100, y: 100 }
+                    position: { x: 200, y: 200 }
                 });
             });
         });
@@ -200,13 +200,13 @@ define(function(require) {
                 itemLayout.bottom = 100;
                 itemLayout.left = 0;
                 itemLayout.scaleToFit = 0.5;
-                event.position = { x: 50, y: 50 };
-                var state = new TransformState({ translateX: 0, translateY: 0, scale: 1 });
+                event.position = { x: 300, y: 300 };
+                var state = new TransformState({ translateX: 100, translateY: 100, scale: 2 });
                 var result = HitTester.testListMap(scrollList, event, state);
 
                 expect(result).toEqual({
                     index: itemLayout.itemIndex,
-                    position: { x: 100, y: 100 }
+                    position: { x: 200, y: 200 }
                 });
             });
         });

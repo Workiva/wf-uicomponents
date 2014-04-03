@@ -17,12 +17,13 @@
 define(function() {
     'use strict';
 
-    function getHitData(itemLayout, position, bounds) {
+    function getHitData(itemLayout, position, bounds, mapScale) {
+        var scaleFactor = mapScale * itemLayout.scaleToFit;
         return {
             index: itemLayout.itemIndex,
             position: {
-                x: Math.floor((position.x - bounds.left) / itemLayout.scaleToFit),
-                y: Math.floor((position.y - bounds.top) / itemLayout.scaleToFit)
+                x: Math.floor((position.x - bounds.left) / scaleFactor),
+                y: Math.floor((position.y - bounds.top) / scaleFactor)
             }
         };
     }
@@ -77,7 +78,7 @@ define(function() {
             if (position.x >= validBounds.left && position.x <= validBounds.right &&
                 position.y >= validBounds.top && position.y <= validBounds.bottom) {
 
-                return getHitData(itemLayout, position, validBounds);
+                return getHitData(itemLayout, position, validBounds, mapScale);
             }
 
             return false;
@@ -124,7 +125,7 @@ define(function() {
                 if (position.x >= validBounds.left && position.x <= validBounds.right &&
                     position.y >= validBounds.top && position.y <= validBounds.bottom) {
 
-                    return getHitData(itemLayout, position, validBounds);
+                    return getHitData(itemLayout, position, validBounds, mapScale);
                 }
             }
 
