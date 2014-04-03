@@ -17,6 +17,17 @@
 define(function() {
     'use strict';
 
+    function getHitData(itemLayout, position, bounds, mapScale) {
+        var scaleFactor = mapScale * itemLayout.scaleToFit;
+        return {
+            index: itemLayout.itemIndex,
+            position: {
+                x: Math.floor((position.x - bounds.left) / scaleFactor),
+                y: Math.floor((position.y - bounds.top) / scaleFactor)
+            }
+        };
+    }
+
     /**
      * @classdesc
      *
@@ -40,16 +51,16 @@ define(function() {
          * @param {ScrollList} scrollList
          * @param {InteractionEvent} event - The interaction event under test.
          * @param {TransformState} state - The current transform state of the item map.
-         * @return {false|{ index: number, position: { x: number, y: number }}}
+         * @return {boolean|{ index: number, position: { x: number, y: number }}}
          */
-        testItemMap: function(scrollList, event, currentState) {
+        testItemMap: function(scrollList, event, state) {
             if (!event.position) {
                 return false;
             }
 
             var position = event.position;
-            var scale = currentState.scale;
 
+            var mapScale = state.scale;
             var layout = scrollList.getLayout();
             var currentItemIndex = layout.getCurrentItemIndex();
             var itemLayout = layout.getItemLayout(currentItemIndex);
@@ -58,22 +69,16 @@ define(function() {
             // to center and position content, overriding the layout stuff.
             // Ideally this logic would live in the layout.
             var validBounds = {
-                top: currentState.translateY + itemLayout.paddingTop * scale,
-                right: currentState.translateX + (itemLayout.outerWidth - itemLayout.paddingRight) * scale,
-                bottom: currentState.translateY + (itemLayout.outerHeight - itemLayout.paddingBottom) * scale,
-                left: currentState.translateX + itemLayout.paddingLeft * scale
+                top: state.translateY + itemLayout.paddingTop * mapScale,
+                right: state.translateX + (itemLayout.outerWidth - itemLayout.paddingRight) * mapScale,
+                bottom: state.translateY + (itemLayout.outerHeight - itemLayout.paddingBottom) * mapScale,
+                left: state.translateX + itemLayout.paddingLeft * mapScale
             };
 
             if (position.x >= validBounds.left && position.x <= validBounds.right &&
                 position.y >= validBounds.top && position.y <= validBounds.bottom) {
 
-                return {
-                    index: currentItemIndex,
-                    position: {
-                        x: Math.floor((position.x - validBounds.left) / scale),
-                        y: Math.floor((position.y - validBounds.top) / scale)
-                    }
-                };
+                return getHitData(itemLayout, position, validBounds, mapScale);
             }
 
             return false;
@@ -88,7 +93,7 @@ define(function() {
          * @param {ScrollList} scrollList
          * @param {InteractionEvent} event - The interaction event under test.
          * @param {TransformState} state - The current transform state of the item map.
-         * @return {false|{ index: number, position: { x: number, y: number }}}
+         * @return {boolean|{ index: number, position: { x: number, y: number }}}
          */
         testListMap: function(scrollList, event, state) {
             if (!event.position) {
@@ -96,7 +101,7 @@ define(function() {
             }
 
             var position = event.position;
-            var scale = state.scale;
+            var mapScale = state.scale;
 
             var layout = scrollList.getLayout();
             var undoLeftBy = (layout.getViewportSize().width - layout.getSize().width) / 2;
@@ -111,22 +116,16 @@ define(function() {
             for (i = visibleRange.startIndex; i <= visibleRange.endIndex; i++) {
                 itemLayout = layout.getItemLayout(i);
                 validBounds = {
-                    top: state.translateY + (itemLayout.top + itemLayout.paddingTop) * scale,
-                    right: state.translateX + (itemLayout.right - undoLeftBy - itemLayout.paddingRight) * scale,
-                    bottom: state.translateY + (itemLayout.bottom - itemLayout.paddingBottom) * scale,
-                    left: state.translateX + (itemLayout.left - undoLeftBy + itemLayout.paddingLeft) * scale
+                    top: state.translateY + (itemLayout.top + itemLayout.paddingTop) * mapScale,
+                    right: state.translateX + (itemLayout.right - undoLeftBy - itemLayout.paddingRight) * mapScale,
+                    bottom: state.translateY + (itemLayout.bottom - itemLayout.paddingBottom) * mapScale,
+                    left: state.translateX + (itemLayout.left - undoLeftBy + itemLayout.paddingLeft) * mapScale
                 };
 
                 if (position.x >= validBounds.left && position.x <= validBounds.right &&
                     position.y >= validBounds.top && position.y <= validBounds.bottom) {
 
-                    return {
-                        index: i,
-                        position: {
-                            x: Math.floor((position.x - validBounds.left) / scale),
-                            y: Math.floor((position.y - validBounds.top) / scale)
-                        }
-                    };
+                    return getHitData(itemLayout, position, validBounds, mapScale);
                 }
             }
 
