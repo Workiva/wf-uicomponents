@@ -82,12 +82,14 @@ define(function(require) {
             e1.initEvent('mousedown', true, false);
             var e2 = document.createEvent('Event');
             e2.initEvent('mousemove', true, false);
-            spyOn(scrollList, 'scrollToPosition');
+            
+            var listMap = scrollList.getListMap();
+            spyOn(listMap, 'transform');
 
             scrollBarEl.dispatchEvent(e1);
             scrollBarEl.dispatchEvent(e2);
 
-            // expect(scrollList.scrollToPosition).toHaveBeenCalled();
+            expect(listMap.transform).toHaveBeenCalled();
         });
 
         it('should adjust the position of the scrollbar when the scrollList translation changes', function() {

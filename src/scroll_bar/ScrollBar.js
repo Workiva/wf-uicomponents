@@ -239,7 +239,7 @@ define(function(require) {
                 positionOfInterest = 0;
             }
             
-            var x = -this._listMap.getCurrentTransformState().translateX;
+            var x = this._listMap.getCurrentTransformState().translateX;
 
             this._listMap.transform({
                 x: x,
@@ -273,8 +273,8 @@ define(function(require) {
             // Calculate the size of the scrollbar depending on the virtual height
             // The scrollbar shouldn't be shorter than MIN_HEIGHT
             var MIN_HEIGHT = this._options.minHeight || 8;
-            var visibleArea = this._layout.getVisiblePosition().bottom - this._layout.getVisiblePosition().top;
-            var height =  Math.max(MIN_HEIGHT, (visibleArea / this._virtualHeight) * visibleArea);
+            var height =  Math.max(MIN_HEIGHT, (this._viewportHeight / this._scrollableVirtualHeight) * this._layout.getViewportSize().height);
+
             return height;
         },
 
