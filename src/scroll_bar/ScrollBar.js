@@ -18,7 +18,7 @@ define(function(require) {
     'use strict';
 
     var requestAnimFrame = require('wf-js-common/requestAnimationFrame');
-    var _ = require('lodash');
+    var EventTypes = require('wf-js-uicomponents/awesome_map/EventTypes');
 
     /**
      * Creates a new ScrollBar with the given ScrollList and options.
@@ -102,12 +102,6 @@ define(function(require) {
         // Set the initial scale
         this._scale = this._scrollList.getScale();
 
-        // Set the effective virtual height.
-        // This is a scaled version of the height of the scrollList
-        this._effectiveVirtualHeight = this._virtualHeight * (1 / this._scale);
-
-        this._scrollbarHeight = this._calculateScrollBarHeight();
-
         // Get the initial position, in case it's not at 0, and set the scrollbar position
         requestAnimFrame(function() {
             that._placeScrollBar(that, that._elements.scrollbar);
@@ -119,13 +113,14 @@ define(function(require) {
                 return;
             }
             requestAnimFrame(function() {
-                that._placeScrollBar(that._elements.scrollbar);
+                that._placeScrollBar();
             });
         });
 
         // Make necessary adjustments when the users zooms in or out
         this._listMap.onScaleChanged(function() {
             that._adjustScale();
+            that._placeScrollBar();
         });
 
         this._scrollList.onItemsInserted(function() {
@@ -134,10 +129,17 @@ define(function(require) {
             that._placeScrollBar();
         });
         
-        // Make adjustments when the window is resized
-        window.addEventListener('resize', _.debounce(function() {
-            that._adjustScale();
-        },500));
+        // Make adjustments when the scrollList is resized
+        this._scrollList.onInteraction(function(scrollList, args) {
+            if (args.event.type === EventTypes.RESIZE) {
+                that._resize = true;
+            }
+            
+            if (args.event.type === EventTypes.RELEASE && that._resize === true) {
+                that._adjustScale();
+                that._resize = false;
+            }
+        });
 
         // Attach handlers for scrolling the ScrollBar
         this._elements.scrollbar.addEventListener('mousedown', function(event) {
@@ -222,7 +224,7 @@ define(function(require) {
         _placeScrollBar: function() {
             var currentPosition = this._layout.getVisiblePosition().top;
             var availableScrollbarHeight = this._viewportHeight - this._scrollbarHeight;
-            var scrollableVirtualHeight = this._scrollableVirtualHeight - (this._layout.getVisiblePosition().bottom - this._layout.getVisiblePosition().top);
+            var scrollableVirtualHeight = this._virtualHeight;
             var translatedPosition = availableScrollbarHeight / scrollableVirtualHeight * currentPosition;
             this._elements.scrollbar.style.top = translatedPosition + 'px';
         },
@@ -279,7 +281,7 @@ define(function(require) {
             // Calculate the size of the scrollbar depending on the virtual height
             // The scrollbar shouldn't be shorter than MIN_HEIGHT
             var MIN_HEIGHT = this._options.minHeight || 8;
-            var height =  Math.max(MIN_HEIGHT, (this._viewportHeight / this._scrollableVirtualHeight) * this._layout.getViewportSize().height);
+            var height = Math.max(MIN_HEIGHT, (this._viewportHeight / this._scrollableVirtualHeight) * this._layout.getViewportSize().height);
 
             return height;
         },
@@ -291,7 +293,7 @@ define(function(require) {
             this._scale = this._scrollList.getScale();
             this._viewportHeight = this._layout.getVisiblePosition().bottom - this._layout.getVisiblePosition().top;
             this._virtualHeight = this._layout.getSize().height - this._viewportHeight;
-            this._effectiveVirtualHeight = this._layout.getSize().height * this._scale;
+            this._scrollableVirtualHeight = this._layout.getSize().height;
             this._scrollbarHeight = this._calculateScrollBarHeight();
             this._elements.scrollbar.style.height = this._scrollbarHeight + 'px';
             this._elements.scrollbarContainer.style.height = this._layout.getViewportSize().height + 'px';
