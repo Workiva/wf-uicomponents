@@ -200,13 +200,13 @@ define(function(require) {
 
             // Remove hammer event handlers.
             for (eventType in handlers) {
-                if (eventType !== EventTypes.MOUSE_WHEEL && eventType !== EventTypes.RESIZE) {
+                if (eventType.indexOf('mouse') === -1 && eventType !== EventTypes.RESIZE) {
                     this._hammer.off(eventType, handlers[eventType]);
                 }
             }
 
             this._mouseAdapter.dispose();
-
+            this._host.removeEventListener(EventTypes.MOUSE_MOVE, this._eventHandlers[EventTypes.MOUSE_MOVE], false);
             dependencies.getWindow().removeEventListener(this._resizeEventType, this._eventHandlers[EventTypes.RESIZE], false);
 
             // Destroy the instance.
@@ -385,9 +385,30 @@ define(function(require) {
             };
         },
 
+        _getMouseMoveHandler: function() {
+            var self = this;
+            /**
+             * Handler for mouse move events.
+             * @param {Object} event - The source event.
+             * @private
+             */
+            return function(event) {
+                if (self._dragging || self._transforming) {
+                    return;
+                }
+                var gesture = {
+                    center: {
+                        pageX: event.pageX,
+                        pageY: event.pageY
+                    },
+                    srcEvent: event.source
+                };
+                self._dispatchEvent(EventTypes.MOUSE_MOVE, gesture);
+            };
+        },
+
         _getMouseWheelHandler: function(eventType) {
             var self = this;
-
             /**
              * Handler for mouse wheel events.
              * @param {Object} event - The source event.
@@ -576,6 +597,7 @@ define(function(require) {
             handlers[EventTypes.DRAG_END] = this._getDragEndHandler();
             handlers[EventTypes.DRAG_START] = this._getDragStartHandler();
             handlers[EventTypes.HOLD] = this._getHoldHandler();
+            handlers[EventTypes.MOUSE_MOVE] = this._getMouseMoveHandler();
             handlers[EventTypes.MOUSE_WHEEL] = this._getMouseWheelHandler(EventTypes.MOUSE_WHEEL);
             handlers[EventTypes.MOUSE_WHEEL_START] = this._getMouseWheelHandler(EventTypes.MOUSE_WHEEL_START);
             handlers[EventTypes.MOUSE_WHEEL_END] = this._getMouseWheelHandler(EventTypes.MOUSE_WHEEL_END);
@@ -608,11 +630,12 @@ define(function(require) {
                 hammer.on(eventType, handlers[eventType]);
             });
 
-            // Initialize the mouse adapter.
+            // Initialize mouse event handlers.
             this._mouseAdapter = dependencies.createMouseAdapter(this._host);
             this._mouseAdapter.onMouseWheel(handlers[EventTypes.MOUSE_WHEEL]);
             this._mouseAdapter.onMouseWheelStart(handlers[EventTypes.MOUSE_WHEEL_START]);
             this._mouseAdapter.onMouseWheelEnd(handlers[EventTypes.MOUSE_WHEEL_END]);
+            this._host.addEventListener(EventTypes.MOUSE_MOVE, handlers[EventTypes.MOUSE_MOVE]);
 
             // Initialize the window resize handler.
             dependencies.getWindow().addEventListener(this._resizeEventType, handlers[EventTypes.RESIZE]);

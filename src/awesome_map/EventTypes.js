@@ -57,6 +57,12 @@ define(function() {
         HOLD: 'hold',
 
         /**
+         * User generates a mousemove event on desktop.
+         * @type {string}
+         */
+        MOUSE_MOVE: 'mousemove',
+
+        /**
          * User generates a mousewheel event on desktop.
          * @type {string}
          */
