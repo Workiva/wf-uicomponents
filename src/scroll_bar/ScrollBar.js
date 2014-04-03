@@ -18,6 +18,7 @@ define(function(require) {
     'use strict';
 
     var requestAnimFrame = require('wf-js-common/requestAnimationFrame');
+    var _ = require('lodash');
 
     /**
      * Creates a new ScrollBar with the given ScrollList and options.
@@ -132,6 +133,11 @@ define(function(require) {
             that._adjustScale();
             that._placeScrollBar();
         });
+        
+        // Make adjustments when the window is resized
+        window.addEventListener('resize', _.debounce(function() {
+            that._adjustScale();
+        },500));
 
         // Attach handlers for scrolling the ScrollBar
         this._elements.scrollbar.addEventListener('mousedown', function(event) {
@@ -205,7 +211,7 @@ define(function(require) {
             this._adjustScale();
 
             // Set the container height to the viewport height
-            scrollbarContainerEL.style.height = this._viewportHeight + 'px';
+            scrollbarContainerEL.style.height = this._layout.getViewportSize().height + 'px';
             // Set the scrollbar height
             scrollbarEL.style.height = this._scrollbarHeight + 'px';
         },
@@ -288,6 +294,7 @@ define(function(require) {
             this._effectiveVirtualHeight = this._layout.getSize().height * this._scale;
             this._scrollbarHeight = this._calculateScrollBarHeight();
             this._elements.scrollbar.style.height = this._scrollbarHeight + 'px';
+            this._elements.scrollbarContainer.style.height = this._layout.getViewportSize().height + 'px';
         }
 
     };
