@@ -93,7 +93,9 @@ define(function(require) {
         this._listMap = this._scrollList.getListMap();
 
         this._setUpDOM();
-
+        
+        this._availableScrollbarHeight = this._viewportHeight - this._scrollbarHeight;
+        
         // Set scrollbarScrolling to initially false
         this._scrollbarScrolling = false;
 
@@ -223,9 +225,7 @@ define(function(require) {
          */
         _placeScrollBar: function() {
             var currentPosition = this._layout.getVisiblePosition().top;
-            var availableScrollbarHeight = this._viewportHeight - this._scrollbarHeight;
-            var scrollableVirtualHeight = this._virtualHeight;
-            var translatedPosition = availableScrollbarHeight / scrollableVirtualHeight * currentPosition;
+            var translatedPosition = this._availableScrollbarHeight / this._virtualHeight * currentPosition;
             this._elements.scrollbar.style.top = translatedPosition + 'px';
         },
 
@@ -297,6 +297,7 @@ define(function(require) {
             this._scrollbarHeight = this._calculateScrollBarHeight();
             this._elements.scrollbar.style.height = this._scrollbarHeight + 'px';
             this._elements.scrollbarContainer.style.height = this._layout.getViewportSize().height + 'px';
+            this._availableScrollbarHeight = this._viewportHeight - this._scrollbarHeight;
         }
 
     };
