@@ -54,23 +54,34 @@ define(function(require) {
         options.scrollbarClass = 'scroll-bar';
         options.scrollBarContainerClass = 'scroll-bar-container';
 
-        beforeEach(function() {
-            parentEl = document.getElementById('scroll-bar-parent');
-
+        parentEl = document.getElementById('scroll-bar-parent');
+        var initialize = function() {
             scrollBar = new ScrollBar(scrollList, parentEl, options);
-        });
+        };
 
         afterEach(function() {
             $parent.empty();
         });
 
         it('should initialize the ScrollBar with the given parameters', function() {
+            initialize();
             expect(scrollBar._parent).toEqual(parentEl);
             expect(scrollBar._scrollList).toEqual(scrollList);
             expect(scrollBar._options).toEqual(options);
         });
+        
+        it('should throw an error if initialized without a parent element', function() {
+            expect(function() { scrollBar = new ScrollBar(scrollList, null, options); }).toThrow(
+                new Error('ScrollBar#ScrollBar: parent is required.'));
+        });
+        
+        it('should throw an error if initialized without a scrollList', function() {
+            expect(function() { scrollBar = new ScrollBar(null, parentEl, options); }).toThrow(
+                new Error('ScrollBar#ScrollBar: scrollList is required'));
+        });
 
         it('should set up the DOM with the scrollbar and container with the given ids', function() {
+            initialize();
             var scrollBarEl =  document.getElementById(options.scrollbarId);
             var scrollBarContainerEl = document.getElementById(options.scrollbarContainerId);
 
@@ -79,6 +90,7 @@ define(function(require) {
         });
         
         it('should set up the DOM with the scrollbar and container with the given classes', function() {
+            initialize();
             var scrollBarEl = document.getElementsByClassName(options.scrollbarClass);
             var scrollBarContainerEl = document.getElementsByClassName(options.scrollBarContainerClass);
  
@@ -87,6 +99,7 @@ define(function(require) {
         });
 
         it('should scroll to position when the scrollBar is moved', function() {
+            initialize();
             var scrollBarEl = document.getElementById('scroll-bar');
             var e1 = document.createEvent('Event');
             e1.initEvent('mousedown', true, false);
@@ -103,6 +116,7 @@ define(function(require) {
         });
 
         it('should adjust the position of the scrollbar when the scrollList translation changes', function() {
+            initialize();
             spyOn(scrollBar, '_placeScrollBar');
             runs(function() {
                 scrollList.scrollToPosition({y: 400});
@@ -114,12 +128,14 @@ define(function(require) {
         });
 
         it('should adjust the scrollbar size and the scale variables when the scale changes', function() {
+            initialize();
             spyOn(scrollBar, '_adjustScale');
             scrollList.zoomTo({scale: 1.2});
             expect(scrollBar._adjustScale).toHaveBeenCalled();
         });
 
         it('should adjust the scrollbar size and position when new items are inserted into the scrollList', function () {
+            initialize();
             spyOn(scrollBar, '_adjustScale');
             spyOn(scrollBar, '_placeScrollBar');
             scrollList.insertItems(0, [{height: 400, width: 400}, {height: 600, width: 400}]);

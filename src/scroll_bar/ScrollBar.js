@@ -64,14 +64,14 @@ define(function(require) {
         var offset;
         var that = this;
 
-        if (scrollList === undefined) {
+        if (!scrollList) {
             throw new Error('ScrollBar#ScrollBar: scrollList is required');
         }
         else {
             this._scrollList = scrollList;
         }
 
-        if (parent === undefined) {
+        if (!parent) {
             throw new Error('ScrollBar#ScrollBar: parent is required.');
         }
         else {
