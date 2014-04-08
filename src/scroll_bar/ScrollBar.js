@@ -198,13 +198,13 @@ define(function(require) {
                 scrollbarEL.setAttribute('id', this._options.scrollbarId);
             }
             if (this._options.scrollbarClass) {
-                scrollbarEL.classNames += this._options.scrollbarClass;
+                scrollbarEL.className += this._options.scrollbarClass;
             }
             if (this._options.scrollbarContainerId) {
                 scrollbarContainerEL.setAttribute('id', this._options.scrollbarContainerId);
             }
             if (this._options.scrollbarContainerClass) {
-                scrollbarContainerEL.classnames += this._options.scrollbarContainerClass;
+                scrollbarContainerEL.className += this._options.scrollbarContainerClass;
             }
 
             // Append the scrollbar and it's parent container to the given parent element

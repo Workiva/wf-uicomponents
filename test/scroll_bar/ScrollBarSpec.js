@@ -51,6 +51,8 @@ define(function(require) {
         var options = {};
         options.scrollbarId = 'scroll-bar';
         options.scrollbarContainerId = 'scroll-bar-container';
+        options.scrollbarClass = 'scroll-bar';
+        options.scrollBarContainerClass = 'scroll-bar-container';
 
         beforeEach(function() {
             parentEl = document.getElementById('scroll-bar-parent');
@@ -72,6 +74,14 @@ define(function(require) {
             var scrollBarEl =  document.getElementById(options.scrollbarId);
             var scrollBarContainerEl = document.getElementById(options.scrollbarContainerId);
 
+            expect(scrollBarEl).not.toBe(undefined);
+            expect(scrollBarContainerEl).not.toBe(undefined);
+        });
+        
+        it('should set up the DOM with the scrollbar and container with the given classes', function() {
+            var scrollBarEl = document.getElementsByClassName(options.scrollbarClass);
+            var scrollBarContainerEl = document.getElementsByClassName(options.scrollBarContainerClass);
+ 
             expect(scrollBarEl).not.toBe(undefined);
             expect(scrollBarContainerEl).not.toBe(undefined);
         });
