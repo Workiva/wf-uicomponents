@@ -82,7 +82,8 @@ define(function(require) {
 
         this._layout = scrollList.getLayout();
 
-        this._TOTAL_ITEMS = scrollList.getItemSizeCollection()._items.length;
+        this._TOTAL_ITEMS = scrollList.getItemSizeCollection ? scrollList.getItemSizeCollection()._items.length :
+                            scrollList.getItemMetadata().length;
 
         this._viewportHeight = this._layout.getVisiblePosition().bottom - this._layout.getVisiblePosition().top;
 

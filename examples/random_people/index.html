@@ -9,7 +9,7 @@
 <body>
     <div id="host"></div>
     <div id="current-position"></div>
-    <div id="scroll-bar"></div>
+    <div id="scroll-bar-parent"></div>
 
     <script id="person-template" type="text/template">
         <div class='outer-person'>
@@ -38,6 +38,6 @@
     <script src="//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
     <script src="/examples/vendor/mustache.js"></script>
     <script src="/examples/vendor/wf-uicomponents.min.js"></script>
-    <script src="random_people.js"></script>
-</body>
+    <script data-main="/examples/random_people/random_people.js" src="/bower_components/requirejs/require.js"></script>
+    <script src="../require.config.js"></script></body>
 </html>

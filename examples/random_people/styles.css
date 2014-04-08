@@ -23,13 +23,17 @@ div#host {
     background-color: #fff;
 }
 
-div#scroll-bar {
-    cursor: default;
+#scrollbar {
+    width: 10px;
+    background-color: gray;
     position: absolute;
-    right: 2px;
-    width: 16px;
-    border: 1px solid black;
-    height: 100px;
+    z-index: 3;
+}
+
+#scrollbar-container {
+    width: 10px;
+    position: absolute;
+    right: 5px;
 }
 
 .loading {
