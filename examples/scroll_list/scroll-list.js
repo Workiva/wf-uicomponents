@@ -2,6 +2,7 @@ require([
     'hammerjs',
     'jquery',
     'wf-js-uicomponents/scroll_list/ScrollList',
+    'wf-js-uicomponents/scroll_bar/ScrollBar',
     'wf-js-uicomponents/layouts/ItemSizeCollection',
     'wf-js-uicomponents/awesome_map/BoundaryInterceptor',
     'wf-js-uicomponents/awesome_map/ScaleInterceptor',
@@ -17,6 +18,7 @@ require([
     Hammer,
     $,
     ScrollList,
+    ScrollBar,
     ItemSizeCollection,
     BoundaryInterceptor,
     ScaleInterceptor,
@@ -136,6 +138,15 @@ require([
         padding: 1,
         scaleLimits: { minimum: 0.25, maximum: 3 }
     });
+
+    // If on desktop, instantiate a scrollBar
+    if (DeviceInfo.desktop) {
+        var parent = document.getElementById('scrollbar-parent');
+        var scrollbarOptions = {};
+        scrollbarOptions.scrollbarId = 'scrollbar';
+        scrollbarOptions.scrollbarContainerId = 'scrollbar-container';
+        window.scrollBar = new ScrollBar(scrollList, parent, scrollbarOptions);
+    }
 
     scrollList.onContentRequested(function(sender, args) {
         var itemIndex = args.itemIndex;

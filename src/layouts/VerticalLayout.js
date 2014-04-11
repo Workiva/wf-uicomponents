@@ -600,7 +600,7 @@ define(function(require) {
             var i;
 
             var startIndex = -1;
-            var endIndex = -1;
+            var endIndex = Number.NEGATIVE_INFINITY;
             var result;
 
             for (i = itemRange.startIndex; i <= itemRange.endIndex; i++) {

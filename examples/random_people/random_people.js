@@ -1,10 +1,18 @@
-(function() {
+require([
+    'wf-js-uicomponents/scroll_bar/ScrollBar',
+], function(
+        ScrollBar
+    ) {
     /* globals $: true */
     /* globals Mustache: true */
     /* globals wf: true */
     var personTemplate = $('#person-template').html();
     Mustache.parse(personTemplate);
     var cache = {};
+    var TOTAL_ITEMS = 1000,
+        MIN_NUMBER_OF_VIRTUAL_ITEMS = 50;
+
+
 
     function randomUserData(seed, onSuccess, onError) {
         if (cache[seed]){
@@ -27,7 +35,7 @@
 
     var items = (function(){
         var items = [];
-        for (var i = 0; i < 10000; i++) {
+        for (var i = 0; i < TOTAL_ITEMS; i++) {
             items.push({ width: 600, height: 300 });
         }
         return items;
@@ -38,8 +46,8 @@
         gap: 10,
         mode: 'flow',
         fit: 'auto',
-        minNumberOfVirtualItems: 50,
-        padding: 10,
+        minNumberOfVirtualItems: MIN_NUMBER_OF_VIRTUAL_ITEMS,
+        padding: 0,
         scaleLimits: { minimum: 0.25, maximum: 3 }
     });
 
@@ -82,11 +90,23 @@
     scrollList.onPlaceholderRendered(function(sender, args) {
         var container = args.placeholder.contentContainer;
         $(container).addClass('loading');
-        // var el = document.createElement('img');
-        // el.className = 'loading';
-
-        // container.appendChild(el);
     });
 
     scrollList.render();
-})();
+
+
+    // POSITIONAL INFORMATION
+    var pageLocation$ = $('#current-position');
+    pageLocation$.text('0 / ' + TOTAL_ITEMS);
+    scrollList.onCurrentItemChanged(function(sender, args) {
+        pageLocation$.text(args.itemIndex + ' / ' + TOTAL_ITEMS);
+    });
+
+
+    // SCROLL BAR
+    var parent = document.getElementById('scroll-bar-parent');
+    var scrollbarOptions = {};
+    scrollbarOptions.scrollbarId = 'scrollbar';
+    scrollbarOptions.scrollbarContainerId = 'scrollbar-container';
+    window.scrollBar = new ScrollBar(scrollList, parent, scrollbarOptions);
+});
