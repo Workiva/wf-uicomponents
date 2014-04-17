@@ -27,6 +27,7 @@ define(function(require) {
     var ScrollModes = require('wf-js-uicomponents/scroll_list/ScrollModes');
     var Utils = require('wf-js-common/Utils');
     var VerticalLayout = require('wf-js-uicomponents/layouts/VerticalLayout');
+    var KeyNavigator = require('wf-js-uicomponents/scroll_list/KeyNavigator');
 
     function constrain(value, min, max) {
         return Math.max(min, Math.min(max, value));
@@ -318,6 +319,8 @@ define(function(require) {
          * @type {ScaleTranslator}
          */
         this._scaleTranslator = null;
+        
+        
 
         //---------------------------------------------------------
         // Initialization
@@ -775,6 +778,7 @@ define(function(require) {
 
             this._listMap = AwesomeMapFactory.createListMap(this);
             this._scaleTranslator = new ScaleTranslator(this, this._listMap, 0);
+            this._keyNavigator = new KeyNavigator(this);
         },
 
         /**
