@@ -14,8 +14,10 @@
  * limitations under the License.
  */
  
-define(function() {
+define(function(require) {
     'use strict';
+
+    var ScrollModes = require('wf-js-uicomponents/scroll_list/ScrollModes');
 
     /**
      * Creates a new KeyNavigator tied to the provided ScrollList
@@ -80,16 +82,27 @@ define(function() {
          */
 
         _handleKeyPress: function(event) {
-            if (event.keyCode === keys.LEFT || event.keyCode === keys.RIGHT) {
+            if ((event.keyCode === keys.LEFT || event.keyCode === keys.RIGHT) &&
+                this._scrollList._options.mode === ScrollModes.FLOW) {
                 this._moveX(event.keyCode);
             }
             
             if (event.keyCode === keys.UP || event.keyCode === keys.DOWN) {
-                this._moveY(event.keyCode);
+                if (this._scrollList._options.mode === ScrollModes.FLOW) {
+                    this._moveY(event.keyCode);
+                }
+                else {
+                    this._movePagePrevNext(event.keyCode);
+                }
             }
             
             if (event.keyCode === keys.PAGEUP || event.keyCode === keys.PAGEDOWN) {
-                this._movePage(event.keyCode);
+                if (this._scrollList._options.mode === ScrollModes.FLOW) {
+                    this._movePage(event.keyCode);
+                }
+                else {
+                    this._movePagePrevNext(event.keyCode);
+                }
             }
 
             if (event.keyCode === keys.HOME || event.keyCode === keys.END) {
@@ -97,7 +110,9 @@ define(function() {
                     this._moveCtrlHomeEnd(event.keyCode);
                 }
                 else {
-                    this._moveHomeEnd(event.keyCode);
+                    if (this._scrollList._options.mode === ScrollModes.FLOW) {
+                        this._moveHomeEnd(event.keyCode);
+                    }
                 }
             }
         },
@@ -112,10 +127,10 @@ define(function() {
         _moveX: function(direction) {
             var currentX = -this._scrollList.getListMap().getCurrentTransformState().translateX;
             if (direction === keys.LEFT) {
-                this._scrollList.scrollToPosition({ x: currentX - 40 });
+                this._scrollList.scrollTo({ x: currentX - 40 });
             }
             else {
-                this._scrollList.scrollToPosition({ x: currentX + 40 });
+                this._scrollList.scrollTo({ x: currentX + 40 });
             }
         },
 
@@ -149,20 +164,32 @@ define(function() {
          *        The direction to move by a page (PageUp or PageDown)
          */
         _movePage: function(direction) {
-            var currentPage = this._scrollList.getCurrentItem();
             var currentPosition = this._layout.getVisiblePosition();
             
-            var itemHeight = this._scrollList.getItemSizeCollection();
-            itemHeight = itemHeight._items[currentPage.index].height;
+            var visiblePortion = currentPosition.bottom - currentPosition.top;
             
             if (direction === keys.PAGEUP) {
-                this._scrollList.scrollToPosition({ y: currentPosition.top - itemHeight });
+                this._scrollList.scrollToPosition({ y: currentPosition.top - visiblePortion });
             }
             else {
-                if (currentPosition.bottom === this._layout.getSize().height) {
-                    return;
-                }
-                this._scrollList.scrollToPosition({ y: currentPosition.top + itemHeight });
+                this._scrollList.scrollToPosition({ y: currentPosition.top + visiblePortion });
+            }
+        },
+        
+        /**
+         * Move to the next or the previous page
+         *
+         * @private
+         * @param {number} direction
+         *        The direction to move in
+         */
+        _movePagePrevNext: function(direction) {
+            var currentPage = this._scrollList.getCurrentItem().index;
+            if (direction === keys.UP || direction === keys.PAGEUP) {
+                this._scrollList.scrollTo({ index: currentPage - 1 });
+            }
+            else {
+                this._scrollList.scrollTo({ index: currentPage + 1 });
             }
         },
 
@@ -176,29 +203,27 @@ define(function() {
         _moveHomeEnd: function(direction) {
             var currentPage = this._scrollList.getCurrentItem();
             var items = this._scrollList.getItemSizeCollection()._items;
-            var position = 0;
+            var currentPosition;
+            var viewport;
             
             if (direction === keys.HOME) {
-                for (var i = 0; i < currentPage.index; i++) {
-                    position += items[i].height;
-                }
-                
-                position = position * 1.5;
-                position += (currentPage.index * 5);
-
+                this._scrollList.scrollTo({ index: currentPage.index });
             }
             
             if (direction === keys.END) {
-                for (var j = 0; j <= currentPage.index; j++) {
-                    position += items[j].height;
-                }
+                this._scrollList.scrollTo({ index: currentPage.index + 1});
+                currentPosition = this._layout.getVisiblePosition();
+                viewport = currentPosition.bottom - currentPosition.top;
                 
-                position = position * 1.5;
-                position += (currentPage.index * 5);
-                position -= (this._layout.getVisiblePosition().bottom - this._layout.getVisiblePosition().top);
+                if (items[currentPage.index].height < viewport) {
+                    
+                }
+                else {
+                    this._scrollList.scrollToPosition({
+                        y: currentPosition.top - viewport
+                    });
+                }
             }
-                                        
-            this._scrollList.scrollToPosition({ y: position });
         },
 
         /**
@@ -210,11 +235,11 @@ define(function() {
          */
         _moveCtrlHomeEnd: function(direction) {
             if (direction === keys.HOME) {
-                this._scrollList.scrollToPosition({ y: 0 });
+                this._scrollList.scrollTo({ index: 0 });
             }
             else {
-                var height = this._layout.getSize().height;
-                this._scrollList.scrollToPosition({ y: height });
+                var items = this._scrollList.getItemSizeCollection()._items;
+                this._scrollList.scrollTo({ index: items.length, center: {y : items[items.length - 1].height }});
             }
         }
     };
