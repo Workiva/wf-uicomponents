@@ -33,7 +33,7 @@ define(function(require){
 
         beforeEach(function() {
             keyNavigator = new KeyNavigator(scrollList);
-            scrollList.scrollToPosition({y: 300});
+            scrollList.scrollToPosition({ y: 300 });
         });
         
         it('should scroll up on up arrow keypress', function() {
@@ -45,7 +45,7 @@ define(function(require){
             keyNavigator._keyNavListener(keyboardEvent);
 
             expect(keyNavigator._moveY).toHaveBeenCalled();
-            expect(scrollList.scrollToPosition).toHaveBeenCalledWith({y: current - 40});
+            expect(scrollList.scrollToPosition).toHaveBeenCalledWith({ y: current - 40 });
             
         });
         
@@ -58,86 +58,71 @@ define(function(require){
             keyNavigator._keyNavListener(keyboardEvent);
             
             expect(keyNavigator._moveY).toHaveBeenCalled();
-            expect(scrollList.scrollToPosition).toHaveBeenCalledWith({y: current + 40});
+            expect(scrollList.scrollToPosition).toHaveBeenCalledWith({ y: current + 40 });
         });
         
         it('should go down a page on page down key presses', function() {
             spyOn(keyNavigator, '_movePage').andCallThrough();
             spyOn(scrollList, 'scrollToPosition');
             
-            var currentPage = scrollList.getCurrentItem();
             var currentPosition = scrollList.getLayout().getVisiblePosition();
-            
-            var itemHeight = scrollList.getItemSizeCollection();
-            itemHeight = itemHeight._items[currentPage.index].height;
+            var visiblePortion = currentPosition.bottom - currentPosition.top;
             
             var keyboardEvent = createEvent(false, 34);
             keyNavigator._keyNavListener(keyboardEvent);
             
             expect(keyNavigator._movePage).toHaveBeenCalled();
-            expect(scrollList.scrollToPosition).toHaveBeenCalledWith({y: currentPosition.top + itemHeight});
+            expect(scrollList.scrollToPosition).toHaveBeenCalledWith({ y: currentPosition.top + visiblePortion });
         });
         
         it('should go up a page on page up key presses', function() {
             spyOn(keyNavigator, '_movePage').andCallThrough();
             spyOn(scrollList, 'scrollToPosition');
             
-            var currentPage = scrollList.getCurrentItem();
             var currentPosition = scrollList.getLayout().getVisiblePosition();
-            
-            var itemHeight = scrollList.getItemSizeCollection();
-            itemHeight = itemHeight._items[currentPage.index].height;
+            var visiblePortion = currentPosition.bottom - currentPosition.top;
             
             var keyboardEvent = createEvent(false, 33);
             keyNavigator._keyNavListener(keyboardEvent);
             
             expect(keyNavigator._movePage).toHaveBeenCalled();
-            expect(scrollList.scrollToPosition).toHaveBeenCalledWith({y: currentPosition.top - itemHeight});
+            expect(scrollList.scrollToPosition).toHaveBeenCalledWith({ y: currentPosition.top - visiblePortion });
         });
         
         it('should go to the top of the document on ctrl-home', function() {
             spyOn(keyNavigator, '_moveCtrlHomeEnd').andCallThrough();
-            spyOn(scrollList, 'scrollToPosition');
+            spyOn(scrollList, 'scrollTo');
             
             var keyboardEvent = createEvent(true, 36);
             keyNavigator._keyNavListener(keyboardEvent);
             
             expect(keyNavigator._moveCtrlHomeEnd).toHaveBeenCalled();
-            expect(scrollList.scrollToPosition).toHaveBeenCalledWith({y: 0});
+            expect(scrollList.scrollTo).toHaveBeenCalledWith({ index: 0 });
         });
         
         it('should go to the bottom of the document on ctrl-end', function() {
             spyOn(keyNavigator, '_moveCtrlHomeEnd').andCallThrough();
-            spyOn(scrollList, 'scrollToPosition');
+            spyOn(scrollList, 'scrollTo');
             
-            var height = scrollList.getLayout().getSize().height;
+            var items = scrollList.getItemSizeCollection()._items;
             var keyboardEvent = createEvent(true, 35);
             keyNavigator._keyNavListener(keyboardEvent);
             
             expect(keyNavigator._moveCtrlHomeEnd).toHaveBeenCalled();
-            expect(scrollList.scrollToPosition).toHaveBeenCalledWith({y: height});
+            expect(scrollList.scrollTo).toHaveBeenCalledWith({ index: items.length, center: {y : items[items.length - 1].height }});
         });
         
         it('should go the top of the current page on home', function() {
             spyOn(keyNavigator, '_moveHomeEnd').andCallThrough();
-            spyOn(scrollList, 'scrollToPosition');
+            spyOn(scrollList, 'scrollTo');
             
-            var currentPage = scrollList.getCurrentItem();
-            var items = scrollList.getItemSizeCollection()._items;
-            var position = 0;
-            
-            // The top of the current page will be the sum of the heights of pages before the current page
-            for (var i = 0; i < currentPage.index; i++ ) {
-                position += items[i].height;
-            }
-            position = position * 1.5;
-            position += ( currentPage.index * 5 );
+            var currentPage = scrollList.getCurrentItem().index;
             
             var keyboardEvent = createEvent(false, 36);
             keyNavigator._keyNavListener(keyboardEvent);
             
             expect(keyNavigator._moveHomeEnd).toHaveBeenCalled();
-            expect(scrollList.scrollToPosition).toHaveBeenCalledWith({y: position});
+            expect(scrollList.scrollTo).toHaveBeenCalledWith({ index: currentPage });
         });
         
         it('should go to the bottom of the current page on end', function() {
@@ -145,22 +130,15 @@ define(function(require){
             spyOn(scrollList, 'scrollToPosition');
 
             var currentPage = scrollList.getCurrentItem();
-            var items = scrollList.getItemSizeCollection()._items;
-            var position = 0;
-            
-            // The bottom of the current page will be the sum of the heights of all pages
-            // through the current page, minus the height of the viewport
-            for (var j = 0; j <= currentPage.index; j++ ) {
-                position += items[j].height;
-            }
-            position = position * 1.5;
-            position += ( currentPage.index * 5 );
-            position -= (scrollList.getLayout().getVisiblePosition().bottom - scrollList.getLayout().getVisiblePosition().top);
+            scrollList.scrollTo({ index: currentPage.index + 1});
+            var currentPosition = scrollList.getLayout().getVisiblePosition();
+            var viewport = currentPosition.bottom - currentPosition.top;
 
             var keyboardEvent = createEvent(false, 35);
             keyNavigator._keyNavListener(keyboardEvent);
+            
             expect(keyNavigator._moveHomeEnd).toHaveBeenCalled();
-            expect(scrollList.scrollToPosition).toHaveBeenCalledWith({y: position});
+            expect(scrollList.scrollToPosition).toHaveBeenCalledWith({ y: currentPosition.top - viewport });
         });
         
     });

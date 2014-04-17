@@ -202,7 +202,6 @@ define(function(require) {
          */
         _moveHomeEnd: function(direction) {
             var currentPage = this._scrollList.getCurrentItem();
-            var items = this._scrollList.getItemSizeCollection()._items;
             var currentPosition;
             var viewport;
             
@@ -215,14 +214,9 @@ define(function(require) {
                 currentPosition = this._layout.getVisiblePosition();
                 viewport = currentPosition.bottom - currentPosition.top;
                 
-                if (items[currentPage.index].height < viewport) {
-                    
-                }
-                else {
-                    this._scrollList.scrollToPosition({
-                        y: currentPosition.top - viewport
-                    });
-                }
+                this._scrollList.scrollToPosition({
+                    y: currentPosition.top - viewport
+                });
             }
         },
 
@@ -239,7 +233,7 @@ define(function(require) {
             }
             else {
                 var items = this._scrollList.getItemSizeCollection()._items;
-                this._scrollList.scrollTo({ index: items.length, center: {y : items[items.length - 1].height }});
+                this._scrollList.scrollTo({ index: items.length, center: {y : items[items.length - 1].height } });
             }
         }
     };
