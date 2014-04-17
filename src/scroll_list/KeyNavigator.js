@@ -79,21 +79,21 @@ define(function() {
          *        The event to be handled
          */
 
-        _handleKeyPress: function (event) {
-            if ( event.keyCode === keys.LEFT || event.keyCode === keys.RIGHT ) {
+        _handleKeyPress: function(event) {
+            if (event.keyCode === keys.LEFT || event.keyCode === keys.RIGHT) {
                 this._moveX(event.keyCode);
             }
             
-            if ( event.keyCode === keys.UP || event.keyCode === keys.DOWN ) {
+            if (event.keyCode === keys.UP || event.keyCode === keys.DOWN) {
                 this._moveY(event.keyCode);
             }
             
-            if ( event.keyCode === keys.PAGEUP || event.keyCode === keys.PAGEDOWN ) {
+            if (event.keyCode === keys.PAGEUP || event.keyCode === keys.PAGEDOWN) {
                 this._movePage(event.keyCode);
             }
 
-            if ( event.keyCode === keys.HOME || event.keyCode === keys.END ) {
-                if ( event.ctrlKey ) {
+            if (event.keyCode === keys.HOME || event.keyCode === keys.END) {
+                if (event.ctrlKey) {
                     this._moveCtrlHomeEnd(event.keyCode);
                 }
                 else {
@@ -109,15 +109,13 @@ define(function() {
          * @param {number} direction
          *        Which horizontal direction to move in (left or right)
          */
-        _moveX: function (direction) {
+        _moveX: function(direction) {
             var currentX = -this._scrollList.getListMap().getCurrentTransformState().translateX;
-            
             if (direction === keys.LEFT) {
-                this._scrollList.scrollToPosition({x: currentX - 40});
+                this._scrollList.scrollToPosition({ x: currentX - 40 });
             }
             else {
-                
-                this._scrollList.scrollToPosition({x: currentX + 40});
+                this._scrollList.scrollToPosition({ x: currentX + 40 });
             }
         },
 
@@ -128,17 +126,17 @@ define(function() {
          * @param {number} direction
          *        Which vertical direction to move in (up or down)
          */
-        _moveY: function (direction) {
+        _moveY: function(direction) {
             var currentY = this._layout.getVisiblePosition().top;
             if (direction === keys.UP) {
-                this._scrollList.scrollToPosition({y: currentY - 40});
+                this._scrollList.scrollToPosition({ y: currentY - 40 });
             }
             else {
                 if (this._layout.getVisiblePosition().bottom === this._layout.getSize().height) {
                     return;
                 }
                 else {
-                    this._scrollList.scrollToPosition({y: currentY + 40});
+                    this._scrollList.scrollToPosition({ y: currentY + 40 });
                 }
             }
         },
@@ -150,7 +148,7 @@ define(function() {
          * @param {number} direction
          *        The direction to move by a page (PageUp or PageDown)
          */
-        _movePage: function (direction) {
+        _movePage: function(direction) {
             var currentPage = this._scrollList.getCurrentItem();
             var currentPosition = this._layout.getVisiblePosition();
             
@@ -158,13 +156,13 @@ define(function() {
             itemHeight = itemHeight._items[currentPage.index].height;
             
             if (direction === keys.PAGEUP) {
-                this._scrollList.scrollToPosition({y: currentPosition.top - itemHeight});
+                this._scrollList.scrollToPosition({ y: currentPosition.top - itemHeight });
             }
             else {
                 if (currentPosition.bottom === this._layout.getSize().height) {
                     return;
                 }
-                this._scrollList.scrollToPosition({y: currentPosition.top + itemHeight});
+                this._scrollList.scrollToPosition({ y: currentPosition.top + itemHeight });
             }
         },
 
@@ -175,32 +173,32 @@ define(function() {
          * @param {number} direction 
          *        The keyCode indicating whether to go to home or end
          */
-        _moveHomeEnd: function (direction) {
+        _moveHomeEnd: function(direction) {
             var currentPage = this._scrollList.getCurrentItem();
             var items = this._scrollList.getItemSizeCollection()._items;
             var position = 0;
             
             if (direction === keys.HOME) {
-                for (var i = 0; i < currentPage.index; i++ ) {
+                for (var i = 0; i < currentPage.index; i++) {
                     position += items[i].height;
                 }
                 
                 position = position * 1.5;
-                position += ( currentPage.index * 5 );
+                position += (currentPage.index * 5);
 
             }
             
             if (direction === keys.END) {
-                for (var j = 0; j <= currentPage.index; j++ ) {
+                for (var j = 0; j <= currentPage.index; j++) {
                     position += items[j].height;
                 }
                 
                 position = position * 1.5;
-                position += ( currentPage.index * 5 );
+                position += (currentPage.index * 5);
                 position -= (this._layout.getVisiblePosition().bottom - this._layout.getVisiblePosition().top);
             }
                                         
-            this._scrollList.scrollToPosition({y: position});
+            this._scrollList.scrollToPosition({ y: position });
         },
 
         /**
@@ -210,13 +208,13 @@ define(function() {
          * @param {number} direction
          *        The direction to move in (Home or End)
          */
-        _moveCtrlHomeEnd: function (direction) {
-            if ( direction === keys.HOME ) {
-                this._scrollList.scrollToPosition({y: 0});
+        _moveCtrlHomeEnd: function(direction) {
+            if (direction === keys.HOME) {
+                this._scrollList.scrollToPosition({ y: 0 });
             }
             else {
                 var height = this._layout.getSize().height;
-                this._scrollList.scrollToPosition({y: height});
+                this._scrollList.scrollToPosition({ y: height });
             }
         }
     };
