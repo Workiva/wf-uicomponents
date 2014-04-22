@@ -126,11 +126,12 @@ define(function(require) {
          */
         _moveX: function(direction) {
             var currentX = -this._scrollList.getListMap().getCurrentTransformState().translateX;
+            var scale = this._scrollList.getListMap().getCurrentTransformState().scale;
             if (direction === keys.LEFT) {
-                this._scrollList.scrollTo({ x: currentX - 40 });
+                this._scrollList.scrollToPosition({ x: (currentX / scale) - 40 });
             }
             else {
-                this._scrollList.scrollTo({ x: currentX + 40 });
+                this._scrollList.scrollToPosition({ x: (currentX / scale) + 40 });
             }
         },
 
