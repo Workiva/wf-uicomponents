@@ -318,6 +318,8 @@ define(function(require) {
          * @type {ScaleTranslator}
          */
         this._scaleTranslator = null;
+        
+        
 
         //---------------------------------------------------------
         // Initialization

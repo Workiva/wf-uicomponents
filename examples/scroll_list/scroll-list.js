@@ -3,6 +3,7 @@ require([
     'jquery',
     'wf-js-uicomponents/scroll_list/ScrollList',
     'wf-js-uicomponents/scroll_bar/ScrollBar',
+    'wf-js-uicomponents/scroll_list/KeyNavigator',
     'wf-js-uicomponents/layouts/ItemSizeCollection',
     'wf-js-uicomponents/awesome_map/BoundaryInterceptor',
     'wf-js-uicomponents/awesome_map/ScaleInterceptor',
@@ -19,6 +20,7 @@ require([
     $,
     ScrollList,
     ScrollBar,
+    KeyNavigator,
     ItemSizeCollection,
     BoundaryInterceptor,
     ScaleInterceptor,
@@ -138,6 +140,9 @@ require([
         padding: 1,
         scaleLimits: { minimum: 0.25, maximum: 3 }
     });
+    
+    // Instantiate a KeyNavigator
+    window._keyNavigator = new KeyNavigator(scrollList);
 
     // If on desktop, instantiate a scrollBar
     if (DeviceInfo.desktop) {
