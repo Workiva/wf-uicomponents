@@ -88,22 +88,22 @@ define(function(require) {
         this._viewportHeight = this._layout.getVisiblePosition().bottom - this._layout.getVisiblePosition().top;
 
         this._virtualHeight = this._layout.getSize().height - this._viewportHeight;
-        
+
         this._scrollableVirtualHeight = this._layout.getSize().height;
-        
+
         this._listMap = this._scrollList.getListMap();
 
         this._setUpDOM();
-        
+
         this._availableScrollbarHeight = this._viewportHeight - this._scrollbarHeight;
-        
+
         // Set scrollbarScrolling to initially false
         this._scrollbarScrolling = false;
 
         this._clickOffset = null;
 
         // Set the initial scale
-        this._scale = this._scrollList.getScale();
+        this._scale = this._listMap.getCurrentTransformState().scale;
 
         // Get the initial position, in case it's not at 0, and set the scrollbar position
         requestAnimFrame(function() {
@@ -211,7 +211,7 @@ define(function(require) {
             scrollbarContainerEL.appendChild(scrollbarEL);
             this._parent.appendChild(scrollbarContainerEL);
 
-            this._elements = {scrollbar: scrollbarEL, scrollbarContainer: scrollbarContainerEL};
+            this._elements = { scrollbar: scrollbarEL, scrollbarContainer: scrollbarContainerEL };
 
             this._adjustScale();
 
@@ -236,25 +236,27 @@ define(function(require) {
         _updateScrollBar: function(event, clickOffset) {
             // Don't go past the window bounds
             var scrollbarPos = Math.max(0, event.clientY - clickOffset);
-            scrollbarPos = Math.min(scrollbarPos, this._viewportHeight - this._scrollbarHeight);
+            scrollbarPos = Math.min(scrollbarPos, this._availableScrollbarHeight);
             this._elements.scrollbar.style.top = scrollbarPos + 'px';
 
             // Use the ratio of scrollbar position inside the scrolling area to calculate
             // the current item we should be interested in.
-            var positionOfInterest = ((scrollbarPos) / (this._viewportHeight - this._scrollbarHeight)) * (this._virtualHeight);
+            var positionOfInterest = (scrollbarPos / (this._viewportHeight - this._scrollbarHeight)) * (this._virtualHeight * this._scale);
 
             // Ensure that positionOfInterest isn't undefined.
             if (!positionOfInterest) {
                 positionOfInterest = 0;
             }
-            
-            var x = this._listMap.getCurrentTransformState().translateX;
+
+            var currentState = this._listMap.getCurrentTransformState();
+            var x = currentState.translateX;
 
             this._listMap.transform({
                 x: x,
                 y: -positionOfInterest,
-                scale: 1
+                scale: this._scale
             });
+
             this._scrollList.render();
         },
 
@@ -291,14 +293,14 @@ define(function(require) {
          * Scale the virtual height and re-calculate the scroll bar height
          */
         _adjustScale: function() {
-            this._scale = this._scrollList.getScale();
+            this._scale = this._listMap.getCurrentTransformState().scale;
             this._viewportHeight = this._layout.getVisiblePosition().bottom - this._layout.getVisiblePosition().top;
             this._virtualHeight = this._layout.getSize().height - this._viewportHeight;
             this._scrollableVirtualHeight = this._layout.getSize().height;
             this._scrollbarHeight = this._calculateScrollBarHeight();
             this._elements.scrollbar.style.height = this._scrollbarHeight + 'px';
             this._elements.scrollbarContainer.style.height = this._layout.getViewportSize().height + 'px';
-            this._availableScrollbarHeight = this._viewportHeight - this._scrollbarHeight;
+            this._availableScrollbarHeight = this._layout.getViewportSize().height - this._scrollbarHeight;
         }
 
     };
