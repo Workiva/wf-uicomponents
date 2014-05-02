@@ -131,13 +131,13 @@ define(function(require) {
             that._adjustScale();
             that._placeScrollBar();
         });
-        
+
         // Make adjustments when the scrollList is resized
         this._scrollList.onInteraction(function(scrollList, args) {
             if (args.event.type === EventTypes.RESIZE) {
                 that._resize = true;
             }
-            
+
             if (args.event.type === EventTypes.RELEASE && that._resize === true) {
                 that._adjustScale();
                 that._resize = false;
@@ -236,28 +236,27 @@ define(function(require) {
         _updateScrollBar: function(event, clickOffset) {
             // Don't go past the window bounds
             var scrollbarPos = Math.max(0, event.clientY - clickOffset);
-            scrollbarPos = Math.min(scrollbarPos, this._availableScrollbarHeight);
-            this._elements.scrollbar.style.top = scrollbarPos + 'px';
+            var maxPos = this._layout.getViewportSize().height - Math.floor(this._scrollbarHeight * this._scale);
+            scrollbarPos = Math.min(scrollbarPos, maxPos);
 
             // Use the ratio of scrollbar position inside the scrolling area to calculate
             // the current item we should be interested in.
-            var positionOfInterest = (scrollbarPos / (this._viewportHeight - this._scrollbarHeight)) * (this._virtualHeight * this._scale);
+            var positionOfInterest = ((scrollbarPos) / (this._viewportHeight - this._scrollbarHeight)) * (this._virtualHeight);
 
             // Ensure that positionOfInterest isn't undefined.
             if (!positionOfInterest) {
                 positionOfInterest = 0;
             }
 
-            var currentState = this._listMap.getCurrentTransformState();
-            var x = currentState.translateX;
+            var x = this._listMap.getCurrentTransformState().translateX;
 
             this._listMap.transform({
                 x: x,
                 y: -positionOfInterest,
                 scale: this._scale
             });
-
             this._scrollList.render();
+            this._placeScrollBar();
         },
 
         /**
@@ -300,7 +299,7 @@ define(function(require) {
             this._scrollbarHeight = this._calculateScrollBarHeight();
             this._elements.scrollbar.style.height = this._scrollbarHeight + 'px';
             this._elements.scrollbarContainer.style.height = this._layout.getViewportSize().height + 'px';
-            this._availableScrollbarHeight = this._layout.getViewportSize().height - this._scrollbarHeight;
+            this._availableScrollbarHeight = this._layout.getViewportSize().height - Math.floor(this._scrollbarHeight);
         }
 
     };
