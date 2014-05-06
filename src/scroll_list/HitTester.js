@@ -68,15 +68,16 @@ define(function() {
             // This is awful stuff. Tricky currently due to using the item map
             // to center and position content, overriding the layout stuff.
             // Ideally this logic would live in the layout.
+            var yTranslateAndOffset = state.translateY + itemLayout.offsetTop;
             var validBounds = {
-                top: state.translateY + itemLayout.paddingTop * mapScale,
+                top: yTranslateAndOffset + itemLayout.paddingTop * mapScale,
                 right: state.translateX + (itemLayout.outerWidth - itemLayout.paddingRight) * mapScale,
-                bottom: state.translateY + (itemLayout.outerHeight - itemLayout.paddingBottom) * mapScale,
+                bottom: yTranslateAndOffset + (itemLayout.outerHeight - itemLayout.paddingBottom) * mapScale,
                 left: state.translateX + itemLayout.paddingLeft * mapScale
             };
 
-            if (position.x >= validBounds.left && position.x <= validBounds.right &&
-                position.y >= validBounds.top && position.y <= validBounds.bottom) {
+            if (validBounds.left <= position.x && position.x <= validBounds.right &&
+                validBounds.top <= position.y && position.y <= validBounds.bottom) {
 
                 return getHitData(itemLayout, position, validBounds, mapScale);
             }

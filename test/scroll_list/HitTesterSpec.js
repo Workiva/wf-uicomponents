@@ -91,6 +91,25 @@ define(function(require) {
                     expect(result).toBe(false);
                 });
             });
+            describe('when itemLayout has an offsetTop', function() {
+                it('should test correctly at top edge', function() {
+                    itemLayout.outerHeight = 110;
+                    itemLayout.paddingTop = 10;
+                    itemLayout.offsetTop = 200;
+                    event.position = {
+                        x: 0,
+                        y: 310 // outerHeight + offsetTop
+                    };
+                    var state = new TransformState({ translateY: 100 });
+                    var result = HitTester.testItemMap(scrollList, event, state);
+                    expect(result).toBeTruthy();
+                    // Now bump one px outside.
+                    state.translateY = 101;
+                    result = HitTester.testItemMap(scrollList, event, state);
+                    expect(result).toBe(false);
+                });
+
+            });
             it('should translate successful hit positions to be relative to original item size', function() {
                 itemLayout.outerWidth = 100;
                 itemLayout.outerHeight = 100;
