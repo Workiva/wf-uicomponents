@@ -231,21 +231,21 @@ define(function(require) {
          * Position the scrollbar based on the position of a click event
          */
         _updateScrollBar: function(event, clickOffset) {
-            // Don't go past the window bounds
             var scrollbarPos = Math.max(0, event.clientY - clickOffset);
-            // maxPos expresses the maximum distance the top of the scrollbar can be from the top of the container
-            // Unlike availableScrollBarHeight, this is scaled.
-            var maxPos = this._layout.getViewportSize().height - (this._scrollbarHeight * this._scale);
-            scrollbarPos = Math.min(scrollbarPos, maxPos);
+            var scrollListPos = scrollbarPos;
+            // Don't go past the bounds of the scrollbar container
+            scrollbarPos = Math.min(scrollbarPos, this._availableScrollbarHeight);
+            this._elements.scrollbar.style.top = scrollbarPos + 'px';
 
             // Use the ratio of scrollbar position inside the scrolling area to calculate
             // the current item we should be interested in.
-            var positionOfInterest = ((scrollbarPos) / (this._viewportHeight - this._scrollbarHeight)) * (this._virtualHeight);
+            var positionOfInterest = (scrollListPos * this._scale / this._availableScrollbarHeight) * this._virtualHeight;
 
             // Ensure that positionOfInterest isn't undefined.
             if (!positionOfInterest) {
                 positionOfInterest = 0;
             }
+            positionOfInterest = Math.min(positionOfInterest, this._virtualHeight * this._scale);
 
             var x = this._listMap.getCurrentTransformState().translateX;
 
@@ -256,7 +256,6 @@ define(function(require) {
             });
 
             this._scrollList.render();
-            this._placeScrollBar();
         },
 
         /**
