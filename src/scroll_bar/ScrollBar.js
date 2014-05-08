@@ -102,9 +102,6 @@ define(function(require) {
 
         this._clickOffset = null;
 
-        // Set the initial scale
-        this._scale = this._listMap.getCurrentTransformState().scale;
-
         // Get the initial position, in case it's not at 0, and set the scrollbar position
         requestAnimFrame(function() {
             that._placeScrollBar(that, that._elements.scrollbar);
@@ -236,7 +233,9 @@ define(function(require) {
         _updateScrollBar: function(event, clickOffset) {
             // Don't go past the window bounds
             var scrollbarPos = Math.max(0, event.clientY - clickOffset);
-            var maxPos = this._layout.getViewportSize().height - Math.floor(this._scrollbarHeight * this._scale);
+            // maxPos expresses the maximum distance the top of the scrollbar can be from the top of the container
+            // Unlike availableScrollBarHeight, this is scaled.
+            var maxPos = this._layout.getViewportSize().height - (this._scrollbarHeight * this._scale);
             scrollbarPos = Math.min(scrollbarPos, maxPos);
 
             // Use the ratio of scrollbar position inside the scrolling area to calculate
@@ -255,6 +254,7 @@ define(function(require) {
                 y: -positionOfInterest,
                 scale: this._scale
             });
+
             this._scrollList.render();
             this._placeScrollBar();
         },
@@ -299,7 +299,7 @@ define(function(require) {
             this._scrollbarHeight = this._calculateScrollBarHeight();
             this._elements.scrollbar.style.height = this._scrollbarHeight + 'px';
             this._elements.scrollbarContainer.style.height = this._layout.getViewportSize().height + 'px';
-            this._availableScrollbarHeight = this._layout.getViewportSize().height - Math.floor(this._scrollbarHeight);
+            this._availableScrollbarHeight = this._layout.getViewportSize().height - this._scrollbarHeight;
         }
 
     };
