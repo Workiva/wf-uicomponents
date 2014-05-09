@@ -143,13 +143,14 @@ define(function(require) {
 
         // Attach handlers for scrolling the ScrollBar
         this._elements.scrollbar.addEventListener('mousedown', function(event) {
-            offset = that._elements.scrollbar.offsetTop + that._elements.scrollbarContainer.offsetTop;
-            that._clickOffset = event.clientY - offset + that._elements.scrollbarContainer.offsetTop;
-            that._scrollbarScrolling = true;
-
             that._mouseupHandler = function() {
                 that._stopUpdatingScrollbar();
             };
+            that._mouseupHandler();
+
+            offset = that._elements.scrollbar.offsetTop + that._elements.scrollbarContainer.offsetTop;
+            that._clickOffset = event.clientY - offset + that._elements.scrollbarContainer.offsetTop;
+            that._scrollbarScrolling = true;
 
             that._mousemoveHandler = function(e) {
                 that._updateScrollBar(e, that._clickOffset);
