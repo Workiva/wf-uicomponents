@@ -144,8 +144,11 @@ define(function(require) {
         // Attach handlers for scrolling the ScrollBar
         this._elements.scrollbar.addEventListener('mousedown', function(event) {
             that._mouseupHandler = function() {
+                // _stopUpdatingScrollbar unbinds the 'mousemove' and 'mouseup' handlers from the document
                 that._stopUpdatingScrollbar();
             };
+            // _mouseupHandler will ensure that, in the event that the mousemove event is not caught,
+            // the event handlers will be unbound before being bound again.
             that._mouseupHandler();
 
             offset = that._elements.scrollbar.offsetTop + that._elements.scrollbarContainer.offsetTop;
@@ -264,15 +267,8 @@ define(function(require) {
          */
         _stopUpdatingScrollbar: function() {
             this._clickOffset = undefined;
-            document.removeEventListener('mousemove', this._mousemoveHandler);
             this._scrollbarScrolling = false;
-            this._removeDocumentEventWatching(this);
-        },
-
-        /**
-         * Remove the mouseup listener from the document
-         */
-        _removeDocumentEventWatching: function() {
+            document.removeEventListener('mousemove', this._mousemoveHandler);
             document.removeEventListener('mouseup', this._mouseupHandler);
         },
 
