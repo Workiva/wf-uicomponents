@@ -50,16 +50,22 @@ define(function() {
          * @method
          * @param {ScrollList} scrollList
          * @param {InteractionEvent} event - The interaction event under test.
-         * @param {TransformState} state - The current transform state of the item map.
          * @return {boolean|{ index: number, position: { x: number, y: number }}}
          */
-        testItemMap: function(scrollList, event, state) {
+        testItemMap: function(scrollList, event) {
             if (!event.position) {
                 return false;
             }
 
-            var position = event.position;
+            // Item map may not exist after list invalidation, which happens
+            // during window/container resize event cycles.
+            var itemMap = scrollList.getCurrentItemMap();
+            if (!itemMap) {
+                return false;
+            }
 
+            var position = event.position;
+            var state = itemMap.getCurrentTransformState();
             var mapScale = state.scale;
             var layout = scrollList.getLayout();
             var currentItemIndex = layout.getCurrentItemIndex();
@@ -68,11 +74,10 @@ define(function() {
             // This is awful stuff. Tricky currently due to using the item map
             // to center and position content, overriding the layout stuff.
             // Ideally this logic would live in the layout.
-            var yTranslateAndOffset = state.translateY + itemLayout.offsetTop;
             var validBounds = {
-                top: yTranslateAndOffset + itemLayout.paddingTop * mapScale,
+                top: state.translateY + itemLayout.paddingTop * mapScale,
                 right: state.translateX + (itemLayout.outerWidth - itemLayout.paddingRight) * mapScale,
-                bottom: yTranslateAndOffset + (itemLayout.outerHeight - itemLayout.paddingBottom) * mapScale,
+                bottom: state.translateY + (itemLayout.outerHeight - itemLayout.paddingBottom) * mapScale,
                 left: state.translateX + itemLayout.paddingLeft * mapScale
             };
 
@@ -93,15 +98,16 @@ define(function() {
          * @method
          * @param {ScrollList} scrollList
          * @param {InteractionEvent} event - The interaction event under test.
-         * @param {TransformState} state - The current transform state of the item map.
          * @return {boolean|{ index: number, position: { x: number, y: number }}}
          */
-        testListMap: function(scrollList, event, state) {
+        testListMap: function(scrollList, event) {
             if (!event.position) {
                 return false;
             }
 
+            var listMap = scrollList.getListMap();
             var position = event.position;
+            var state = listMap.getCurrentTransformState();
             var mapScale = state.scale;
 
             var layout = scrollList.getLayout();

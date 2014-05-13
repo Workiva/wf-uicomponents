@@ -1,6 +1,7 @@
 define(function(require) {
     'use strict';
 
+    var AwesomeMap = require('wf-js-uicomponents/awesome_map/AwesomeMap');
     var Gesture = require('wf-js-uicomponents/awesome_map/Gesture');
     var HitTester = require('wf-js-uicomponents/scroll_list/HitTester');
     var InteractionEvent = require('wf-js-uicomponents/awesome_map/InteractionEvent');
@@ -13,6 +14,7 @@ define(function(require) {
         describe('testing item maps', function() {
             var scrollList;
             var itemLayout;
+            var itemMapState;
             var event;
             beforeEach(function() {
                 itemLayout = new ItemLayout({ itemIndex: 0 });
@@ -21,8 +23,14 @@ define(function(require) {
                 spyOn(layout, 'getCurrentItemIndex').andReturn(itemLayout.itemIndex);
                 spyOn(layout, 'getItemLayout').andReturn(itemLayout);
 
+                itemMapState = new TransformState();
+
+                var itemMap = Object.create(AwesomeMap.prototype);
+                spyOn(itemMap, 'getCurrentTransformState').andReturn(itemMapState);
+
                 scrollList = Object.create(ScrollList.prototype);
                 spyOn(scrollList, 'getLayout').andReturn(layout);
+                spyOn(scrollList, 'getCurrentItemMap').andReturn(itemMap);
 
                 var gesture = new Gesture();
                 event = new InteractionEvent('faketype', gesture, gesture);
@@ -31,8 +39,8 @@ define(function(require) {
                 itemLayout.outerWidth = 100;
                 itemLayout.outerHeight = 100;
                 event.position = { x: 50, y: 50 };
-                var state = new TransformState({ translateX: 0, translateY: 0, scale: 1 });
-                var result = HitTester.testItemMap(scrollList, event, state);
+
+                var result = HitTester.testItemMap(scrollList, event);
 
                 expect(result).toEqual({
                     index: itemLayout.itemIndex,
@@ -46,77 +54,62 @@ define(function(require) {
                     itemLayout.outerHeight = 110;
                     itemLayout.paddingTop = 10;
                     event.position = { x: 0, y: 110 };
-                    var state = new TransformState({ translateY: 100 });
-                    var result = HitTester.testItemMap(scrollList, event, state);
+                    itemMapState.translateY = 100;
+                    var result = HitTester.testItemMap(scrollList, event);
                     expect(result).toBeTruthy();
                     // Now bump one px outside.
-                    state.translateY = 101;
-                    result = HitTester.testItemMap(scrollList, event, state);
+                    itemMapState.translateY = 101;
+                    result = HitTester.testItemMap(scrollList, event);
                     expect(result).toBe(false);
                 });
                 it('should test correctly at bottom edge', function() {
                     itemLayout.outerHeight = 110;
                     itemLayout.paddingBottom = 10;
                     event.position = { x: 0, y: 200 };
-                    var state = new TransformState({ translateY: 100 });
-                    var result = HitTester.testItemMap(scrollList, event, state);
+                    itemMapState.translateY = 100;
+                    var result = HitTester.testItemMap(scrollList, event);
                     expect(result).toBeTruthy();
                     // Now bump one px outside.
-                    state.translateY = 99;
-                    result = HitTester.testItemMap(scrollList, event, state);
+                    itemMapState.translateY = 99;
+                    result = HitTester.testItemMap(scrollList, event);
                     expect(result).toBe(false);
                 });
                 it('should test correctly at left edge', function() {
                     itemLayout.outerWidth = 110;
                     itemLayout.paddingLeft = 10;
                     event.position = { x: 110, y: 0 };
-                    var state = new TransformState({ translateX: 100 });
-                    var result = HitTester.testItemMap(scrollList, event, state);
+                    itemMapState.translateX = 100;
+                    var result = HitTester.testItemMap(scrollList, event);
                     expect(result).toBeTruthy();
                     // Now bump one px outside.
-                    state.translateX = 101;
-                    result = HitTester.testItemMap(scrollList, event, state);
+                    itemMapState.translateX = 101;
+                    result = HitTester.testItemMap(scrollList, event);
                     expect(result).toBe(false);
                 });
                 it('should test correctly at right edge', function() {
                     itemLayout.outerWidth = 110;
                     itemLayout.paddingRight = 10;
                     event.position = { x: 200, y: 0 };
-                    var state = new TransformState({ translateX: 100 });
-                    var result = HitTester.testItemMap(scrollList, event, state);
+                    itemMapState.translateX = 100;
+                    var result = HitTester.testItemMap(scrollList, event);
                     expect(result).toBeTruthy();
                     // Now bump one px outside.
-                    state.translateX = 99;
-                    result = HitTester.testItemMap(scrollList, event, state);
+                    itemMapState.translateX = 99;
+                    result = HitTester.testItemMap(scrollList, event);
                     expect(result).toBe(false);
                 });
-            });
-            describe('when itemLayout has an offsetTop', function() {
-                it('should test correctly at top edge', function() {
-                    itemLayout.outerHeight = 110;
-                    itemLayout.paddingTop = 10;
-                    itemLayout.offsetTop = 200;
-                    event.position = {
-                        x: 0,
-                        y: 310 // outerHeight + offsetTop
-                    };
-                    var state = new TransformState({ translateY: 100 });
-                    var result = HitTester.testItemMap(scrollList, event, state);
-                    expect(result).toBeTruthy();
-                    // Now bump one px outside.
-                    state.translateY = 101;
-                    result = HitTester.testItemMap(scrollList, event, state);
-                    expect(result).toBe(false);
-                });
-
             });
             it('should translate successful hit positions to be relative to original item size', function() {
                 itemLayout.outerWidth = 100;
                 itemLayout.outerHeight = 100;
                 itemLayout.scaleToFit = 0.5;
                 event.position = { x: 300, y: 300 };
-                var state = new TransformState({ translateX: 100, translateY: 100, scale: 2 });
-                var result = HitTester.testItemMap(scrollList, event, state);
+
+                itemMapState.translateX = 100;
+                itemMapState.translateY = 100;
+                itemMapState.scale = 2;
+
+                var result = HitTester.testItemMap(scrollList, event);
 
                 expect(result).toEqual({
                     index: itemLayout.itemIndex,
@@ -127,6 +120,7 @@ define(function(require) {
         describe('testing list maps', function() {
             var scrollList;
             var itemLayout;
+            var listMapState;
             var event;
             beforeEach(function() {
                 itemLayout = new ItemLayout({ itemIndex: 0 });
@@ -137,8 +131,14 @@ define(function(require) {
                 spyOn(layout, 'getVisibleItemRange').andReturn({ startIndex: 0, endIndex: 0 });
                 spyOn(layout, 'getItemLayout').andReturn(itemLayout);
 
+                listMapState = new TransformState();
+
+                var listMap = Object.create(AwesomeMap.prototype);
+                spyOn(listMap, 'getCurrentTransformState').andReturn(listMapState);
+
                 scrollList = Object.create(ScrollList.prototype);
                 spyOn(scrollList, 'getLayout').andReturn(layout);
+                spyOn(scrollList, 'getListMap').andReturn(listMap);
 
                 var gesture = new Gesture();
                 event = new InteractionEvent('faketype', gesture, gesture);
@@ -149,8 +149,9 @@ define(function(require) {
                 itemLayout.bottom = 200;
                 itemLayout.left = 100;
                 event.position = { x: 50, y: 50 };
-                var state = new TransformState({ translateX: -100, translateY: -100 });
-                var result = HitTester.testListMap(scrollList, event, state);
+                listMapState.translateX = -100;
+                listMapState.translateY = -100;
+                var result = HitTester.testListMap(scrollList, event);
 
                 expect(result).toEqual({
                     index: itemLayout.itemIndex,
@@ -165,12 +166,12 @@ define(function(require) {
                     itemLayout.bottom = 200;
                     itemLayout.paddingTop = 10;
                     event.position = { x: 0, y: 110 };
-                    var state = new TransformState({ translateY: 0 });
-                    var result = HitTester.testListMap(scrollList, event, state);
+                    listMapState.translateY = 0;
+                    var result = HitTester.testListMap(scrollList, event);
                     expect(result).toBeTruthy();
                     // Now bump one px outside.
-                    state.translateY = 1;
-                    result = HitTester.testListMap(scrollList, event, state);
+                    listMapState.translateY = 1;
+                    result = HitTester.testListMap(scrollList, event);
                     expect(result).toBe(false);
                 });
                 it('should test correctly at bottom edge', function() {
@@ -178,12 +179,12 @@ define(function(require) {
                     itemLayout.bottom = 200;
                     itemLayout.paddingBottom = 10;
                     event.position = { x: 0, y: 190 };
-                    var state = new TransformState({ translateY: 0 });
-                    var result = HitTester.testListMap(scrollList, event, state);
+                    listMapState.translateY = 0;
+                    var result = HitTester.testListMap(scrollList, event);
                     expect(result).toBeTruthy();
                     // Now bump one px outside.
-                    state.translateY = -1;
-                    result = HitTester.testListMap(scrollList, event, state);
+                    listMapState.translateY = -1;
+                    result = HitTester.testListMap(scrollList, event);
                     expect(result).toBe(false);
                 });
                 it('should test correctly at left edge', function() {
@@ -191,12 +192,12 @@ define(function(require) {
                     itemLayout.right = 200;
                     itemLayout.paddingLeft = 10;
                     event.position = { x: 110, y: 0 };
-                    var state = new TransformState({ translateX: 0 });
-                    var result = HitTester.testListMap(scrollList, event, state);
+                    listMapState.translateX = 0;
+                    var result = HitTester.testListMap(scrollList, event);
                     expect(result).toBeTruthy();
                     // Now bump one px outside.
-                    state.translateX = 1;
-                    result = HitTester.testListMap(scrollList, event, state);
+                    listMapState.translateX = 1;
+                    result = HitTester.testListMap(scrollList, event);
                     expect(result).toBe(false);
                 });
                 it('should test correctly at right edge', function() {
@@ -204,12 +205,12 @@ define(function(require) {
                     itemLayout.right = 200;
                     itemLayout.paddingRight = 10;
                     event.position = { x: 190, y: 0 };
-                    var state = new TransformState({ translateX: 0 });
-                    var result = HitTester.testListMap(scrollList, event, state);
+                    listMapState.translateX = 0;
+                    var result = HitTester.testListMap(scrollList, event);
                     expect(result).toBeTruthy();
                     // Now bump one px outside.
-                    state.translateX = -1;
-                    result = HitTester.testListMap(scrollList, event, state);
+                    listMapState.translateX = -1;
+                    result = HitTester.testListMap(scrollList, event);
                     expect(result).toBe(false);
                 });
             });
@@ -220,8 +221,10 @@ define(function(require) {
                 itemLayout.left = 0;
                 itemLayout.scaleToFit = 0.5;
                 event.position = { x: 300, y: 300 };
-                var state = new TransformState({ translateX: 100, translateY: 100, scale: 2 });
-                var result = HitTester.testListMap(scrollList, event, state);
+                listMapState.translateX = 100;
+                listMapState.translateY = 100;
+                listMapState.scale = 2;
+                var result = HitTester.testListMap(scrollList, event);
 
                 expect(result).toEqual({
                     index: itemLayout.itemIndex,
