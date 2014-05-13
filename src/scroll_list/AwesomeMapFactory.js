@@ -132,7 +132,7 @@ define(function(require) {
             map.onInteraction(function(source, args) {
                 var newArgs = { event: args.event };
                 var fn = HitTester[options.mode === ScrollModes.FLOW ? 'testListMap' : 'testItemMap'];
-                var hit = fn(scrollList, args.event, args.currentState);
+                var hit = fn(scrollList, args.event);
                 if (hit) {
                     newArgs.itemIndex = hit.index;
                     newArgs.itemPosition = hit.position;
