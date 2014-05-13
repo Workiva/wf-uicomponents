@@ -140,6 +140,14 @@ define(function(require) {
                 that._resize = false;
             }
         });
+        
+        // If part of the page is highlighted and the user clicks and drags on the page,
+        // a 'drag' event may be triggered instead of the standard mousedown-mouseup event.
+        // This results in mouseup never firing, and the mousemove handler never being unbound.
+        // Preventing default on dragstarts on the scrollbar prevents this from occuring.
+        this._elements.scrollbar.addEventListener('dragstart', function(event) {
+            event.preventDefault();
+        });
 
         // Attach handlers for scrolling the ScrollBar
         this._elements.scrollbar.addEventListener('mousedown', function(event) {
