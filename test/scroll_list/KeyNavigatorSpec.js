@@ -168,9 +168,24 @@ define(function(require){
 
                 var keyboardEvent = createEvent(false, 35);
                 keyNavigator._keyNavListener(keyboardEvent);
-                
+
                 expect(keyNavigator._moveHomeEnd).toHaveBeenCalled();
                 expect(scrollList.scrollToPosition).toHaveBeenCalledWith({ y: currentPosition.top - viewport });
+            });
+
+            it('should not request scrolling to a negative position', function() {
+                var currentPage = scrollList.getCurrentItem();
+                scrollList.scrollTo({ index: currentPage.index + 1});
+                spyOn(scrollList, 'scrollToPosition');
+
+                // Fire a horizontal arrow press and then a vertical arrow press
+                var keyboardEvent = createEvent(false, 39);
+                keyNavigator._keyNavListener(keyboardEvent);
+
+                keyboardEvent = createEvent(false, 38);
+                keyNavigator._keyNavListener(keyboardEvent);
+
+                expect(scrollList.scrollToPosition.mostRecentCall.args[0].y).toBeGreaterThan(0);
             });
         });
 
