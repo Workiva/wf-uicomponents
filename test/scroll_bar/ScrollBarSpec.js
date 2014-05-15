@@ -55,9 +55,49 @@ define(function(require) {
         options.scrollBarContainerClass = 'scroll-bar-container';
 
         parentEl = document.getElementById('scroll-bar-parent');
+
         var initialize = function() {
             scrollBar = new ScrollBar(scrollList, parentEl, options);
         };
+
+        function checkScrollBarAtBottom () {
+            scrollList.scrollToPosition({y: Number.POSITIVE_INFINITY});
+            scrollBar._placeScrollBar();
+
+            var scrollBarEL = document.getElementById('scroll-bar');
+            var position = scrollBarEL.style.top;
+            position = parseInt(position, 10);
+
+            expect(position).toEqual(Math.floor(scrollBar._availableScrollbarHeight));
+        }
+
+        function checkForScrollPastEnd () {
+            var scrollBarEl = document.getElementById('scroll-bar');
+            var e1 = document.createEvent('Event');
+            e1.initEvent('mousedown', true, false);
+            var e2 = document.createEvent('Event');
+            e2.initEvent('mousemove', true, false);
+
+            var listMap = scrollList.getListMap();
+            var visibleArea = scrollBar._layout.getVisiblePosition().bottom - scrollBar._layout.getVisiblePosition().top;
+
+            listMap.transform({
+                x: 0,
+                y: -scrollList.getLayout().getSize().height - visibleArea,
+                scale: listMap.getCurrentTransformState().scale
+            });
+
+            scrollList.render();
+            scrollBar._placeScrollBar();
+
+            spyOn(listMap, 'transform');
+
+            scrollBarEl.dispatchEvent(e1);
+            scrollBarEl.dispatchEvent(e2);
+
+            var newY = -listMap.transform.mostRecentCall.args[0].y;
+            expect(newY).toBeLessThan(scrollList._layout.getSize().height + 1);
+        }
 
         afterEach(function() {
             $parent.empty();
@@ -143,6 +183,50 @@ define(function(require) {
             expect(scrollBar._placeScrollBar).toHaveBeenCalled();
         });
 
-    });
+        describe('when zoomed in', function () {
+            beforeEach(function() {
+                var listMap = scrollList.getListMap();
+                listMap.transform({
+                    x: 0,
+                    y: -scrollList._layout.getSize().height,
+                    scale: listMap.getCurrentTransformState().scale + 0.5
+                });
+            });
 
+            it('should not try to scroll past the bottom of the ScrollList', function() {
+                initialize();
+
+                checkForScrollPastEnd();
+            });
+
+            it('should put the ScrollBar at the bottom when the ScrollList is scrolled to the end', function() {
+                initialize();
+
+                checkScrollBarAtBottom();
+            });
+        });
+
+        describe('when zoomed out', function () {
+            beforeEach(function() {
+                var listMap = scrollList.getListMap();
+                listMap.transform({
+                    x: 0,
+                    y: -scrollList.getLayout().getSize().height,
+                    scale: listMap.getCurrentTransformState().scale - 0.5
+                });
+            });
+
+            it('should not try to scroll past the bottom of the ScrollList', function() {
+                initialize();
+
+                checkForScrollPastEnd();
+            });
+
+            it('should put the ScrollBar at the bottom when the ScrollList is scrolled to the end', function() {
+                initialize();
+
+                checkScrollBarAtBottom();
+            });
+        });
+    });
 });
