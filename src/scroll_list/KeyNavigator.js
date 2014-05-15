@@ -166,9 +166,9 @@ define(function(require) {
          */
         _movePage: function(direction) {
             var currentPosition = this._layout.getVisiblePosition();
-            
-            var visiblePortion = currentPosition.bottom - currentPosition.top;
-            
+
+            var visiblePortion = this._validateY(currentPosition.bottom - currentPosition.top);
+
             if (direction === keys.PAGEUP) {
                 this._scrollList.scrollToPosition({ y: this._validateY(currentPosition.top) - visiblePortion });
             }
@@ -213,8 +213,8 @@ define(function(require) {
             if (direction === keys.END) {
                 this._scrollList.scrollTo({ index: currentPage.index + 1});
                 currentPosition = this._layout.getVisiblePosition();
-                viewport = currentPosition.bottom - currentPosition.top;
-                
+                viewport = this._validateY(currentPosition.bottom - currentPosition.top);
+
                 this._scrollList.scrollToPosition({
                     y: this._validateY(currentPosition.top) - viewport
                 });
