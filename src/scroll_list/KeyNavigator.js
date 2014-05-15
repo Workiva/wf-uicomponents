@@ -143,7 +143,7 @@ define(function(require) {
          *        Which vertical direction to move in (up or down)
          */
         _moveY: function(direction) {
-            var currentY = this._layout.getVisiblePosition().top;
+            var currentY = this._validateY(this._layout.getVisiblePosition().top);
             if (direction === keys.UP) {
                 this._scrollList.scrollToPosition({ y: currentY - 40 });
             }
@@ -166,14 +166,14 @@ define(function(require) {
          */
         _movePage: function(direction) {
             var currentPosition = this._layout.getVisiblePosition();
-            
-            var visiblePortion = currentPosition.bottom - currentPosition.top;
-            
+
+            var visiblePortion = this._validateY(currentPosition.bottom - currentPosition.top);
+
             if (direction === keys.PAGEUP) {
-                this._scrollList.scrollToPosition({ y: currentPosition.top - visiblePortion });
+                this._scrollList.scrollToPosition({ y: this._validateY(currentPosition.top) - visiblePortion });
             }
             else {
-                this._scrollList.scrollToPosition({ y: currentPosition.top + visiblePortion });
+                this._scrollList.scrollToPosition({ y: this._validateY(currentPosition.top) + visiblePortion });
             }
         },
         
@@ -213,10 +213,10 @@ define(function(require) {
             if (direction === keys.END) {
                 this._scrollList.scrollTo({ index: currentPage.index + 1});
                 currentPosition = this._layout.getVisiblePosition();
-                viewport = currentPosition.bottom - currentPosition.top;
-                
+                viewport = this._validateY(currentPosition.bottom - currentPosition.top);
+
                 this._scrollList.scrollToPosition({
-                    y: currentPosition.top - viewport
+                    y: this._validateY(currentPosition.top) - viewport
                 });
             }
         },
@@ -236,6 +236,10 @@ define(function(require) {
                 var items = this._scrollList.getItemSizeCollection()._items;
                 this._scrollList.scrollTo({ index: items.length, center: {y : items[items.length - 1].height } });
             }
+        },
+
+        _validateY: function(y) {
+            return (y < 0) ? -y : y;
         }
     };
     
