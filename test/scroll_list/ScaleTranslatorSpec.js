@@ -38,6 +38,13 @@ define(function(require) {
             spyOn(scrollList, 'getLayout').andReturn(layout);
         });
 
+        it('should not throw during initialization if scroll list layout has no items', function() {
+            // Spy in another way since spy is already setup for this method in beforeEach.
+            layout.getItemLayout = jasmine.createSpy('getItemLayout');
+            layout.getItemLayout.andReturn(undefined);
+            return new ScaleTranslator(scrollList, map, 0);
+        });
+
         it('should reinitialize after attaching to another map', function() {
             var otherMap = {};
             var translator = new ScaleTranslator(scrollList, map, 0);
