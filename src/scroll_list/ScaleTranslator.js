@@ -109,7 +109,7 @@ define(function(require) {
          * Translates the given scale to a transformation scale to use in the map.
          *
          * @method ScaleTranslator#toMapScale
-         * @param {number}
+         * @param {number} scale
          * @return {number}
          */
         toMapScale: function(scale) {
@@ -126,8 +126,9 @@ define(function(require) {
         _initialize: function() {
             var scrollList = this._scrollList;
             var layout = scrollList.getLayout();
-            var baseScale = layout.getItemLayout(this._itemIndex).scaleToFit;
+            var itemLayout = layout.getItemLayout(this._itemIndex);
 
+            var baseScale = itemLayout ? itemLayout.scaleToFit : this._baseScale;
             this._baseScale = baseScale;
 
             // If scale is being intercepted, change the limits via the translator
