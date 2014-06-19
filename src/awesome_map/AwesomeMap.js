@@ -44,6 +44,12 @@ define(function(require) {
      *        NOTE: Ensure that the host has "position: relative|absolute",
      *        otherwise various dimension measurements will fail.
      *
+     * @param {boolean} [options.touchScrollingEnabled=true]
+     *        When touch scrolling is enabled, dragging and swiping will scroll
+     *        the list and pan items. When disabled, the mouse wheel and
+     *        scrollbar are the only default means of scrolling. Be aware,
+     *        that the mouse wheel only has effect when mode is set to 'flow'.
+     *
      * @example <caption>Simple Instantiation</caption>
      *
      * // AwesomeMap will provide unlimited panning and zooming by default.
@@ -78,7 +84,7 @@ define(function(require) {
      * awesomeMap.addInterceptor(new BoundaryInterceptor());
      *
      */
-    var AwesomeMap = function(host) {
+    var AwesomeMap = function(host, options) {
 
         //---------------------------------------------------------
         // Observables
@@ -234,6 +240,15 @@ define(function(require) {
          * @private
          */
         this._interceptors = [];
+
+        /**
+         * When enabled, dragging and swiping will both pan the map.
+         * @type {boolean}
+         * @private
+         */
+        this._touchScrollingEnabled =
+            options && options.touchScrollingEnabled !== undefined ?
+            options.touchScrollingEnabled : true;
 
         /**
          * The transformation plane used to pan and zoom content.
@@ -574,6 +589,15 @@ define(function(require) {
          * @param {Function} [args.done] - Callback invoked after the event is handled.
          */
         handleInteractionEvent: function(source, args) {
+            if (!this._touchScrollingEnabled && (
+                args.event.type == EventTypes.DRAG ||
+                args.event.type == EventTypes.SWIPE ||
+                args.event.type == EventTypes.DRAG_START ||
+                args.event.type == EventTypes.DRAG_END
+            )) {
+                return;
+            }
+
             var self = this;
             var queue = this._transformationQueue;
             var event = args.event;

@@ -125,6 +125,8 @@ require([
     var fitMode = urlParams.fit || 'auto';
     var totalPages = +urlParams.totalPages || 100;
     var minNumberOfVirtualItems = scrollMode === 'flow' ? (DeviceInfo.desktop ? 15 : 9) : (DeviceInfo.desktop ? 5 : 3);
+    var touchScrollingEnabled = urlParams.touchScrollingEnabled !== undefined ?
+        urlParams.touchScrollingEnabled == 'true' : true;
 
     var itemSizeCollection = new ItemSizeCollection({
         maxWidth: 1022,
@@ -138,9 +140,10 @@ require([
         fit: fitMode,
         minNumberOfVirtualItems: minNumberOfVirtualItems,
         padding: 1,
-        scaleLimits: { minimum: 0.25, maximum: 3 }
+        scaleLimits: { minimum: 0.25, maximum: 3 },
+        touchScrollingEnabled: touchScrollingEnabled
     });
-    
+
     // Instantiate a KeyNavigator
     window._keyNavigator = new KeyNavigator(scrollList);
 
