@@ -454,6 +454,43 @@ define(function(require) {
             });
         });
 
+        describe('setting touchScrollingEnabled to false', function() {
+            var args = {};
+
+            beforeEach(function() {
+                awesomeMap._touchScrollingEnabled = false;
+
+                var gesture = new Gesture();
+                args.event = new InteractionEvent({ simulated: false }, gesture, gesture);
+
+                spyOn(awesomeMap._transformationQueue, 'enqueue');
+            });
+
+            it('should not respond to drag events', function() {
+                args.event.type = EventTypes.DRAG;
+                awesomeMap.handleInteractionEvent(null, args);
+                expect(awesomeMap._transformationQueue.enqueue).not.toHaveBeenCalled();
+            });
+
+            it('should not respond to swipe events', function() {
+                args.event.type = EventTypes.SWIPE;
+                awesomeMap.handleInteractionEvent(null, args);
+                expect(awesomeMap._transformationQueue.enqueue).not.toHaveBeenCalled();
+            });
+
+            it('should not respond to dragstart events', function() {
+                args.event.type = EventTypes.DRAG_START;
+                awesomeMap.handleInteractionEvent(null, args);
+                expect(awesomeMap._transformationQueue.enqueue).not.toHaveBeenCalled();
+            });
+
+            it('should not respond to dragend events', function() {
+                args.event.type = EventTypes.DRAG_END;
+                awesomeMap.handleInteractionEvent(null, args);
+                expect(awesomeMap._transformationQueue.enqueue).not.toHaveBeenCalled();
+            });
+        });
+
         describe('panning', function() {
             it('should pan by relative distance', function() {
                 var finished = false;

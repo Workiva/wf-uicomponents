@@ -590,10 +590,10 @@ define(function(require) {
          */
         handleInteractionEvent: function(source, args) {
             if (!this._touchScrollingEnabled && (
-                args.event.type == EventTypes.DRAG ||
-                args.event.type == EventTypes.SWIPE ||
-                args.event.type == EventTypes.DRAG_START ||
-                args.event.type == EventTypes.DRAG_END
+                args.event.type === EventTypes.DRAG ||
+                args.event.type === EventTypes.SWIPE ||
+                args.event.type === EventTypes.DRAG_START ||
+                args.event.type === EventTypes.DRAG_END
             )) {
                 return;
             }

@@ -126,7 +126,7 @@ require([
     var totalPages = +urlParams.totalPages || 100;
     var minNumberOfVirtualItems = scrollMode === 'flow' ? (DeviceInfo.desktop ? 15 : 9) : (DeviceInfo.desktop ? 5 : 3);
     var touchScrollingEnabled = urlParams.touchScrollingEnabled !== undefined ?
-        urlParams.touchScrollingEnabled == 'true' : true;
+        urlParams.touchScrollingEnabled === 'true' : true;
 
     var itemSizeCollection = new ItemSizeCollection({
         maxWidth: 1022,
