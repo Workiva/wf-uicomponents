@@ -635,7 +635,7 @@ define(function(require) {
                 event.cancelled = event.cancelled || (returnValue === false);
             });
 
-            if (this._eventCancelsTransform(event)) {
+            if (this._isEventCanceled(event)) {
                 return done();
             }
 
@@ -803,11 +803,10 @@ define(function(require) {
         },
 
         /**
-         * Returns true if the given event cancels the current transform. This
-         * can happen if the event is cancelled by a consumer, the AwesomeMap
+         * Returns true if the event is cancelled by a consumer, the AwesomeMap
          * is disabled, or if touch scrolling is disabled.
          */
-        _eventCancelsTransform: function(event) {
+        _isEventCanceled: function(event) {
             // The event was cancelled by a subscriber to onInteraction
             if (event.cancelled) {
                 return true;

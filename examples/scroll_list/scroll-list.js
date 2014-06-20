@@ -1,37 +1,20 @@
-require([
-    'hammerjs',
-    'jquery',
-    'wf-js-uicomponents/scroll_list/ScrollList',
-    'wf-js-uicomponents/scroll_bar/ScrollBar',
-    'wf-js-uicomponents/scroll_list/KeyNavigator',
-    'wf-js-uicomponents/layouts/ItemSizeCollection',
-    'wf-js-uicomponents/awesome_map/BoundaryInterceptor',
-    'wf-js-uicomponents/awesome_map/ScaleInterceptor',
-    'wf-js-uicomponents/awesome_map/SwipeInterceptor',
-    'wf-js-common/DeviceInfo',
-    'wf-js-common/BrowserInfo',
-    'wf-js-common/Url',
-    'wf-js-common/DOMUtil',
-    'wf-js-common/console',
-    'hammerjs.fakemultitouch',
-    'hammerjs.showtouches'
-], function(
-    Hammer,
-    $,
-    ScrollList,
-    ScrollBar,
-    KeyNavigator,
-    ItemSizeCollection,
-    BoundaryInterceptor,
-    ScaleInterceptor,
-    SwipeInterceptor,
-    DeviceInfo,
-    BrowserInfo,
-    Url,
-    DOMUtil,
-    console
-) {
+define(function(require) {
     'use strict';
+
+    var Hammer = require('hammerjs');
+    require('hammerjs.fakemultitouch');
+    require('hammerjs.showtouches');
+    var $ = require('jquery');
+    var ScrollBar = require('wf-js-uicomponents/scroll_bar/ScrollBar');
+    var ScrollList = require('wf-js-uicomponents/scroll_list/ScrollList');
+    var KeyNavigator = require('wf-js-uicomponents/scroll_list/KeyNavigator');
+    var ItemSizeCollection = require('wf-js-uicomponents/layouts/ItemSizeCollection');
+    var BrowserInfo = require('wf-js-common/BrowserInfo');
+    var console = require('wf-js-common/console');
+    var DeviceInfo = require('wf-js-common/DeviceInfo');
+    var DOMUtil = require('wf-js-common/DOMUtil');
+    var Url = require('wf-js-common/Url');
+    var Utils = require('wf-js-common/Utils');
 
     //---------------------------------------------------------
     // Initialize ViewerComponent
@@ -125,8 +108,7 @@ require([
     var fitMode = urlParams.fit || 'auto';
     var totalPages = +urlParams.totalPages || 100;
     var minNumberOfVirtualItems = scrollMode === 'flow' ? (DeviceInfo.desktop ? 15 : 9) : (DeviceInfo.desktop ? 5 : 3);
-    var touchScrollingEnabled = true;
-    touchScrollingEnabled = urlParams.touchScrollingEnabled === 'true';
+    var touchScrollingEnabled = Utils.valueOr(urlParams.touchScrollingEnabled, 'true') === 'true';
 
     var itemSizeCollection = new ItemSizeCollection({
         maxWidth: 1022,
