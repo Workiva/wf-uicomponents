@@ -90,8 +90,7 @@ define(function(require) {
      * @param {boolean} [options.touchScrollingEnabled=true]
      *        When touch scrolling is enabled, dragging and swiping will scroll
      *        the list and pan items. When disabled, the mouse wheel and
-     *        scrollbar are the only default means of scrolling. Be aware,
-     *        that the mouse wheel only has effect when mode is set to 'flow'.
+     *        scrollbar are the only default means of scrolling.
      *
      * @example
      *

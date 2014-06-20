@@ -458,8 +458,7 @@ define(function(require) {
             var args = {};
 
             beforeEach(function() {
-                awesomeMap._touchScrollingEnabled = false;
-
+                awesomeMap = new AwesomeMap($host[0], { touchScrollingEnabled: false });
                 var gesture = new Gesture();
                 args.event = new InteractionEvent({ simulated: false }, gesture, gesture);
 

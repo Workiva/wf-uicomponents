@@ -17,6 +17,7 @@
 define(function(require) {
     'use strict';
 
+    var _ = require('lodash');
     var BrowserInfo = require('wf-js-common/BrowserInfo');
     var DestroyUtil = require('wf-js-common/DestroyUtil');
     var DOMUtil = require('wf-js-common/DOMUtil');
@@ -46,9 +47,8 @@ define(function(require) {
      *
      * @param {boolean} [options.touchScrollingEnabled=true]
      *        When touch scrolling is enabled, dragging and swiping will scroll
-     *        the list and pan items. When disabled, the mouse wheel and
-     *        scrollbar are the only default means of scrolling. Be aware,
-     *        that the mouse wheel only has effect when mode is set to 'flow'.
+     *        the list and pan items. When disabled, the following events have
+     *        no effect: drag, swipe, dragstart, dragend
      *
      * @example <caption>Simple Instantiation</caption>
      *
@@ -85,6 +85,14 @@ define(function(require) {
      *
      */
     var AwesomeMap = function(host, options) {
+
+        /**
+         * User-configurable options.
+         * @type {Object}
+         */
+        this._options = _.extend({
+            touchScrollingEnabled: true
+        }, options);
 
         //---------------------------------------------------------
         // Observables
@@ -240,15 +248,6 @@ define(function(require) {
          * @private
          */
         this._interceptors = [];
-
-        /**
-         * When enabled, dragging and swiping will both pan the map.
-         * @type {boolean}
-         * @private
-         */
-        this._touchScrollingEnabled =
-            options && options.touchScrollingEnabled !== undefined ?
-            options.touchScrollingEnabled : true;
 
         /**
          * The transformation plane used to pan and zoom content.
@@ -589,15 +588,6 @@ define(function(require) {
          * @param {Function} [args.done] - Callback invoked after the event is handled.
          */
         handleInteractionEvent: function(source, args) {
-            if (!this._touchScrollingEnabled && (
-                args.event.type === EventTypes.DRAG ||
-                args.event.type === EventTypes.SWIPE ||
-                args.event.type === EventTypes.DRAG_START ||
-                args.event.type === EventTypes.DRAG_END
-            )) {
-                return;
-            }
-
             var self = this;
             var queue = this._transformationQueue;
             var event = args.event;
@@ -645,10 +635,7 @@ define(function(require) {
                 event.cancelled = event.cancelled || (returnValue === false);
             });
 
-            // Bail if:
-            // - the event was cancelled by a subscriber to onInteraction
-            // - the map is disabled and the event was caused by direct user interaction
-            if (event.cancelled || (this.isDisabled() && !event.simulated)) {
+            if (this._isTransformationCancelled(event)) {
                 return done();
             }
 
@@ -658,6 +645,34 @@ define(function(require) {
                 done();
             });
             queue.processEvents();
+        },
+
+        _isTransformationCancelled: function(event) {
+            // The event was cancelled by a subscriber to onInteraction
+            if (event.cancelled) {
+                return true;
+            }
+
+            // Don't cancel events that were initiated by the API
+            // (as opposed to direct user interaction)
+            if (event.simulated) {
+                return false;
+            }
+
+            if (this.isDisabled()) {
+                return true;
+            }
+
+            if (!this._touchScrollingEnabled && (
+                event.type === EventTypes.DRAG ||
+                event.type === EventTypes.SWIPE ||
+                event.type === EventTypes.DRAG_START ||
+                event.type === EventTypes.DRAG_END
+            )) {
+                return true;
+            }
+
+            return false;
         },
 
         /**
