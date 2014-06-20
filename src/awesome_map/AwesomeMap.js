@@ -635,7 +635,7 @@ define(function(require) {
                 event.cancelled = event.cancelled || (returnValue === false);
             });
 
-            if (this._isTransformationCancelled(event)) {
+            if (this._eventCancelsTransform(event)) {
                 return done();
             }
 
@@ -645,34 +645,6 @@ define(function(require) {
                 done();
             });
             queue.processEvents();
-        },
-
-        _isTransformationCancelled: function(event) {
-            // The event was cancelled by a subscriber to onInteraction
-            if (event.cancelled) {
-                return true;
-            }
-
-            // Don't cancel events that were initiated by the API
-            // (as opposed to direct user interaction)
-            if (event.simulated) {
-                return false;
-            }
-
-            if (this.isDisabled()) {
-                return true;
-            }
-
-            if (!this._touchScrollingEnabled && (
-                event.type === EventTypes.DRAG ||
-                event.type === EventTypes.SWIPE ||
-                event.type === EventTypes.DRAG_START ||
-                event.type === EventTypes.DRAG_END
-            )) {
-                return true;
-            }
-
-            return false;
         },
 
         /**
@@ -828,6 +800,39 @@ define(function(require) {
             this._interactionSimulator.onEventSimulated(eventHandler);
 
             this._transformationQueue = new TransformationQueue(this);
+        },
+
+        /**
+         * Returns true if the given event cancels the current transform. This
+         * can happen if the event is cancelled by a consumer, the AwesomeMap
+         * is disabled, or if touch scrolling is disabled.
+         */
+        _eventCancelsTransform: function(event) {
+            // The event was cancelled by a subscriber to onInteraction
+            if (event.cancelled) {
+                return true;
+            }
+
+            // Don't cancel events that were initiated by the API
+            // (as opposed to direct user interaction)
+            if (event.simulated) {
+                return false;
+            }
+
+            if (this.isDisabled()) {
+                return true;
+            }
+
+            if (!this._options.touchScrollingEnabled && (
+                event.type === EventTypes.DRAG ||
+                event.type === EventTypes.SWIPE ||
+                event.type === EventTypes.DRAG_START ||
+                event.type === EventTypes.DRAG_END
+            )) {
+                return true;
+            }
+
+            return false;
         },
 
         /**
