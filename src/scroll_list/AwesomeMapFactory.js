@@ -54,8 +54,10 @@ define(function(require) {
          * @return {AwesomeMap}
          */
         createItemMap: function(scrollList, host) {
-            var map = new AwesomeMap(host);
             var options = scrollList.getOptions();
+            var map = new AwesomeMap(host, {
+                touchScrollingEnabled: options.touchScrollingEnabled
+            });
 
             // Register interceptors.
             map.addInterceptor(new DoubleTapZoomInterceptor());
@@ -90,9 +92,11 @@ define(function(require) {
          * @return {AwesomeMap}
          */
         createListMap: function(scrollList) {
-            var map = new AwesomeMap(scrollList.getHost());
             var layout = scrollList.getLayout();
             var options = scrollList.getOptions();
+            var map = new AwesomeMap(scrollList.getHost(), {
+                touchScrollingEnabled: options.touchScrollingEnabled
+            });
 
             // Set content dimensions to the dimensions of the layout.
             map.setContentDimensions(layout.getSize());

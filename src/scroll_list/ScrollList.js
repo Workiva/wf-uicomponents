@@ -87,6 +87,11 @@ define(function(require) {
      *        set to false to remove the default interceptor or
      *        pass an object with custom options for the interceptor.
      *
+     * @param {boolean} [options.touchScrollingEnabled=true]
+     *        When touch scrolling is enabled, dragging and swiping will scroll
+     *        the list and pan items. When disabled, the mouse wheel and
+     *        scrollbar are the only default means of scrolling.
+     *
      * @example
      *
      * var host = document.getElementById('host');
@@ -304,7 +309,8 @@ define(function(require) {
             minNumberOfVirtualItems: 3,
             mode: ScrollModes.FLOW,
             padding: 0,
-            scaleLimits: { minimum: 1, maximum: 3 }
+            scaleLimits: { minimum: 1, maximum: 3 },
+            touchScrollingEnabled: true
         }, options);
 
         /**
@@ -318,8 +324,6 @@ define(function(require) {
          * @type {ScaleTranslator}
          */
         this._scaleTranslator = null;
-        
-        
 
         //---------------------------------------------------------
         // Initialization
