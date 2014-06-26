@@ -40,6 +40,9 @@ define(function(require){
                 keyNavigator = new KeyNavigator(scrollList);
                 scrollList.scrollToPosition({ y: 300 });
             });
+            afterEach(function() {
+                scrollList.dispose();
+            });
 
             
             it('should scroll up on up arrow keypress', function() {
@@ -202,6 +205,9 @@ define(function(require){
 
                 keyNavigator = new KeyNavigator(scrollList);
                 scrollList.scrollTo({ index: 2 });
+            });
+            afterEach(function() {
+                scrollList.dispose();
             });
 
             it('should go to the previous page on up arrow keypress', function() {
