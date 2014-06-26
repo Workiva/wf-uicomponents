@@ -43,6 +43,7 @@ define(function(require) {
 
         afterEach(function() {
             $host.remove();
+            awesomeMap.dispose();
         });
 
         it('should return false to cancel the event and stop propogation to item maps', function() {

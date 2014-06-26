@@ -384,6 +384,15 @@ define(function(require) {
         },
 
         /**
+         * Gets the viewport element.
+         * @method AwesomeMap#getViewport
+         * @returns {HTMLElement}
+         */
+        getViewport: function() {
+            return this._viewport;
+        },
+
+        /**
          * Gets the dimensions of the viewport.
          * @method AwesomeMap#getViewportDimensions
          * @returns {{
@@ -626,6 +635,8 @@ define(function(require) {
             else if (eventType === EventTypes.RESIZE) {
                 this.invalidateViewportDimensions();
             }
+
+            this._normalizeEventPosition(event);
 
             // Dispatch to observers; they can cancel the event by returning false.
             this.onInteraction.dispatch([
@@ -893,6 +904,23 @@ define(function(require) {
                 this._contentDimensions = null;
                 contentDimensions = this.getContentDimensions();
             }
+        },
+
+        /**
+         * Normalize the position of the interaction event so that it is relative to the top/left
+         * of the viewport. If this map is disabled during after touch but before release,
+         * it will continue receiving events; however, the position of those events will be relative
+         * to the browser window, and not the hit area covering the viewport.
+         * @param {InteractionEvent} event - The interaction event
+         * @private
+         */
+        _normalizeEventPosition: function(event) {
+            if (!(this.isDisabled() && event.position)) {
+                return;
+            }
+            var boundingRect = this._viewport.getBoundingClientRect();
+            event.position.x -= boundingRect.left;
+            event.position.y -= boundingRect.top;
         },
 
         /**
