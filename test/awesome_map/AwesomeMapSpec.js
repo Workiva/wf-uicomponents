@@ -742,6 +742,32 @@ define(function(require) {
                 ], jasmine.any(Function));
             });
 
+            it('should normalize the event position relative to the viewport origin if disabled', function() {
+                var evt = createInteractionEvent(null);
+                evt.position = {
+                    x: 100,
+                    y: 200
+                };
+                var viewportOffset = {
+                    left: 10,
+                    top: 20
+                };
+                var viewport = awesomeMap.getViewport();
+                spyOn(viewport, 'getBoundingClientRect').andReturn(viewportOffset);
+
+                spyOn(awesomeMap, 'isDisabled').andReturn(true);
+                spyOn(awesomeMap, 'getCurrentTransformState').andReturn(new TransformState());
+                spyOn(awesomeMap.onInteraction, 'dispatch');
+
+                awesomeMap.handleInteractionEvent(null, { event: evt });
+
+                expect(awesomeMap.onInteraction.dispatch).toHaveBeenCalled();
+                var args = awesomeMap.onInteraction.dispatch.mostRecentCall.args[0];
+                var dispatchedEventPosition = args[1].event.position;
+                expect(dispatchedEventPosition.x).toBe(100 - 10);
+                expect(dispatchedEventPosition.y).toBe(200 - 20);
+            });
+
             it('should set current state to end state of event transformation', function() {
                 var evt = createInteractionEvent(EventTypes.Drag);
 
