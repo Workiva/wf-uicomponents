@@ -19,6 +19,7 @@ define(function(require) {
 
     var requestAnimFrame = require('wf-js-common/requestAnimationFrame');
     var EventTypes = require('wf-js-uicomponents/awesome_map/EventTypes');
+    var DestroyUtil = require('wf-js-common/DestroyUtil');
 
     /**
      * Creates a new ScrollBar with the given ScrollList and options.
@@ -150,7 +151,7 @@ define(function(require) {
         });
 
         // Attach handlers for scrolling the ScrollBar
-        this._elements.scrollbar.addEventListener('mousedown', function(event) {
+        this._mousedownHandler = function(event) {
             that._mouseupHandler = function() {
                 // _stopUpdatingScrollbar unbinds the 'mousemove' and 'mouseup' handlers from the document
                 that._stopUpdatingScrollbar();
@@ -170,7 +171,9 @@ define(function(require) {
             document.addEventListener('mousemove', that._mousemoveHandler);
 
             document.addEventListener('mouseup', that._mouseupHandler);
-        });
+        };
+
+        this._elements.scrollbar.addEventListener('mousedown', this.mousedownHandler);
 
     };
 
@@ -185,8 +188,10 @@ define(function(require) {
          * @method ScrollBar#dispose
          */
         dispose: function() {
+            this._elements.scrollbar.removeEventListener('mousedown', this.mousedownHandler);
             this._elements.scrollbarContainer.removeChild(this._elements.scrollbar);
             this._parent.removeChild(this._elements.scrollbarContainer);
+            DestroyUtil.destroy(this);
         },
 
         //---------------------------------------------------------

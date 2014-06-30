@@ -24,41 +24,43 @@ define(function(require) {
 
     describe('ScrollBar', function() {
 
+        var itemSizeCollection, scrollList, scrollBar, parentEl, $parent, options, initialize;
+
         document.body.style.height = '500px';
-        var itemSizeCollection = new ItemSizeCollection({
-            maxWidth: 600,
-            maxHeight: 600,
-            items: [
-                { width: 400, height: 600 },
-                { width: 600, height: 400 }
-            ]
+
+        beforeEach(function(){
+            itemSizeCollection = new ItemSizeCollection({
+                maxWidth: 600,
+                maxHeight: 600,
+                items: [
+                    { width: 400, height: 600 },
+                    { width: 600, height: 400 }
+                ]
+            });
+
+            scrollList = new ScrollList(document.body, itemSizeCollection, {
+                mode: 'flow',
+                fit: 'auto',
+                padding: 10,
+                gap: 10,
+                concurrentContentLimit: 3
+            });
+
+            $parent = $('<div id="scroll-bar-parent"></div>');
+            $('body').append($parent);
+
+            options = {};
+            options.scrollbarId = 'scroll-bar';
+            options.scrollbarContainerId = 'scroll-bar-container';
+            options.scrollbarClass = 'scroll-bar';
+            options.scrollBarContainerClass = 'scroll-bar-container';
+
+            parentEl = document.getElementById('scroll-bar-parent');
+
+            initialize = function() {
+                scrollBar = new ScrollBar(scrollList, parentEl, options);
+            };
         });
-
-        var scrollList = new ScrollList(document.body, itemSizeCollection, {
-            mode: 'flow',
-            fit: 'auto',
-            padding: 10,
-            gap: 10,
-            concurrentContentLimit: 3
-        });
-
-        var scrollBar;
-        var parentEl;
-
-        var $parent = $('<div id="scroll-bar-parent"></div>');
-        $('body').append($parent);
-
-        var options = {};
-        options.scrollbarId = 'scroll-bar';
-        options.scrollbarContainerId = 'scroll-bar-container';
-        options.scrollbarClass = 'scroll-bar';
-        options.scrollBarContainerClass = 'scroll-bar-container';
-
-        parentEl = document.getElementById('scroll-bar-parent');
-
-        var initialize = function() {
-            scrollBar = new ScrollBar(scrollList, parentEl, options);
-        };
 
         function checkScrollBarAtBottom () {
             scrollList.scrollToPosition({y: Number.POSITIVE_INFINITY});
@@ -100,7 +102,11 @@ define(function(require) {
         }
 
         afterEach(function() {
-            $parent.empty();
+            if ($('#scroll-bar').length > 0) {
+                scrollBar.dispose();
+            }
+            scrollList.dispose();
+            $parent.empty().remove();
         });
 
         it('should initialize the ScrollBar with the given parameters', function() {
