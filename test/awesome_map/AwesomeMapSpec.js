@@ -782,8 +782,8 @@ define(function(require) {
                     expect(pos.x).toBe(eventPosition.x);
                     expect(pos.y).toBe(eventPosition.y);
                 });
-                it('should not normalize if the "normalizeEventPosition" option is falsy', function() {
-                    var pos = dispatchAndGetEventPosition({ normalizeEventPosition: undefined, disable: true });
+                it('should not normalize if the "normalizeEventPosition" option is false', function() {
+                    var pos = dispatchAndGetEventPosition({ normalizeEventPosition: false, disable: true });
                     expect(pos.x).toBe(eventPosition.x);
                     expect(pos.y).toBe(eventPosition.y);
                 });

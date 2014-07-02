@@ -45,7 +45,7 @@ define(function(require) {
      *        NOTE: Ensure that the host has "position: relative|absolute",
      *        otherwise various dimension measurements will fail.
      *
-     * @param {boolean} [options.normalizeEventPosition=false]
+     * @param {boolean} [options.normalizeEventPosition=true]
      *        Ensure that emitted events relate their position to origin of the viewport,
      *        and not the browser page origin.
      *
@@ -95,6 +95,7 @@ define(function(require) {
          * @type {Object}
          */
         this._options = _.extend({
+            normalizeEventPosition: true,
             touchScrollingEnabled: true
         }, options);
 
