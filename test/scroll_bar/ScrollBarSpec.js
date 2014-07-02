@@ -24,46 +24,49 @@ define(function(require) {
 
     describe('ScrollBar', function() {
 
-        var itemSizeCollection, scrollList, scrollBar, parentEl, $parent, options, initialize;
+        var itemSizeCollection, scrollList, scrollBar, parentEl, options, initialize;
+        var $host, $parent;
 
-        document.body.style.height = '500px';
-
-        beforeEach(function(){
-            itemSizeCollection = new ItemSizeCollection({
-                maxWidth: 600,
-                maxHeight: 600,
-                items: [
-                    { width: 400, height: 600 },
-                    { width: 600, height: 400 }
-                ]
-            });
-
-            scrollList = new ScrollList(document.body, itemSizeCollection, {
-                mode: 'flow',
-                fit: 'auto',
-                padding: 10,
-                gap: 10,
-                concurrentContentLimit: 3
-            });
-
-            $parent = $('<div id="scroll-bar-parent"></div>');
-            $('body').append($parent);
-
-            options = {};
-            options.scrollbarId = 'scroll-bar';
-            options.scrollbarContainerId = 'scroll-bar-container';
-            options.scrollbarClass = 'scroll-bar';
-            options.scrollBarContainerClass = 'scroll-bar-container';
-
-            parentEl = document.getElementById('scroll-bar-parent');
-
-            initialize = function() {
-                scrollBar = new ScrollBar(scrollList, parentEl, options);
-            };
+        itemSizeCollection = new ItemSizeCollection({
+            maxWidth: 600,
+            maxHeight: 600,
+            items: [
+                { width: 400, height: 600 },
+                { width: 600, height: 400 }
+            ]
         });
 
+        $host = $('<div id="host"></div>');
+        $('body').append($host);
+        var hostEl = document.getElementById('host');
+        
+        hostEl.style.height = '50px';
+
+        scrollList = new ScrollList(hostEl, itemSizeCollection, {
+            mode: 'flow',
+            fit: 'auto',
+            padding: 10 ,
+            gap: 10,
+            concurrentContentLimit: 3
+        });
+
+        $parent = $('<div id="scroll-bar-parent"></div>');
+        $('body').append($parent);
+
+        options = {};
+        options.scrollbarId = 'scroll-bar';
+        options.scrollbarContainerId = 'scroll-bar-container';
+        options.scrollbarClass = 'scroll-bar';
+        options.scrollBarContainerClass = 'scroll-bar-container';
+
+        parentEl = document.getElementById('scroll-bar-parent');
+
+        initialize = function() {
+            scrollBar = new ScrollBar(scrollList, parentEl, options);
+        };
+
         function checkScrollBarAtBottom () {
-            scrollList.scrollToPosition({y: Number.POSITIVE_INFINITY});
+            scrollList.scrollToPosition({y: scrollList.getLayout().getSize().height});
             scrollBar._placeScrollBar();
 
             var scrollBarEL = document.getElementById('scroll-bar');
@@ -79,13 +82,15 @@ define(function(require) {
             e1.initEvent('mousedown', true, false);
             var e2 = document.createEvent('Event');
             e2.initEvent('mousemove', true, false);
-
+            var e3 = document.createEvent('Event');
+            e3.initEvent('mouseup', true, false);
             var listMap = scrollList.getListMap();
+
             var visibleArea = scrollBar._layout.getVisiblePosition().bottom - scrollBar._layout.getVisiblePosition().top;
 
             listMap.transform({
                 x: 0,
-                y: -scrollList.getLayout().getSize().height - visibleArea,
+                y: (-scrollList.getLayout().getSize().height - visibleArea) * 10,
                 scale: listMap.getCurrentTransformState().scale
             });
 
@@ -96,6 +101,7 @@ define(function(require) {
 
             scrollBarEl.dispatchEvent(e1);
             scrollBarEl.dispatchEvent(e2);
+            scrollBarEl.dispatchEvent(e3);
 
             var newY = -listMap.transform.mostRecentCall.args[0].y;
             expect(newY).toBeLessThan(scrollList._layout.getSize().height + 1);
@@ -105,8 +111,6 @@ define(function(require) {
             if ($('#scroll-bar').length > 0) {
                 scrollBar.dispose();
             }
-            scrollList.dispose();
-            $parent.empty().remove();
         });
 
         it('should initialize the ScrollBar with the given parameters', function() {
@@ -151,12 +155,15 @@ define(function(require) {
             e1.initEvent('mousedown', true, false);
             var e2 = document.createEvent('Event');
             e2.initEvent('mousemove', true, false);
-            
+            var e3 = document.createEvent('Event');
+            e3.initEvent('mouseup', true, false);
+
             var listMap = scrollList.getListMap();
             spyOn(listMap, 'transform');
 
             scrollBarEl.dispatchEvent(e1);
             scrollBarEl.dispatchEvent(e2);
+            scrollBarEl.dispatchEvent(e3);
 
             expect(listMap.transform).toHaveBeenCalled();
         });
@@ -191,6 +198,7 @@ define(function(require) {
 
         describe('when zoomed in', function () {
             beforeEach(function() {
+                initialize();
                 var listMap = scrollList.getListMap();
                 listMap.transform({
                     x: 0,
@@ -200,38 +208,34 @@ define(function(require) {
             });
 
             it('should not try to scroll past the bottom of the ScrollList', function() {
-                initialize();
-
                 checkForScrollPastEnd();
             });
 
             it('should put the ScrollBar at the bottom when the ScrollList is scrolled to the end', function() {
-                initialize();
-
                 checkScrollBarAtBottom();
             });
         });
 
         describe('when zoomed out', function () {
             beforeEach(function() {
+                initialize();
                 var listMap = scrollList.getListMap();
                 listMap.transform({
                     x: 0,
-                    y: -scrollList.getLayout().getSize().height,
+                    y: -scrollList._layout.getSize().height,
                     scale: listMap.getCurrentTransformState().scale - 0.5
                 });
             });
 
             it('should not try to scroll past the bottom of the ScrollList', function() {
-                initialize();
-
                 checkForScrollPastEnd();
             });
 
             it('should put the ScrollBar at the bottom when the ScrollList is scrolled to the end', function() {
-                initialize();
-
                 checkScrollBarAtBottom();
+                this.after(function(){
+                    $host.empty().remove();
+                });
             });
         });
     });
