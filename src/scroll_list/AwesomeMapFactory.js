@@ -55,6 +55,8 @@ define(function(require) {
          */
         createItemMap: function(scrollList, host) {
             var options = scrollList.getOptions();
+            var yBoundaryMode = 'slow';
+            if( options.mode === ScrollModes.SINGLE ) yBoundaryMode = 'stop';
             var map = new AwesomeMap(host, {
                 touchScrollingEnabled: options.touchScrollingEnabled
             });
@@ -70,7 +72,7 @@ define(function(require) {
             }
             map.addInterceptor(new BoundaryInterceptor({
                 centerContent: true,
-                mode: { x: 'stop', y: 'slow' }
+                mode: { x: 'stop', y: yBoundaryMode }
             }));
 
             // Wire up observables.
