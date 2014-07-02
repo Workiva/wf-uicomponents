@@ -55,8 +55,7 @@ define(function(require) {
          */
         createItemMap: function(scrollList, host) {
             var options = scrollList.getOptions();
-            var yBoundaryMode = 'slow';
-            if( options.mode === ScrollModes.SINGLE ) yBoundaryMode = 'stop';
+            var yBoundaryMode = options.mode === ScrollModes.SINGLE ? 'stop' : 'slow';
             var map = new AwesomeMap(host, {
                 touchScrollingEnabled: options.touchScrollingEnabled
             });
