@@ -25,7 +25,7 @@ define(function(require) {
     describe('ScrollBar', function() {
 
         var itemSizeCollection, scrollList, scrollBar, parentEl, options, initialize;
-        var $host, $parent;
+        var $parent;
 
         itemSizeCollection = new ItemSizeCollection({
             maxWidth: 600,
@@ -36,32 +36,15 @@ define(function(require) {
             ]
         });
 
-        $host = $('<div id="host"></div>');
-        $('body').append($host);
-        var hostEl = document.getElementById('host');
-        
-        hostEl.style.height = '50px';
-
-        scrollList = new ScrollList(hostEl, itemSizeCollection, {
-            mode: 'flow',
-            fit: 'auto',
-            padding: 10 ,
-            gap: 10,
-            concurrentContentLimit: 3
-        });
-
-        $parent = $('<div id="scroll-bar-parent"></div>');
-        $('body').append($parent);
-
-        options = {};
-        options.scrollbarId = 'scroll-bar';
-        options.scrollbarContainerId = 'scroll-bar-container';
-        options.scrollbarClass = 'scroll-bar';
-        options.scrollBarContainerClass = 'scroll-bar-container';
-
         parentEl = document.getElementById('scroll-bar-parent');
 
         initialize = function() {
+            options = {};
+            options.scrollbarId = 'scroll-bar';
+            options.scrollbarContainerId = 'scroll-bar-container';
+            options.scrollbarClass = 'scroll-bar';
+            options.scrollBarContainerClass = 'scroll-bar-container';
+
             scrollBar = new ScrollBar(scrollList, parentEl, options);
         };
 
@@ -73,7 +56,7 @@ define(function(require) {
             var position = scrollBarEL.style.top;
             position = parseInt(position, 10);
 
-            expect(position).toEqual(Math.floor(scrollBar._availableScrollbarHeight));
+            expect(position).toEqual(Math.round(scrollBar._availableScrollbarHeight));
         }
 
         function checkForScrollPastEnd () {
@@ -107,10 +90,26 @@ define(function(require) {
             expect(newY).toBeLessThan(scrollList._layout.getSize().height + 1);
         }
 
+        beforeEach(function() {
+            $parent = $('<div id="scroll-bar-parent"></div>');
+            $parent.empty().css({ position: 'absolute', top: -10000, width: 500, height: 500 }).appendTo('body');
+            parentEl = $parent[0];
+
+            scrollList = new ScrollList(parentEl, itemSizeCollection, {
+                mode: 'flow',
+                fit: 'auto',
+                padding: 10,
+                gap: 10,
+                concurrentContentLimit: 3
+            });
+        });
+
         afterEach(function() {
+            scrollList.dispose();
             if ($('#scroll-bar').length > 0) {
                 scrollBar.dispose();
             }
+            $parent.remove();
         });
 
         it('should initialize the ScrollBar with the given parameters', function() {
@@ -233,9 +232,6 @@ define(function(require) {
 
             it('should put the ScrollBar at the bottom when the ScrollList is scrolled to the end', function() {
                 checkScrollBarAtBottom();
-                this.after(function(){
-                    $host.empty().remove();
-                });
             });
         });
     });

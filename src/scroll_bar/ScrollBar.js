@@ -237,7 +237,7 @@ define(function(require) {
          */
         _placeScrollBar: function() {
             var currentPosition = this._layout.getVisiblePosition().top;
-            var translatedPosition = this._availableScrollbarHeight / this._virtualHeight * currentPosition;
+            var translatedPosition = Math.round(this._availableScrollbarHeight / this._virtualHeight * currentPosition);
             this._elements.scrollbar.style.top = translatedPosition + 'px';
         },
 
