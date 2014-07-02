@@ -55,7 +55,7 @@ define(function(require) {
             awesomeMap.dispose();
         });
 
-        xdescribe('construction', function() {
+        describe('construction', function() {
 
             it('should require specifying a host element', function() {
                 var constructor = function() {
