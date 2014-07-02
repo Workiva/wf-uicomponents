@@ -55,7 +55,7 @@ define(function(require) {
             awesomeMap.dispose();
         });
 
-        describe('construction', function() {
+        xdescribe('construction', function() {
 
             it('should require specifying a host element', function() {
                 var constructor = function() {
@@ -742,30 +742,56 @@ define(function(require) {
                 ], jasmine.any(Function));
             });
 
-            it('should normalize the event position relative to the viewport origin if disabled', function() {
-                var evt = createInteractionEvent(null);
-                evt.position = {
-                    x: 100,
-                    y: 200
-                };
-                var viewportOffset = {
-                    left: 10,
-                    top: 20
-                };
-                var viewport = awesomeMap.getViewport();
-                spyOn(viewport, 'getBoundingClientRect').andReturn(viewportOffset);
+            describe('normalizing event position relative to viewport origin', function() {
+                var awesomeMap;
+                var eventPosition;
+                var viewportOffset;
+                function dispatchAndGetEventPosition(options) {
+                    awesomeMap = new AwesomeMap($host[0], {
+                        normalizeEventPosition: options.normalizeEventPosition
+                    });
+                    spyOn(awesomeMap, 'isDisabled').andReturn(options.disable);
 
-                spyOn(awesomeMap, 'isDisabled').andReturn(true);
-                spyOn(awesomeMap, 'getCurrentTransformState').andReturn(new TransformState());
-                spyOn(awesomeMap.onInteraction, 'dispatch');
+                    viewportOffset = {
+                        left: 10,
+                        top: 20
+                    };
 
-                awesomeMap.handleInteractionEvent(null, { event: evt });
+                    var evt = createInteractionEvent(null);
+                    evt.position = _.clone(eventPosition = {
+                        x: 100,
+                        y: 200
+                    });
 
-                expect(awesomeMap.onInteraction.dispatch).toHaveBeenCalled();
-                var args = awesomeMap.onInteraction.dispatch.mostRecentCall.args[0];
-                var dispatchedEventPosition = args[1].event.position;
-                expect(dispatchedEventPosition.x).toBe(100 - 10);
-                expect(dispatchedEventPosition.y).toBe(200 - 20);
+                    var viewport = awesomeMap.getViewport();
+                    spyOn(viewport, 'getBoundingClientRect').andReturn(viewportOffset);
+                    spyOn(awesomeMap, 'getCurrentTransformState').andReturn(new TransformState());
+                    spyOn(awesomeMap.onInteraction, 'dispatch');
+
+                    awesomeMap.handleInteractionEvent(null, { event: evt });
+
+                    expect(awesomeMap.onInteraction.dispatch).toHaveBeenCalled();
+                    var args = awesomeMap.onInteraction.dispatch.mostRecentCall.args[0];
+                    return args[1].event.position;
+                }
+                afterEach(function() {
+                    awesomeMap.dispose();
+                });
+                it('should not normalize if the map is not disabled', function() {
+                    var pos = dispatchAndGetEventPosition({ normalizeEventPosition: true, disable: false });
+                    expect(pos.x).toBe(eventPosition.x);
+                    expect(pos.y).toBe(eventPosition.y);
+                });
+                it('should not normalize if the "normalizeEventPosition" option is falsy', function() {
+                    var pos = dispatchAndGetEventPosition({ normalizeEventPosition: undefined, disable: true });
+                    expect(pos.x).toBe(eventPosition.x);
+                    expect(pos.y).toBe(eventPosition.y);
+                });
+                it('should normalize if the "normalizeEventPosition" option is true and the map is disabled', function() {
+                    var pos = dispatchAndGetEventPosition({ normalizeEventPosition: true, disable: true });
+                    expect(pos.x).toBe(eventPosition.x - viewportOffset.left);
+                    expect(pos.y).toBe(eventPosition.y - viewportOffset.top);
+                });
             });
 
             it('should set current state to end state of event transformation', function() {

@@ -95,6 +95,7 @@ define(function(require) {
             var layout = scrollList.getLayout();
             var options = scrollList.getOptions();
             var map = new AwesomeMap(scrollList.getHost(), {
+                normalizeEventPosition: true,
                 touchScrollingEnabled: options.touchScrollingEnabled
             });
 
