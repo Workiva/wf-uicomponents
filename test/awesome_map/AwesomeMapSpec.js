@@ -746,7 +746,7 @@ define(function(require) {
                 var awesomeMap;
                 var eventPosition;
                 var viewportOffset;
-                function dispatchAndGetEventPosition(options) {
+                function dispatchEvent(options) {
                     awesomeMap = new AwesomeMap($host[0], {
                         normalizeEventPosition: options.normalizeEventPosition
                     });
@@ -756,7 +756,6 @@ define(function(require) {
                         left: 10,
                         top: 20
                     };
-
                     var evt = createInteractionEvent(null);
                     evt.position = _.clone(eventPosition = {
                         x: 100,
@@ -769,7 +768,8 @@ define(function(require) {
                     spyOn(awesomeMap.onInteraction, 'dispatch');
 
                     awesomeMap.handleInteractionEvent(null, { event: evt });
-
+                }
+                function getDispatchedEventPosition() {
                     expect(awesomeMap.onInteraction.dispatch).toHaveBeenCalled();
                     var args = awesomeMap.onInteraction.dispatch.mostRecentCall.args[0];
                     return args[1].event.position;
@@ -778,17 +778,20 @@ define(function(require) {
                     awesomeMap.dispose();
                 });
                 it('should not normalize if the map is not disabled', function() {
-                    var pos = dispatchAndGetEventPosition({ normalizeEventPosition: true, disable: false });
+                    dispatchEvent({ normalizeEventPosition: true, disable: false });
+                    var pos = getDispatchedEventPosition();
                     expect(pos.x).toBe(eventPosition.x);
                     expect(pos.y).toBe(eventPosition.y);
                 });
                 it('should not normalize if the "normalizeEventPosition" option is false', function() {
-                    var pos = dispatchAndGetEventPosition({ normalizeEventPosition: false, disable: true });
+                    dispatchEvent({ normalizeEventPosition: false, disable: true });
+                    var pos = getDispatchedEventPosition();
                     expect(pos.x).toBe(eventPosition.x);
                     expect(pos.y).toBe(eventPosition.y);
                 });
                 it('should normalize if the "normalizeEventPosition" option is true and the map is disabled', function() {
-                    var pos = dispatchAndGetEventPosition({ normalizeEventPosition: true, disable: true });
+                    dispatchEvent({ normalizeEventPosition: true, disable: true });
+                    var pos = getDispatchedEventPosition();
                     expect(pos.x).toBe(eventPosition.x - viewportOffset.left);
                     expect(pos.y).toBe(eventPosition.y - viewportOffset.top);
                 });
