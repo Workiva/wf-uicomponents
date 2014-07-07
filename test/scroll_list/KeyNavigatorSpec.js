@@ -40,10 +40,11 @@ define(function(require){
                 keyNavigator = new KeyNavigator(scrollList);
                 scrollList.scrollToPosition({ y: 300 });
             });
+
             afterEach(function() {
                 scrollList.dispose();
+                keyNavigator.dispose();
             });
-
             
             it('should scroll up on up arrow keypress', function() {
                 spyOn(keyNavigator, '_moveY').andCallThrough();
@@ -208,6 +209,7 @@ define(function(require){
             });
             afterEach(function() {
                 scrollList.dispose();
+                keyNavigator.dispose();
             });
 
             it('should go to the previous page on up arrow keypress', function() {
