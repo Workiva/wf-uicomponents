@@ -36,7 +36,14 @@ define(function(require) {
             ]
         });
 
-        parentEl = document.getElementById('scroll-bar-parent');
+        $('<div id="scrolllist-host"></div>').css({ position: 'absolute', top: -10000, width: 500, height: 500 }).appendTo('body');
+        scrollList = new ScrollList(document.getElementById('scrolllist-host'), itemSizeCollection, {
+            mode: 'flow',
+            fit: 'auto',
+            padding: 10,
+            gap: 10,
+            concurrentContentLimit: 3
+        });
 
         initialize = function() {
             options = {};
@@ -49,10 +56,11 @@ define(function(require) {
         };
 
         function checkScrollBarAtBottom () {
-            scrollList.scrollToPosition({y: scrollList.getLayout().getSize().height});
+            var scrollBarEL = document.getElementById('scroll-bar');
+            scrollList.scrollToPosition({ y: scrollList.getLayout().getSize().height });
+
             scrollBar._placeScrollBar();
 
-            var scrollBarEL = document.getElementById('scroll-bar');
             var position = scrollBarEL.style.top;
             position = parseInt(position, 10);
 
@@ -94,18 +102,9 @@ define(function(require) {
             $parent = $('<div id="scroll-bar-parent"></div>');
             $parent.empty().css({ position: 'absolute', top: -10000, width: 500, height: 500 }).appendTo('body');
             parentEl = $parent[0];
-
-            scrollList = new ScrollList(parentEl, itemSizeCollection, {
-                mode: 'flow',
-                fit: 'auto',
-                padding: 10,
-                gap: 10,
-                concurrentContentLimit: 3
-            });
         });
 
         afterEach(function() {
-            scrollList.dispose();
             if ($('#scroll-bar').length > 0) {
                 scrollBar.dispose();
             }
@@ -201,7 +200,7 @@ define(function(require) {
                 var listMap = scrollList.getListMap();
                 listMap.transform({
                     x: 0,
-                    y: -scrollList._layout.getSize().height,
+                    y: 0,
                     scale: listMap.getCurrentTransformState().scale + 0.5
                 });
             });
@@ -211,6 +210,8 @@ define(function(require) {
             });
 
             it('should put the ScrollBar at the bottom when the ScrollList is scrolled to the end', function() {
+                scrollBar._placeScrollBar();
+
                 checkScrollBarAtBottom();
             });
         });
