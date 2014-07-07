@@ -23,7 +23,7 @@ define(function(require) {
     var DoubleTapZoomInterceptor = require('wf-js-uicomponents/awesome_map/DoubleTapZoomInterceptor');
     var HitTester = require('wf-js-uicomponents/scroll_list/HitTester');
     var MouseWheelNavigationInterceptor = require('wf-js-uicomponents/scroll_list/MouseWheelNavigationInterceptor');
-    var PropogationInterceptor = require('wf-js-uicomponents/scroll_list/PropogationInterceptor');
+    var PropagationInterceptor = require('wf-js-uicomponents/scroll_list/PropagationInterceptor');
     var RenderingHooksInterceptor = require('wf-js-uicomponents/scroll_list/RenderingHooksInterceptor');
     var ScaleInterceptor = require('wf-js-uicomponents/awesome_map/ScaleInterceptor');
     var ScrollModes = require('wf-js-uicomponents/scroll_list/ScrollModes');
@@ -57,6 +57,9 @@ define(function(require) {
             var options = scrollList.getOptions();
             var yBoundaryMode = options.mode === ScrollModes.SINGLE ? 'stop' : 'slow';
             var map = new AwesomeMap(host, {
+                // By the time an event comes through, it has already passed through the list map,
+                // so there's no need to normalize the position again.
+                normalizeEventPosition: false,
                 touchScrollingEnabled: options.touchScrollingEnabled
             });
 
@@ -126,7 +129,7 @@ define(function(require) {
                     map.addInterceptor(new SwipeNavigationInterceptor(scrollList));
                 }
                 map.addInterceptor(new MouseWheelNavigationInterceptor(scrollList));
-                map.addInterceptor(new PropogationInterceptor(scrollList));
+                map.addInterceptor(new PropagationInterceptor(scrollList));
             }
             map.addInterceptor(new RenderingHooksInterceptor(scrollList));
 

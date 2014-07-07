@@ -18,17 +18,17 @@ define(function(require) {
     'use strict';
 
     var AwesomeMap = require('wf-js-uicomponents/awesome_map/AwesomeMap');
-    var PropogationInterceptor = require('wf-js-uicomponents/scroll_list/PropogationInterceptor');
+    var PropagationInterceptor = require('wf-js-uicomponents/scroll_list/PropagationInterceptor');
     var ScrollList = require('wf-js-uicomponents/scroll_list/ScrollList');
 
-    describe('PropogationInterceptor', function() {
+    describe('PropagationInterceptor', function() {
 
         var scrollList = ScrollList.prototype;
         var itemMap = AwesomeMap.prototype;
         var interceptor;
 
         beforeEach(function() {
-            interceptor = new PropogationInterceptor(scrollList);
+            interceptor = new PropagationInterceptor(scrollList);
 
             spyOn(itemMap, 'handleInteractionEvent');
             spyOn(scrollList, 'getCurrentItemMap').andReturn(itemMap);

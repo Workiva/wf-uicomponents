@@ -21,21 +21,21 @@ define(function(require) {
     var InterceptorMixin = require('wf-js-uicomponents/awesome_map/InterceptorMixin');
 
     /**
-     * Creates a new PropogationInterceptor for the given {@link ScrollList}.
+     * Creates a new PropagationInterceptor for the given {@link ScrollList}.
      *
      * @classdesc
      *
-     * The PropogationInterceptor propogates interaction events from a
+     * The PropagationInterceptor propagates interaction events from a
      * list map to the current item map if the event is not cancelled
      * by the list map.
      *
-     * @name PropogationInterceptor
+     * @name PropagationInterceptor
      * @constructor
      * @mixes InterceptorMixin
      *
      * @param  {ScrollList} scrollList
      */
-    var PropogationInterceptor = function(scrollList) {
+    var PropagationInterceptor = function(scrollList) {
 
         //---------------------------------------------------------
         // Private properties
@@ -48,7 +48,7 @@ define(function(require) {
         this._scrollList = scrollList;
     };
 
-    PropogationInterceptor.prototype = {
+    PropagationInterceptor.prototype = {
 
         //---------------------------------------------------------
         // Public methods
@@ -75,7 +75,7 @@ define(function(require) {
         }
     };
 
-    _.assign(PropogationInterceptor.prototype, InterceptorMixin);
+    _.assign(PropagationInterceptor.prototype, InterceptorMixin);
 
-    return PropogationInterceptor;
+    return PropagationInterceptor;
 });
