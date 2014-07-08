@@ -433,7 +433,6 @@ define(function(require) {
          * @return {boolean}
          */
         isDisabled: function() {
-            // return this._hitArea.style.display === 'none';
             return this._disabled;
         },
 
@@ -533,7 +532,6 @@ define(function(require) {
          * @method AwesomeMap#disable
          */
         disable: function() {
-            // this._hitArea.style.display = 'none';
             this._disabled = true;
         },
 
@@ -574,7 +572,6 @@ define(function(require) {
          * @method AwesomeMap#enable
          */
         enable: function() {
-            // this._hitArea.style.display = 'block';
             this._disabled = false;
         },
 
