@@ -625,7 +625,7 @@ define(function(require) {
          * @method ScrollList#scrollTo
          * @param {Object} options
          * @param {number} options.index - The index of the content to jump to.
-         * @param TOMTODO options.offset -  {{ x: number, y: number, type: string }} - An item-relative offset to position the viewport.  Type can be 'top' [default], center', or 'bottom').
+         * @param options.offset -  {{ x: number, y: number, type: string }} - An item-relative offset to position the viewport.  Type can be 'top' [default], center', or 'bottom').
          * @param {Function} [options.done] - Callback invoked when the jump is complete.
          //TOMTODO Fix all references of scrollTo to scrollToItem.  Any references to options.center to options.offset. --tconnell 2014-07-03 14:47:50
          */
@@ -903,37 +903,6 @@ define(function(require) {
                 panToOptions.y += offset.y;
             }
 
-        },
-        _setViewportCenter: function(position, itemScaleToFit, panToOptions) {
-            var viewportSize = this._layout.getViewportSize();
-            var getCenterOffset = function(scale) {
-                return {
-                    x: (viewportSize.width / 2) - (itemScaleToFit * position.x * scale),
-                    y: (viewportSize.height / 2) - (itemScaleToFit * position.y * scale),
-                };
-            };
-
-            // If we are using a item map, we need to pan that map separately.
-            var offset;
-            var itemMap = this.getCurrentItemMap();
-            if (itemMap) {
-                var originalDone = panToOptions.done;
-                panToOptions.done = function() {
-                    offset = getCenterOffset(itemMap.getCurrentTransformState().scale);
-                    itemMap.panTo({
-                        x: offset.x,
-                        y: offset.y,
-                        duration: 0,
-                        done: originalDone
-                    });
-                };
-            }
-            // If not using a item map, we can pan to the position directly.
-            else {
-                offset = getCenterOffset(this._listMap.getCurrentTransformState().scale);
-                panToOptions.x = offset.x;
-                panToOptions.y += offset.y;
-            }
         },
 
         /**
