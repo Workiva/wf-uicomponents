@@ -625,7 +625,7 @@ define(function(require) {
          * @method ScrollList#scrollTo
          * @param {Object} options
          * @param {number} options.index - The index of the content to jump to.
-         * @param options.offset -  {{ x: number, y: number, type: string }} - An item-relative offset to position the viewport.  Type can be 'top' [default], center', or 'bottom').
+         * @param {{ x: number, y: number, type: string }} [options.offset] - An item-relative offset to position the viewport.  Type can be 'top' [default], center', or 'bottom').
          * @param {Function} [options.done] - Callback invoked when the jump is complete.
          //TOMTODO Fix all references of scrollTo to scrollToItem.  Any references to options.center to options.offset. --tconnell 2014-07-03 14:47:50
          */
