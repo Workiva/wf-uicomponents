@@ -625,10 +625,11 @@ define(function(require) {
          * @method ScrollList#scrollTo
          * @param {Object} options
          * @param {number} options.index - The index of the content to jump to.
-         * @param {{ x: number, y: number }} [options.center] - An item-relative position to center in the viewport.
+         * @param TOMTODO options.offset -  {{ x: number, y: number, type: string }} - An item-relative offset to position the viewport.  Type can be 'top' [default], center', or 'bottom').
          * @param {Function} [options.done] - Callback invoked when the jump is complete.
+         //TOMTODO Fix all references of scrollTo to scrollToItem.  Any references to options.center to options.offset. --tconnell 2014-07-03 14:47:50
          */
-        scrollTo: function(options) {
+        scrollToItem: function(options) {
             if (options.index === undefined) {
                 throw new Error('ScrollList#scrollTo: index is required.');
             }
@@ -673,11 +674,10 @@ define(function(require) {
             panToOptions.x = listState.translateX;
             panToOptions.y = -itemLayout.top * listState.scale;
 
-            // If given a content position to center,
-            // place it at the center of the viewport.
-            var position = options.center;
-            if (position) {
-                this._setViewportCenter(position, itemLayout.scaleToFit, panToOptions);
+            // If given a content offset within the item, place it at the center of the viewport.
+            if (options.offset)
+            {
+                this._setViewportLocation(options.offset, itemLayout.scaleToFit, panToOptions);
             }
 
             this.onCurrentItemChanging.dispatch([this, {
@@ -841,9 +841,57 @@ define(function(require) {
         },
 
         /**
-         * Companion method to `scrollTo` responsible for centering the item
+         * Companion method to `scrollToItem` responsible for positioning the viewport the item
          * position in the viewport as part of the scroll operation.
          */
+         _setViewportLocation: function(offset, itemScaleToFit, panToOptions) {
+            //TOMTODO - In peek and single modes, the first invocation of this function is not setting the offset.  Look in itemMap .   line 866
+            var viewportSize = this._layout.getViewportSize();
+            //Top and bottom are absolutes, center can change depending on the size of the viewport and scale. --tconnell 2014-07-03 15:34:39
+            var getCenterOffset = function(scale) {
+                return {
+                    x: (viewportSize.width / 2) - (itemScaleToFit * offset.x * scale),
+                    y: (viewportSize.height / 2) - (itemScaleToFit * offset.y * scale),
+                };
+            };
+            console.log(offset);
+
+            if (offset.type === 'top')
+            {
+                offset.y *= -1; //This may seem obscure.  When positioning from the top, we're actually moving the viewport off the screen by this much, so flip the sign.  --tconnell 2014-07-03 15:46:53
+            }
+
+            // If we are using a item map, we need to pan that map separately.
+            var itemMap = this.getCurrentItemMap();
+            if (itemMap) {
+                if (offset.type === 'center')
+                {
+                    offset = getCenterOffset(itemMap.getCurrentTransformState().scale);
+                }
+                console.log('item', offset);
+                var originalDone = panToOptions.done;
+                panToOptions.done = function() {
+                    itemMap.panTo({
+                        x: offset.x,
+                        y: offset.y,
+                        duration: 0,
+                        done: originalDone
+                    });
+                };
+            }
+            // If not using a item map, we can pan to the position directly.
+            else {
+                if(offset.type === 'center')
+                {
+                    offset = getCenterOffset(this._listMap.getCurrentTransformState().scale);
+                }
+                console.log('list', offset);
+                panToOptions.x = offset.x;
+                panToOptions.y += offset.y;
+            }
+            console.log('panToOptions', panToOptions);
+
+        },
         _setViewportCenter: function(position, itemScaleToFit, panToOptions) {
             var viewportSize = this._layout.getViewportSize();
             var getCenterOffset = function(scale) {
@@ -868,7 +916,7 @@ define(function(require) {
                     });
                 };
             }
-            // If not using a item map, we can pan to the postion directly.
+            // If not using a item map, we can pan to the position directly.
             else {
                 offset = getCenterOffset(this._listMap.getCurrentTransformState().scale);
                 panToOptions.x = offset.x;
