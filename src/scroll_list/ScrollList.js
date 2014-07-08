@@ -671,8 +671,15 @@ define(function(require) {
             var targetIndex = Math.max(0, Math.min(options.index || 0, this._itemSizesCollection.getLength() - 1));
             var itemLayout = layout.getItemLayout(targetIndex);
             var listState = this._listMap.getCurrentTransformState();
+            var viewportSize = layout.getViewportSize();
             panToOptions.x = listState.translateX;
-            panToOptions.y = -itemLayout.top * listState.scale;
+
+            //bottom is a little tricky because if we just used itemLayout.bottom, that would be like saying itemLayout.top of the next item.  Not very useful.  So, we put the bottom of the item on the bottom of the viewport. --tconnell 2014-07-08 13:55:16
+            panToOptions.y = options.offset.type === 'bottom' ? viewportSize.height - itemLayout.bottom : -itemLayout.top;
+            panToOptions.y *= listState.scale;
+
+            console.log('inner', itemLayout.innerHeight, 'outer', itemLayout.outerHeight);
+            console.log('viewportSize', viewportSize);
 
             // If given a content offset within the item, place it at the center of the viewport.
             if (options.offset)
@@ -854,6 +861,14 @@ define(function(require) {
                     y: (viewportSize.height / 2) - (itemScaleToFit * offset.y * scale),
                 };
             };
+
+            var getBottomOffset = function(scale)
+            {
+                return {
+                    x: offset.x * itemScaleToFit * scale,
+                    y: (panToOptions.x + offset.y + viewportSize.height - itemMap._contentDimensions.height) * itemScaleToFit * scale
+                }
+            }
             console.log(offset);
 
             if (offset.type === 'top')
@@ -867,6 +882,10 @@ define(function(require) {
                 if (offset.type === 'center')
                 {
                     offset = getCenterOffset(itemMap.getCurrentTransformState().scale);
+                }
+                else if (offset.type === 'bottom')
+                {
+                    offset = getBottomOffset(itemMap.getCurrentTransformState().scale);
                 }
                 console.log('item', offset);
                 var originalDone = panToOptions.done;
