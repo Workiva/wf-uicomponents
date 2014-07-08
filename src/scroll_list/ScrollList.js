@@ -678,9 +678,6 @@ define(function(require) {
             panToOptions.y = options.offset.type === 'bottom' ? viewportSize.height - itemLayout.bottom : -itemLayout.top;
             panToOptions.y *= listState.scale;
 
-            console.log('inner', itemLayout.innerHeight, 'outer', itemLayout.outerHeight);
-            console.log('viewportSize', viewportSize);
-
             // If given a content offset within the item, place it at the center of the viewport.
             if (options.offset)
             {
@@ -869,7 +866,6 @@ define(function(require) {
                     y: (panToOptions.x + offset.y + viewportSize.height - itemMap._contentDimensions.height) * itemScaleToFit * scale
                 }
             }
-            console.log(offset);
 
             if (offset.type === 'top')
             {
@@ -887,7 +883,6 @@ define(function(require) {
                 {
                     offset = getBottomOffset(itemMap.getCurrentTransformState().scale);
                 }
-                console.log('item', offset);
                 var originalDone = panToOptions.done;
                 panToOptions.done = function() {
                     itemMap.panTo({
@@ -904,11 +899,9 @@ define(function(require) {
                 {
                     offset = getCenterOffset(this._listMap.getCurrentTransformState().scale);
                 }
-                console.log('list', offset);
                 panToOptions.x = offset.x;
                 panToOptions.y += offset.y;
             }
-            console.log('panToOptions', panToOptions);
 
         },
         _setViewportCenter: function(position, itemScaleToFit, panToOptions) {
