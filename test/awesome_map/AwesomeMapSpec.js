@@ -349,7 +349,7 @@ define(function(require) {
                 expect(host).toBe(awesomeMap._host);
             });
 
-            it('should get whether the hit area is enabled', function() {
+            it('should get whether the map is enabled', function() {
                 expect(awesomeMap.isDisabled()).toBe(false);
 
                 awesomeMap.disable();
@@ -413,12 +413,6 @@ define(function(require) {
 
         describe('disabling', function() {
 
-            it('should set display:none on the hit area', function() {
-                awesomeMap.disable();
-
-                expect(awesomeMap._hitArea.style.display).toBe('none');
-            });
-
             it('should cause map to ignore direct user interaction', function() {
                 var gesture = new Gesture();
                 var evt = new InteractionEvent({ simulated: false }, gesture, gesture);
@@ -433,12 +427,6 @@ define(function(require) {
         });
 
         describe('enabling', function() {
-
-            it('should set display:block on the hit area', function() {
-                awesomeMap.enable();
-
-                expect(awesomeMap._hitArea.style.display).toBe('block');
-            });
 
             it('should cause map to respond to direct user interaction', function() {
                 var gesture = new Gesture();
