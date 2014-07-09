@@ -627,7 +627,6 @@ define(function(require) {
          * @param {number} options.index - The index of the content to jump to.
          * @param {{ x: number, y: number, type: string }} [options.offset] - An item-relative offset to position the viewport.  Type can be 'top' [default], center', or 'bottom').
          * @param {Function} [options.done] - Callback invoked when the jump is complete.
-         //TOMTODO Fix all references of scrollTo to scrollToItem.  Any references to options.center to options.offset. --tconnell 2014-07-03 14:47:50
          */
         scrollToItem: function(options) {
             if (options.index === undefined) {
@@ -851,7 +850,7 @@ define(function(require) {
          _setViewportLocation: function(offset, itemScaleToFit, panToOptions) {
             //TOMTODO - In peek and single modes, the first invocation of this function is not setting the offset.  Look in itemMap .   line 866
             var viewportSize = this._layout.getViewportSize();
-            //Top and bottom are absolutes, center can change depending on the size of the viewport and scale. --tconnell 2014-07-03 15:34:39
+            //Top is an absolute, but center and bottom can change depending on the size of the viewport and scale. --tconnell 2014-07-03 15:34:39
             var getCenterOffset = function(scale) {
                 return {
                     x: (viewportSize.width / 2) - (itemScaleToFit * offset.x * scale),
@@ -895,7 +894,7 @@ define(function(require) {
             }
             // If not using a item map, we can pan to the position directly.
             else {
-                if(offset.type === 'center')
+                if (offset.type === 'center')
                 {
                     offset = getCenterOffset(this._listMap.getCurrentTransformState().scale);
                 }
