@@ -194,6 +194,24 @@ define(function(require) {
             expect(scrollBar._placeScrollBar).toHaveBeenCalled();
         });
 
+        it('should not show the scrollbar when it is not needed', function() {
+            initialize();
+            var listMap = scrollList.getListMap();
+            listMap.transform({
+                x: 0,
+                y: 0,
+                scale: listMap.getCurrentTransformState().scale * 0.1
+            });
+
+            expect(scrollBar._scrollbarHeight).toBe(0);
+
+            listMap.transform({
+                x: 0,
+                y: 0,
+                scale: listMap.getCurrentTransformState().scale * 10
+            });
+        });
+
         describe('when zoomed in', function () {
             beforeEach(function() {
                 initialize();

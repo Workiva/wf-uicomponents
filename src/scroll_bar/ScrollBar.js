@@ -238,6 +238,8 @@ define(function(require) {
         _placeScrollBar: function() {
             var currentPosition = this._layout.getVisiblePosition().top;
             var translatedPosition = Math.round(this._availableScrollbarHeight / this._virtualHeight * currentPosition);
+            translatedPosition = Math.max(0, translatedPosition);
+            translatedPosition = Math.min(translatedPosition, this._availableScrollbarHeight);
             this._elements.scrollbar.style.top = translatedPosition + 'px';
         },
 
@@ -290,7 +292,9 @@ define(function(require) {
             // The scrollbar shouldn't be shorter than MIN_HEIGHT
             var MIN_HEIGHT = this._options.minHeight || 8;
             var height = Math.max(MIN_HEIGHT, (this._viewportHeight / this._scrollableVirtualHeight) * this._layout.getViewportSize().height);
-
+            if (height >= this._layout.getViewportSize().height) {
+                height = 0;
+            }
             return height;
         },
 
