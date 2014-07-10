@@ -85,9 +85,9 @@ define(function(require) {
         this._TOTAL_ITEMS = scrollList.getItemSizeCollection ? scrollList.getItemSizeCollection()._items.length :
                             scrollList.getItemMetadata().length;
 
-        this._viewportHeight = this._layout.getVisiblePosition().bottom - this._layout.getVisiblePosition().top;
+        this._visibleHeight = this._layout.getVisiblePosition().bottom - this._layout.getVisiblePosition().top;
 
-        this._virtualHeight = this._layout.getSize().height - this._viewportHeight;
+        this._virtualHeight = this._layout.getSize().height - this._visibleHeight;
 
         this._scrollableVirtualHeight = this._layout.getSize().height;
 
@@ -95,7 +95,7 @@ define(function(require) {
 
         this._setUpDOM();
 
-        this._availableScrollbarHeight = this._viewportHeight - this._scrollbarHeight;
+        this._availableScrollbarHeight = this._visibleHeight - this._scrollbarHeight;
 
         // Set scrollbarScrolling to initially false
         this._scrollbarScrolling = false;
@@ -291,11 +291,11 @@ define(function(require) {
             // Calculate the size of the scrollbar depending on the virtual height
             // The scrollbar shouldn't be shorter than MIN_HEIGHT
             var MIN_HEIGHT = this._options.minHeight || 8;
-            var height = Math.max(MIN_HEIGHT, (this._viewportHeight / this._scrollableVirtualHeight) * this._layout.getViewportSize().height);
-            if (height >= this._layout.getViewportSize().height) {
-                height = 0;
+            var scrollBarHeight = Math.max(MIN_HEIGHT, (this._visibleHeight / this._scrollableVirtualHeight) * this._layout.getViewportSize().height);
+            if (scrollBarHeight >= this._layout.getViewportSize().height) {
+                scrollBarHeight = 0;
             }
-            return height;
+            return scrollBarHeight;
         },
 
         /**
@@ -303,8 +303,8 @@ define(function(require) {
          */
         _adjustScale: function() {
             this._scale = this._listMap.getCurrentTransformState().scale;
-            this._viewportHeight = this._layout.getVisiblePosition().bottom - this._layout.getVisiblePosition().top;
-            this._virtualHeight = this._layout.getSize().height - this._viewportHeight;
+            this._visibleHeight = this._layout.getVisiblePosition().bottom - this._layout.getVisiblePosition().top;
+            this._virtualHeight = this._layout.getSize().height - this._visibleHeight;
             this._scrollableVirtualHeight = this._layout.getSize().height;
             this._scrollbarHeight = this._calculateScrollBarHeight();
             this._elements.scrollbar.style.height = this._scrollbarHeight + 'px';
