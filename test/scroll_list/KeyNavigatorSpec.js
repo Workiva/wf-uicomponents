@@ -191,6 +191,18 @@ define(function(require){
 
                 expect(scrollList.scrollToPosition.mostRecentCall.args[0].y).toBeGreaterThan(0);
             });
+
+            it('should still be on the same page after a horizontal scroll', function() {
+                var oldPage = scrollList.getCurrentItem();
+                scrollList.scrollTo({ index: oldPage.index + 1});
+                
+                var keyboardEvent = createEvent(false, 39);
+                keyNavigator._keyNavListener(keyboardEvent);
+
+                var currentPage = scrollList.getCurrentItem();
+
+                expect(currentPage.index).toBe(oldPage.index + 1);
+            });
         });
 
         describe('in peek or single mode', function() {
