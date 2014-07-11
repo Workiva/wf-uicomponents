@@ -19,6 +19,7 @@ define(function(require) {
 
     var requestAnimFrame = require('wf-js-common/requestAnimationFrame');
     var EventTypes = require('wf-js-uicomponents/awesome_map/EventTypes');
+    var DestroyUtil = require('wf-js-common/DestroyUtil');
 
     /**
      * Creates a new ScrollBar with the given ScrollList and options.
@@ -80,14 +81,16 @@ define(function(require) {
 
         this._options = options;
 
+        this._disposed = false;
+
         this._layout = scrollList.getLayout();
 
         this._TOTAL_ITEMS = scrollList.getItemSizeCollection ? scrollList.getItemSizeCollection()._items.length :
                             scrollList.getItemMetadata().length;
 
-        this._viewportHeight = this._layout.getVisiblePosition().bottom - this._layout.getVisiblePosition().top;
+        this._visibleHeight = this._layout.getVisiblePosition().bottom - this._layout.getVisiblePosition().top;
 
-        this._virtualHeight = this._layout.getSize().height - this._viewportHeight;
+        this._virtualHeight = this._layout.getSize().height - this._visibleHeight;
 
         this._scrollableVirtualHeight = this._layout.getSize().height;
 
@@ -95,7 +98,7 @@ define(function(require) {
 
         this._setUpDOM();
 
-        this._availableScrollbarHeight = this._viewportHeight - this._scrollbarHeight;
+        this._availableScrollbarHeight = this._visibleHeight - this._scrollbarHeight;
 
         // Set scrollbarScrolling to initially false
         this._scrollbarScrolling = false;
@@ -107,11 +110,10 @@ define(function(require) {
 
         // Match the scroll bar positioning to the users scrolling
         this._listMap.onTranslationChanged(function() {
-            if (that._scrollbarScrolling) {
-                return;
-            }
             requestAnimFrame(function() {
-                that._placeScrollBar();
+                if (!that._scrollbarScrolling && !that._disposed) {
+                    that._placeScrollBar();
+                }
             });
         });
 
@@ -189,6 +191,8 @@ define(function(require) {
             this._elements.scrollbar.removeEventListener('mousedown', this._mousedownHandler);
             this._elements.scrollbarContainer.removeChild(this._elements.scrollbar);
             this._parent.removeChild(this._elements.scrollbarContainer);
+            DestroyUtil.destroy(this);
+            this._disposed = true;
         },
 
         //---------------------------------------------------------
@@ -238,6 +242,8 @@ define(function(require) {
         _placeScrollBar: function() {
             var currentPosition = this._layout.getVisiblePosition().top;
             var translatedPosition = Math.round(this._availableScrollbarHeight / this._virtualHeight * currentPosition);
+            translatedPosition = Math.max(0, translatedPosition);
+            translatedPosition = Math.min(translatedPosition, this._availableScrollbarHeight);
             this._elements.scrollbar.style.top = translatedPosition + 'px';
         },
 
@@ -289,9 +295,11 @@ define(function(require) {
             // Calculate the size of the scrollbar depending on the virtual height
             // The scrollbar shouldn't be shorter than MIN_HEIGHT
             var MIN_HEIGHT = this._options.minHeight || 8;
-            var height = Math.max(MIN_HEIGHT, (this._viewportHeight / this._scrollableVirtualHeight) * this._layout.getViewportSize().height);
-
-            return height;
+            var scrollBarHeight = Math.max(MIN_HEIGHT, (this._visibleHeight / this._scrollableVirtualHeight) * this._layout.getViewportSize().height);
+            if (scrollBarHeight >= this._layout.getViewportSize().height) {
+                scrollBarHeight = 0;
+            }
+            return scrollBarHeight;
         },
 
         /**
@@ -299,8 +307,8 @@ define(function(require) {
          */
         _adjustScale: function() {
             this._scale = this._listMap.getCurrentTransformState().scale;
-            this._viewportHeight = this._layout.getVisiblePosition().bottom - this._layout.getVisiblePosition().top;
-            this._virtualHeight = this._layout.getSize().height - this._viewportHeight;
+            this._visibleHeight = this._layout.getVisiblePosition().bottom - this._layout.getVisiblePosition().top;
+            this._virtualHeight = this._layout.getSize().height - this._visibleHeight;
             this._scrollableVirtualHeight = this._layout.getSize().height;
             this._scrollbarHeight = this._calculateScrollBarHeight();
             this._elements.scrollbar.style.height = this._scrollbarHeight + 'px';
