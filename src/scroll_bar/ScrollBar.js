@@ -19,6 +19,7 @@ define(function(require) {
 
     var requestAnimFrame = require('wf-js-common/requestAnimationFrame');
     var EventTypes = require('wf-js-uicomponents/awesome_map/EventTypes');
+    var DestroyUtil = require('wf-js-common/DestroyUtil');
 
     /**
      * Creates a new ScrollBar with the given ScrollList and options.
@@ -80,6 +81,8 @@ define(function(require) {
 
         this._options = options;
 
+        this._disposed = false;
+
         this._layout = scrollList.getLayout();
 
         this._TOTAL_ITEMS = scrollList.getItemSizeCollection ? scrollList.getItemSizeCollection()._items.length :
@@ -107,11 +110,10 @@ define(function(require) {
 
         // Match the scroll bar positioning to the users scrolling
         this._listMap.onTranslationChanged(function() {
-            if (that._scrollbarScrolling) {
-                return;
-            }
             requestAnimFrame(function() {
-                that._placeScrollBar();
+                if (!that._scrollbarScrolling && !that._disposed) {
+                    that._placeScrollBar();
+                }
             });
         });
 
@@ -189,6 +191,8 @@ define(function(require) {
             this._elements.scrollbar.removeEventListener('mousedown', this._mousedownHandler);
             this._elements.scrollbarContainer.removeChild(this._elements.scrollbar);
             this._parent.removeChild(this._elements.scrollbarContainer);
+            DestroyUtil.destroy(this);
+            this._disposed = true;
         },
 
         //---------------------------------------------------------
