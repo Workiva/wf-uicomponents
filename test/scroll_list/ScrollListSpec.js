@@ -522,15 +522,15 @@ define(function(require) {
             it('should require an index', function() {
                 testScrollList(function(scrollList) {
                     expect(function() {
-                        scrollList.scrollTo({});
-                    }).toThrow('ScrollList#scrollTo: index is required.');
+                        scrollList.scrollToItem({});
+                    }).toThrow('ScrollList#scrollToItem: index is required.');
                 });
             });
 
             it('should guard against index less than zero', function() {
                 testScrollList(function(scrollList) {
                     spyOn(scrollList._layout, 'getItemLayout').andReturn({ top: 0 });
-                    scrollList.scrollTo({ index: -1 });
+                    scrollList.scrollToItem({ index: -1 });
 
                     expect(scrollList._layout.getItemLayout).toHaveBeenCalledWith(0);
                 });
@@ -541,7 +541,7 @@ define(function(require) {
                     var numberOfItems = scrollList.getItemSizeCollection().getLength();
 
                     spyOn(scrollList._layout, 'getItemLayout').andReturn({ top: 0 });
-                    scrollList.scrollTo({ index: numberOfItems });
+                    scrollList.scrollToItem({ index: numberOfItems });
 
                     expect(scrollList._layout.getItemLayout).toHaveBeenCalledWith(numberOfItems - 1);
                 });
@@ -551,7 +551,7 @@ define(function(require) {
                 testScrollList(function(scrollList) {
                     spyOn(scrollList.onCurrentItemChanging, 'dispatch');
                     spyOn(scrollList._layout, 'getCurrentItemIndex').andReturn(1);
-                    scrollList.scrollTo({ index: 2 });
+                    scrollList.scrollToItem({ index: 2 });
 
                     expect(scrollList.onCurrentItemChanging.dispatch).toHaveBeenCalledWith([
                         scrollList,
@@ -560,7 +560,7 @@ define(function(require) {
                 });
             });
 
-            it('should render placeholders at the jump target if absent', function() {
+            it('should render placeholders at the scroll target if absent', function() {
                 testScrollList(function(scrollList) {
                     var map = scrollList.getListMap();
                     var currentState = { translateX: 10, scale: 2 };
@@ -574,7 +574,7 @@ define(function(require) {
                     spyOn(layout, 'setScrollPosition');
                     spyOn(layout, 'render');
 
-                    scrollList.scrollTo({ index: 10 });
+                    scrollList.scrollToItem({ index: 10 });
 
                     expect(layout.setScrollPosition).toHaveBeenCalledWith({
                         top: -itemLayout.top * currentState.scale,
@@ -595,7 +595,7 @@ define(function(require) {
                     spyOn(map, 'getCurrentTransformState').andReturn(currentState);
                     spyOn(scrollList._layout, 'getItemLayout').andReturn(itemLayout);
 
-                    scrollList.scrollTo({
+                    scrollList.scrollToItem({
                         index: 2,
                         done: done
                     });
@@ -616,7 +616,7 @@ define(function(require) {
 
                         // Expect that we panned the list map.
                         spyOn(listMap, 'panTo');
-                        scrollList.scrollTo({ index: 2 });
+                        scrollList.scrollToItem({ index: 2 });
                         expect(listMap.panTo).toHaveBeenCalled();
 
                         // Mock state during invocation of done and invoke.
@@ -661,36 +661,43 @@ define(function(require) {
                 });
             });
 
-            describe('when scrolling item position to center', function() {
-
-                it('should center list map in flow mode', function() {
-                    testScrollList({ mode: 'flow' }, function(scrollList) {
-                        var map = scrollList.getListMap();
-                        var currentState = { translateX: 0, scale: 2 };
+            describe('when scrolling item to item with offset', function() {
+                var createScrollList = function(options){
+                    var scrollList;
+                    testScrollList(options, function(newScrollList) {
+                        scrollList = newScrollList;
                         var itemLayout = { top: 1000, scaleToFit: 1 };
                         var viewportSize = { width: 200, height: 400 };
 
-                        spyOn(map, 'panTo');
-                        spyOn(map, 'getCurrentTransformState').andReturn(currentState);
                         spyOn(scrollList._layout, 'getItemLayout').andReturn(itemLayout);
                         spyOn(scrollList._layout, 'getViewportSize').andReturn(viewportSize);
+                    });
+                    return scrollList;
+                };
 
-                        scrollList.scrollTo({
-                            index: 2,
-                            duration: 0,
-                            center: { x: 100, y: 200 }
-                        });
+                it(', when offset.type is center, should center list map in flow mode', function() {
+                    var scrollList = createScrollList({ mode: 'flow' });
+                    var map = scrollList.getListMap();
+                    var currentState = { translateX: 0, scale: 2 };
 
-                        expect(map.panTo).toHaveBeenCalledWith({
-                            x: -100,
-                            y: -2200,
-                            duration: 0,
-                            done: undefined
-                        });
+                    spyOn(map, 'panTo');
+                    spyOn(map, 'getCurrentTransformState').andReturn(currentState);
+
+                    scrollList.scrollToItem({
+                        index: 2,
+                        duration: 0,
+                        center: { x: 100, y: 200 }
+                    });
+
+                    expect(map.panTo).toHaveBeenCalledWith({
+                        x: -100,
+                        y: -2200,
+                        duration: 0,
+                        done: undefined
                     });
                 });
 
-                it('should center item map in other modes', function() {
+                it(', when offset.type is center, should center item map in other modes', function() {
                     testScrollList({ mode: 'peek' }, function(scrollList) {
                         var listMap = scrollList.getListMap();
                         var listState = { translateX: 0, scale: 1 };
@@ -711,7 +718,7 @@ define(function(require) {
                         spyOn(scrollList._layout, 'getViewportSize').andReturn(viewportSize);
                         spyOn(scrollList._layout, 'render');
 
-                        scrollList.scrollTo({
+                        scrollList.scrollToItem({
                             index: 2,
                             duration: 0,
                             center: { x: 100, y: 200 }
@@ -732,6 +739,16 @@ define(function(require) {
                         });
                     });
                 });
+
+                // it(', when offset.type is top, should place the item map top at the top of the viewport', function() {
+                // it -- type === top, not flow mode.
+
+
+                // });
+                // it(', when offset.type is bottom, should place the item map top at the bottom of the viewport', function() {
+                // it -- type === bottom, not flow mode.
+
+                // });
             });
         });
 
