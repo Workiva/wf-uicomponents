@@ -158,7 +158,10 @@ define(function(require) {
                 }]);
             });
             map.onTranslationChanged(function(source, args) {
-                scrollList.getLayout().setScrollPosition({ top: args.y, left: args.x });
+                scrollList.getLayout().setScrollPosition({
+                    top: -args.y,
+                    left: -args.x
+                });
                 scrollList.onScrollPositionChanged.dispatch([scrollList, {
                     event: args.event,
                     x: -args.x,

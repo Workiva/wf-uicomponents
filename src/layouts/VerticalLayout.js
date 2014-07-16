@@ -175,7 +175,7 @@ define(function(require) {
 
         /**
          * The direction of the last scroll, updated when the scroll position changes:
-         * No change is 0, scroll up is 1, scroll down is -1.
+         * No change is 0, scroll down is 1, scroll up is -1.
          *
          * @type {number}
          */
@@ -304,7 +304,7 @@ define(function(require) {
             var oldTop = this._scrollPosition.top;
 
             if (newTop !== oldTop) {
-                this._scrollDirection = newTop < oldTop ? -1 : 1;
+                this._scrollDirection = newTop > oldTop ? 1 : -1;
                 this._invalidatePosition();
             }
 
@@ -364,8 +364,8 @@ define(function(require) {
             // First need to determine how to weigh the distribution of extra items.
             var scrollDirection = this._scrollDirection;
             var weight = this._options.directionalRenderingWeight;
-            var startIndexWeight = scrollDirection > 0 ? weight : 1 - weight;
-            var endIndexWeight = scrollDirection > 0 ? 1 - weight : weight;
+            var startIndexWeight = scrollDirection > 0 ? 1 - weight : weight;
+            var endIndexWeight = scrollDirection > 0 ? weight: 1 - weight;
             var startIndex = range.startIndex - Math.ceil(itemsToAdd * startIndexWeight);
             var endIndex = range.endIndex + Math.ceil(itemsToAdd * endIndexWeight);
 
@@ -548,8 +548,8 @@ define(function(require) {
 
             // Setup the initial top and bottom positions for the layout area.
             var visibleHeight = this.getViewportSize().height / this._scale;
-            var top = this._unscale(-currentScrollTop);
-            var bottom = this._unscale(-currentScrollTop) + visibleHeight;
+            var top = this._unscale(currentScrollTop);
+            var bottom = this._unscale(currentScrollTop) + visibleHeight;
 
             // Must offset the layout range to prevent possible gaps in item flow.
             var offsetHeight = visibleHeight * this._options.eagerRenderingFactor;
@@ -562,13 +562,13 @@ define(function(require) {
             if (targetScrollTop !== null) {
 
                 // The content is being shifted up.
-                if (targetScrollTop < currentScrollTop) {
+                if (targetScrollTop > currentScrollTop) {
                     offsetTop = 0;
-                    offsetBottom += this._unscale(currentScrollTop - targetScrollTop);
+                    offsetBottom += this._unscale(targetScrollTop - currentScrollTop);
                 }
                 // The content is being shifted down.
-                else if (targetScrollTop > currentScrollTop) {
-                    offsetTop += this._unscale(targetScrollTop - currentScrollTop);
+                else if (targetScrollTop < currentScrollTop) {
+                    offsetTop += this._unscale(currentScrollTop - targetScrollTop);
                     offsetBottom = 0;
                 }
             }
@@ -646,9 +646,9 @@ define(function(require) {
 
             // Cache and return the visible position.
             result = {
-                top: this._unscale(-scrollTop),
-                bottom: this._unscale(-scrollTop + viewportHeight),
-                center: this._unscale(-scrollTop + viewportHeight / 2)
+                top: this._unscale(scrollTop),
+                bottom: this._unscale(scrollTop + viewportHeight),
+                center: this._unscale(scrollTop + viewportHeight / 2)
             };
             this._cache.visiblePosition = result;
             return result;
