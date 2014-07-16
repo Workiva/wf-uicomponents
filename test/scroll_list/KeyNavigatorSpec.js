@@ -72,29 +72,33 @@ define(function(require){
             });
             
             it('should scroll left on left arrow key presses', function() {
+                var listMap = scrollList.getListMap();
                 spyOn(keyNavigator, '_moveX').andCallThrough();
-                spyOn(scrollList, 'scrollToPosition');
+                spyOn(listMap, 'panTo');
                 
-                var currentPosition = -scrollList.getListMap().getCurrentTransformState().translateX;
+                var currentX = -scrollList.getListMap().getCurrentTransformState().translateX;
+                var currentY = -scrollList.getListMap().getCurrentTransformState().translateY;
                 var currentScale = scrollList.getListMap().getCurrentTransformState().scale;
                 var keyboardEvent = createEvent(false, 37);
                 keyNavigator._keyNavListener(keyboardEvent);
                 
                 expect(keyNavigator._moveX).toHaveBeenCalled();
-                expect(scrollList.scrollToPosition).toHaveBeenCalledWith({ x: (currentPosition / currentScale) - 40 });
+                expect(listMap.panTo).toHaveBeenCalledWith({ x: -(currentX - 40 * currentScale), y: -currentY });
             });
             
             it('should scroll right on right arrow key presses', function() {
+                var listMap = scrollList.getListMap();
                 spyOn(keyNavigator, '_moveX').andCallThrough();
-                spyOn(scrollList, 'scrollToPosition');
+                spyOn(listMap, 'panTo');
                 
-                var currentPosition = -scrollList.getListMap().getCurrentTransformState().translateX;
+                var currentX = -scrollList.getListMap().getCurrentTransformState().translateX;
+                var currentY = -scrollList.getListMap().getCurrentTransformState().translateY;
                 var currentScale = scrollList.getListMap().getCurrentTransformState().scale;
                 var keyboardEvent = createEvent(false, 39);
                 keyNavigator._keyNavListener(keyboardEvent);
                 
                 expect(keyNavigator._moveX).toHaveBeenCalled();
-                expect(scrollList.scrollToPosition).toHaveBeenCalledWith({ x: (currentPosition / currentScale) + 40 });
+                expect(listMap.panTo).toHaveBeenCalledWith({ x: -(currentX + 40 * currentScale), y: -currentY });
             });
             
             it('should go down a page on page down key presses', function() {
@@ -190,6 +194,18 @@ define(function(require){
                 keyNavigator._keyNavListener(keyboardEvent);
 
                 expect(scrollList.scrollToPosition.mostRecentCall.args[0].y).toBeGreaterThan(0);
+            });
+
+            it('should still be on the same page after a horizontal scroll', function() {
+                var oldPage = scrollList.getCurrentItem();
+                scrollList.scrollTo({ index: oldPage.index + 1});
+                
+                var keyboardEvent = createEvent(false, 39);
+                keyNavigator._keyNavListener(keyboardEvent);
+
+                var currentPage = scrollList.getCurrentItem();
+
+                expect(currentPage.index).toBe(oldPage.index + 1);
             });
         });
 

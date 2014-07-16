@@ -133,13 +133,23 @@ define(function(require) {
          *        Which horizontal direction to move in (left or right)
          */
         _moveX: function(direction) {
-            var currentX = -this._scrollList.getListMap().getCurrentTransformState().translateX;
-            var scale = this._scrollList.getListMap().getCurrentTransformState().scale;
+            var listMap = this._scrollList.getListMap();
+            var currentState = listMap.getCurrentTransformState();
+            var currentY = currentState.translateY;
+            var currentX = -currentState.translateX;
+            var currentScale = currentState.scale;
+
             if (direction === keys.LEFT) {
-                this._scrollList.scrollToPosition({ x: (currentX / scale) - 40 });
+                listMap.panTo({
+                    x: -(currentX - 40 * currentScale),
+                    y: currentY
+                });
             }
             else {
-                this._scrollList.scrollToPosition({ x: (currentX / scale) + 40 });
+                listMap.panTo({
+                    x: -(currentX + 40 * currentScale),
+                    y: currentY
+                });
             }
         },
 
