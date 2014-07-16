@@ -199,7 +199,7 @@ define(function(require) {
                 });
                 var range = { startIndex: 8, endIndex: 11 };
 
-                layout.setScrollPosition({ top: -1750, left: 0 });
+                layout.setScrollPosition({ top: 1750, left: 0 });
                 layout.ensureMinNumberOfVirtualItems(range);
 
                 expect(range.startIndex).toBe(5);
@@ -214,14 +214,14 @@ define(function(require) {
                 });
                 var range = { startIndex: 8, endIndex: 11 };
 
-                layout.setScrollPosition({ top: -1750, left: 0 });
+                layout.setScrollPosition({ top: 1750, left: 0 });
                 layout.ensureMinNumberOfVirtualItems(range);
 
                 expect(range.startIndex).toBe(8);
                 expect(range.endIndex).toBe(17);
             });
 
-            it('should extend the start index when weight is 0 and scroll direction is down', function() {
+            it('should extend the start index when weight is 1.0 and scroll direction is down', function() {
                 layout = createVerticalLayout({
                     directionalRenderingWeight: 1,
                     eagerRenderingFactor: 0,
@@ -229,8 +229,8 @@ define(function(require) {
                 });
                 var range = { startIndex: 8, endIndex: 11 };
 
-                layout.setScrollPosition({ top: -3500, left: 0 });
-                layout.setScrollPosition({ top: -1750, left: 0 });
+                layout.setScrollPosition({ top: 3500, left: 0 });
+                layout.setScrollPosition({ top: 1750, left: 0 });
                 layout.ensureMinNumberOfVirtualItems(range);
 
                 expect(range.startIndex).toBe(2);
@@ -245,7 +245,7 @@ define(function(require) {
                 });
                 var range = { startIndex: 0, endIndex: 2 };
 
-                layout.setScrollPosition({ top: -3500, left: 0 });
+                layout.setScrollPosition({ top: 3500, left: 0 });
                 layout.setScrollPosition({ top: 0, left: 0 });
                 layout.ensureMinNumberOfVirtualItems(range);
 
@@ -261,7 +261,7 @@ define(function(require) {
                 });
                 var range = { startIndex: 17, endIndex: 19 };
 
-                layout.setScrollPosition({ top: -3500, left: 0 });
+                layout.setScrollPosition({ top: 3500, left: 0 });
                 layout.ensureMinNumberOfVirtualItems(range);
 
                 expect(range.startIndex).toBe(10);
@@ -276,7 +276,7 @@ define(function(require) {
 
                 expect(layout.getCurrentItemIndex()).toBe(1);
             });
-            
+
             it('should return the item nearest the viewport center if none intersects', function() {
                 itemMetadata = [{
                     width: viewportSize.width,
@@ -303,7 +303,7 @@ define(function(require) {
             });
 
             it('should cover the range to the target scroll position', function() {
-                var targetScrollPosition = { top: -500, left: 0 };
+                var targetScrollPosition = { top: 500, left: 0 };
                 var range = layout.getItemRangeToRender(targetScrollPosition);
 
                 expect(range.startIndex).toBe(0);
@@ -311,7 +311,7 @@ define(function(require) {
             });
 
             it('should cover the entire range when the minimum number of virtual items covers all the items', function() {
-                var targetScrollPosition = { top: -500, left: 0 };
+                var targetScrollPosition = { top: 500, left: 0 };
                 layout = createVerticalLayout({
                     eagerRenderingFactor: 0,
                     minNumberOfVirtualItems: 5,
@@ -331,7 +331,7 @@ define(function(require) {
             });
 
             it('should return correct values when scrolled to middle of layout', function() {
-                layout.setScrollPosition({ top: -250, left: 0 });
+                layout.setScrollPosition({ top: 250, left: 0 });
                 var range = layout.getItemRangeToRender();
 
                 expect(range.startIndex).toBe(1);
@@ -339,7 +339,7 @@ define(function(require) {
             });
 
             it('should return correct values when scrolled to bottom of layout', function() {
-                layout.setScrollPosition({ top: -500, left: 0 });
+                layout.setScrollPosition({ top: 500, left: 0 });
                 var range = layout.getItemRangeToRender();
 
                 expect(range.startIndex).toBe(2);
@@ -357,14 +357,14 @@ define(function(require) {
                 var position;
 
                 // When scrolling items up.
-                position = layout.getPositionToRender({ top: -100 });
+                position = layout.getPositionToRender({ top: 100 });
 
                 expect(position.top).toBe(0);
                 expect(position.bottom).toBe(600);
 
                 // When scrolling items down.
-                layout.setScrollPosition({ top: -500 });
-                position = layout.getPositionToRender({ top: -400 });
+                layout.setScrollPosition({ top: 500 });
+                position = layout.getPositionToRender({ top: 400 });
 
                 expect(position.top).toBe(400);
                 expect(position.bottom).toBe(1000);
@@ -390,7 +390,7 @@ define(function(require) {
             it('should return correct values when scrolled to bottom of layout', function() {
                 var position;
 
-                layout.setScrollPosition({ top: -500, left: 0});
+                layout.setScrollPosition({ top: 500, left: 0});
                 position = layout.getPositionToRender();
 
                 expect(position.top).toBe(500);
@@ -400,7 +400,7 @@ define(function(require) {
             it('should return correct values when scrolled to middle of layout', function() {
                 var position;
 
-                layout.setScrollPosition({ top: -250, left: 0});
+                layout.setScrollPosition({ top: 250, left: 0});
                 position = layout.getPositionToRender();
 
                 expect(position.top).toBe(250);
@@ -411,14 +411,14 @@ define(function(require) {
                 var position;
 
                 // Scrolled down beyond top of item.
-                layout.setScrollPosition({ top: 100, left: 0});
+                layout.setScrollPosition({ top: -100, left: 0});
                 position = layout.getPositionToRender();
 
                 expect(position.top).toBe(0);
                 expect(position.bottom).toBe(400);
 
                 // Scrolled up beyond bottom of item.
-                layout.setScrollPosition({ top: -600, left: 0});
+                layout.setScrollPosition({ top: 600, left: 0});
                 position = layout.getPositionToRender();
 
                 expect(position.top).toBe(600);
@@ -438,7 +438,7 @@ define(function(require) {
             it('should return correct values when zoomed in', function() {
                 var position;
 
-                layout.setScrollPosition({ top: -500, left: 0 });
+                layout.setScrollPosition({ top: 500, left: 0 });
                 layout.setScale(2);
                 position = layout.getPositionToRender();
                 expect(position.top).toBe(250);
@@ -478,7 +478,7 @@ define(function(require) {
             it('should return indexes in the correct order when scrolled to middle of layout', function() {
                 var indexes;
 
-                layout.setScrollPosition({ top: -250, left: 0 });
+                layout.setScrollPosition({ top: 250, left: 0 });
                 layout.render();
                 indexes = layout.getOrderedRenderedItemIndexes();
 
@@ -491,7 +491,7 @@ define(function(require) {
             it('should return indexes in the correct order when scrolled to bottom of layout', function() {
                 var indexes;
 
-                layout.setScrollPosition({ top: -500, left: 0 });
+                layout.setScrollPosition({ top: 500, left: 0 });
                 layout.render();
                 indexes = layout.getOrderedRenderedItemIndexes();
 
@@ -520,7 +520,7 @@ define(function(require) {
             it('should return the correct range when scrolled to the middle of the layout', function() {
                 var range;
 
-                layout.setScrollPosition({ top: -250, left: 0 });
+                layout.setScrollPosition({ top: 250, left: 0 });
                 range = layout.getVisibleItemRange();
 
                 expect(range.startIndex).toBe(1);
@@ -530,7 +530,7 @@ define(function(require) {
             it('should return the correct range when scrolled to the bottom of the layout', function() {
                 var range;
 
-                layout.setScrollPosition({ top: -500, left: 0 });
+                layout.setScrollPosition({ top: 500, left: 0 });
                 range = layout.getVisibleItemRange();
 
                 expect(range.startIndex).toBe(2);
@@ -555,7 +555,7 @@ define(function(require) {
             it('should return correct values when scrolled to bottom of layout', function() {
                 var position;
 
-                layout.setScrollPosition({ top: -500, left: 0});
+                layout.setScrollPosition({ top: 500, left: 0});
                 position = layout.getVisiblePosition();
 
                 expect(position.top).toBe(500);
@@ -566,7 +566,7 @@ define(function(require) {
             it('should return correct values when scrolled to middle of layout', function() {
                 var position;
 
-                layout.setScrollPosition({ top: -250, left: 0});
+                layout.setScrollPosition({ top: 250, left: 0});
                 position = layout.getVisiblePosition();
 
                 expect(position.top).toBe(250);
@@ -578,7 +578,7 @@ define(function(require) {
                 var position;
 
                 layout.setScale(0.5);
-                layout.setScrollPosition({ top: -1000, left: 0});
+                layout.setScrollPosition({ top: 1000, left: 0});
                 position = layout.getVisiblePosition();
 
                 expect(position.top).toBe(2000);
@@ -628,7 +628,7 @@ define(function(require) {
 
             it('should unload stale content', function() {
                 layout.render();
-                layout.setScrollPosition({ top: -500, left: 0 });
+                layout.setScrollPosition({ top: 500, left: 0 });
                 layout.render();
                 layout.loadContent();
 
@@ -937,7 +937,7 @@ define(function(require) {
             });
 
             it('should render the range between the current and target scroll position', function() {
-                var targetScrollPosition = { top: -500, left: 0 };
+                var targetScrollPosition = { top: 500, left: 0 };
 
                 spyOn(renderer, 'render');
 
@@ -956,7 +956,7 @@ define(function(require) {
                 spyOn(renderer, 'remove').andReturn(true);
 
                 layout.render();
-                layout.setScrollPosition({ top: -500, left: 0 });
+                layout.setScrollPosition({ top: 500, left: 0 });
                 layout.render();
 
                 expect(renderer.remove.calls.length).toBe(2);
@@ -968,7 +968,7 @@ define(function(require) {
                 spyOn(renderer, 'render');
                 spyOn(renderer, 'remove').andReturn(true);
 
-                layout.setScrollPosition({ top: -500, left: 0 });
+                layout.setScrollPosition({ top: 500, left: 0 });
                 layout.render();
                 layout.setScrollPosition({ top: 0, left: 0 });
                 layout.render();
@@ -983,7 +983,7 @@ define(function(require) {
                 spyOn(renderer, 'remove').andReturn(false);
 
                 layout.render();
-                layout.setScrollPosition({ top: -250, left: 0 });
+                layout.setScrollPosition({ top: 250, left: 0 });
                 layout.render();
 
                 expect(renderer.remove.calls.length).toBe(2);
@@ -1007,7 +1007,7 @@ define(function(require) {
                 spyOn(renderer, 'remove');
 
                 layout.render();
-                layout.setScrollPosition({ top: -500, left: 0 });
+                layout.setScrollPosition({ top: 500, left: 0 });
 
                 spyOn(layout.onCurrentItemIndexChanged, 'dispatch');
                 layout.render();
