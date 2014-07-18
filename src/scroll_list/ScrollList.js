@@ -621,18 +621,25 @@ define(function(require) {
         },
 
         /**
-         * Scroll to the specified item in the list.
-         * @method ScrollList#scrollTo
+         * Scroll to the specified item index, optionally to an offset within that item.
+         * @method ScrollList#scrollToItem
          * @param {Object} options
-         //TOMTODO maybe call index itemIndex
-         * @param {number} options.index - The index of the content to jump to.
-         //TOMTODO Myabe call offset translation?
-         * @param {{ x: number, y: number, type: string }} [options.offset] - An item-relative offset to position the viewport.  Type can be 'top' [default], center', or 'bottom').
+         * @param {number} options.index - The index of the item/content to jump to.
+         * @param {string} options.viewportAnchorLocation - Where you want the item (and offset, if set) to show in the viewport.  Can be 'top' [default], 'center', or 'bottom.'
+         * @param {{ x: number, y: number}} [options.offset] - An item-relative offset to position the viewport.  Positive numbers move the document to the left and down for x and y, respectively.
          * @param {Function} [options.done] - Callback invoked when the jump is complete.
          */
         scrollToItem: function(options) {
+            /*
+                Some answers to potential WTFs:
+                  * x means nothing to top and bottom.  The viewport x will stay where is was before calling scrollToItem.
+                  * If you specify bottom with no offset, you will see the previous item in the viewport...
+                  * ...You may think bottom means put the bottom of the item at the bottom of the viewport, but it means put the top of the item/offset at the bottom of the  viewport.  This is consistent with center and top.  It is conceivable that you would expect the bottom of the item (with no offset) would show at the bottom of the viewport.  This is not supported right now.
+                  * All viewportAnchorLocations are weird in modes other than flow.  This happens because the repositioning must obey boundaries.  Since there are boundaries on every page in peek and single, any type of viewportAnchorLocation will pretty much show the whole page.  Bottom is particularly useless.  Only if you are zoomed in quite a bit will you see any results.
+            */
+            console.log(options);
             if (options.index === undefined) {
-                throw new Error('ScrollList#scrollToItem: index is required.');
+                throw new Error('ScrollList#scrollToItem: index is required.');  //We know that it is weird to have index required, when it is inside the options object.  But, Tim thought we should not stray from the interfaces that exist elsewhere in this class at this time.  --tconnell 2014-07-18 10:48:59
             }
 
             var panToOptions = {
@@ -676,13 +683,11 @@ define(function(require) {
             panToOptions.x = listState.translateX;
             panToOptions.y = -itemLayout.top * listState.scale;
 
-            // If given a content offset within the item, place it at the center of the viewport.
+            // If given a content offset within the item, adjust the panToOptions.
             if (options.offset)
             {
-                this._applyItemOffset(panToOptions, options.offset, itemLayout.scaleToFit);
+                this._applyItemOffset(panToOptions, options.offset, itemLayout.scaleToFit, options.viewportAnchorLocation);
             }
-
-
 
             this.onCurrentItemChanging.dispatch([this, {
                 fromIndex: currentIndex,
@@ -848,35 +853,36 @@ define(function(require) {
          * Companion method to `scrollToItem` responsible for positioning the viewport the item
          * position in the viewport as part of the scroll operation.
          */
-        _applyItemOffset: function(panToOptions, offset, itemScaleToFit) {
+        _applyItemOffset: function(panToOptions, offset, itemScaleToFit, viewportAnchorLocation) {
             var viewportSize = this._layout.getViewportSize();
-            //Top and bottom are absolutes, but center can change depending on the size of the viewport and scale. --tconnell 2014-07-03 15:34:39
+
+            //All of these translations adjust based on scale, so that when a user asks for the item at 200 px, it always yields the same place, regardless of zoom. --tconnell 2014-07-18 11:03:37
             var getTranslation = function(scale) {
-                if (offset.type === 'top') {
+                if (viewportAnchorLocation === 'top') {
                     return {
                         x: panToOptions.x,
-                        y: -offset.y
+                        y: -(itemScaleToFit * offset.y * scale)
                     };
                 }
-                else if (offset.type === 'center') {
+                else if (viewportAnchorLocation === 'center') {
                     return {
                         x: (viewportSize.width / 2) - (itemScaleToFit * offset.x * scale),
                         y: (viewportSize.height / 2) - (itemScaleToFit * offset.y * scale),
                     };
                 }
-                else if (offset.type === 'bottom') {
+                else if (viewportAnchorLocation === 'bottom') {
                     return {
                         x: panToOptions.x,
-                        y: viewportSize.height - offset.y
+                        y: viewportSize.height - (itemScaleToFit * offset.y * scale)
                     };
                 }
             };
 
             var translation = {x: 0, y: 0};
 
-            if (offset.type === 'top') {
+            if (viewportAnchorLocation === 'top') {
 
-                translation.y = -offset.y; //This may seem obscure.  When positioning from the top, we're actually moving the viewport off the screen by this much, so flip the sign.  --tconnell 2014-07-03 15:46:53
+                translation.y = -offset.y; //This may seem obscure.  When positioning from the top, we're actually moving the item off the viewport by this much, so flip the sign.  --tconnell 2014-07-03 15:46:53
             }
 
             // If we are using a item map, we need to pan that map separately.

@@ -662,7 +662,7 @@ define(function(require) {
             });
 
             describe('with offset', function() {
-                //With the way this code was structured before, Tim and I decided it would be better to make this function, rather than do a Jasmine beforeEace.  --tconnell 2014-07-17 09:18:51
+                //With the way this code was structured before, Tim and I decided it would be better to make this function, rather than do a Jasmine beforeEach.  --tconnell 2014-07-17 09:18:51
                 var pageSize = 500;  //This could be variable in real life.  --tconnell 2014-07-18 08:46:48
                 var scale = 2;
                 var scaleToFit = 1; //This math is complicated enough, I am keeping this one for now, but it could easily be something else.  --tconnell 2014-07-18 08:47:53
@@ -680,7 +680,7 @@ define(function(require) {
                     return scrollList;
                 };
 
-                describe('offset.type is center', function() {
+                describe('viewportAnchorLocation is center', function() {
                     it('should pass centering coords to listmap.panTo in flow mode', function() {
                         var scrollList = createScrollList({ mode: 'flow' });
                         var map = scrollList.getListMap();
@@ -692,7 +692,8 @@ define(function(require) {
                         scrollList.scrollToItem({
                             index: itemIndex,
                             duration: 0,
-                            offset: { x: offset.x, y: offset.y, type: 'center' }
+                            viewportAnchorLocation: 'center',
+                            offset: { x: offset.x, y: offset.y }
                         });
 
                         expect(map.panTo).toHaveBeenCalledWith({
@@ -723,7 +724,8 @@ define(function(require) {
                         scrollList.scrollToItem({
                             index: itemIndex,
                             duration: 0,
-                            offset: { x: offset.x, y: offset.y, type: 'center' }
+                            viewportAnchorLocation: 'center',
+                            offset: { x: offset.x, y: offset.y }
                         });
 
                         expect(listMap.panTo).toHaveBeenCalledWith({
@@ -742,7 +744,7 @@ define(function(require) {
                     });
                 });
 
-                describe('offset.type is top', function() {
+                describe('viewportAnchorLocation is top', function() {
                     it('should pass coords to listmap.panTo that will place the item and offset at the top of the viewport in flow mode', function() {
                         var scrollList = createScrollList({ mode: 'flow' });
                         var map = scrollList.getListMap();
@@ -754,7 +756,8 @@ define(function(require) {
                         scrollList.scrollToItem({
                             index: itemIndex,
                             duration: 0,
-                            offset: { x: offset.x, y: offset.y, type: 'top' } //x should have no effect. --tconnell 2014-07-18 09:17:21
+                            viewportAnchorLocation: 'top',
+                            offset: { x: offset.x, y: offset.y } //x should have no effect. --tconnell 2014-07-18 09:17:21
                         });
 
                         expect(map.panTo).toHaveBeenCalledWith({
@@ -784,7 +787,8 @@ define(function(require) {
                         scrollList.scrollToItem({
                             index: itemIndex,
                             duration: 0,
-                            offset: { x: offset.x, y: offset.y, type: 'top' }
+                            viewportAnchorLocation: 'top',
+                            offset: { x: offset.x, y: offset.y }
                         });
 
                         expect(listMap.panTo).toHaveBeenCalledWith({
@@ -803,7 +807,7 @@ define(function(require) {
                     });
                 });
 
-                describe('offset.type is bottom', function() {
+                describe('viewportAnchorLocation is bottom', function() {
                     it('should call listmap.panTo with coordinates that place the item and offset at the bottom of the viewport in flow mode', function() {
                         var scrollList = createScrollList({ mode: 'flow' });
                         var map = scrollList.getListMap();
@@ -815,7 +819,8 @@ define(function(require) {
                         scrollList.scrollToItem({
                             index: itemIndex,
                             duration: 0,
-                            offset: { x: offset.x, y: offset.y, type: 'bottom' } //x should have no effect. --tconnell 2014-07-18 09:17:17
+                            viewportAnchorLocation: 'bottom',
+                            offset: { x: offset.x, y: offset.y } //x should have no effect. --tconnell 2014-07-18 09:17:17
                         });
 
                         expect(map.panTo).toHaveBeenCalledWith({
@@ -845,7 +850,8 @@ define(function(require) {
                         scrollList.scrollToItem({
                             index: itemIndex,
                             duration: 0,
-                            offset: { x: offset.x, y: offset.y, type: 'bottom' }
+                            viewportAnchorLocation: 'bottom',
+                            offset: { x: offset.x, y: offset.y }
                         });
 
                         expect(listMap.panTo).toHaveBeenCalledWith({

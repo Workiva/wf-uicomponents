@@ -141,7 +141,7 @@ define(function(require){
                 keyNavigator._keyNavListener(keyboardEvent);
 
                 expect(keyNavigator._moveCtrlHomeEnd).toHaveBeenCalled();
-                expect(scrollList.scrollToItem).toHaveBeenCalledWith({ index: items.length, center: {y : items[items.length - 1].height }});
+                expect(scrollList.scrollToItem).toHaveBeenCalledWith({ index: items.length, viewportAnchorLocation: 'center', offset: {y : items[items.length - 1].height }});
             });
 
             it('should go the top of the current page on home', function() {
@@ -270,7 +270,7 @@ define(function(require){
                 keyNavigator._keyNavListener(keyboardEvent);
 
                 expect(keyNavigator._moveCtrlHomeEnd).toHaveBeenCalled();
-                expect(scrollList.scrollToItem).toHaveBeenCalledWith({ index: items.length, center: {y : items[items.length - 1].height }});
+                expect(scrollList.scrollToItem).toHaveBeenCalledWith({ index: items.length, viewportAnchorLocation: 'center', offset: {y : items[items.length - 1].height }});
             });
         });
 

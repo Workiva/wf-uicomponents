@@ -234,7 +234,7 @@ define(function(require) {
             }
             else {
                 var items = this._scrollList.getItemSizeCollection()._items;
-                this._scrollList.scrollToItem({ index: items.length, center: {y : items[items.length - 1].height } });
+                this._scrollList.scrollToItem({ index: items.length, viewportAnchorLocation: 'center', offset: {y : items[items.length - 1].height } });
             }
         },
 
