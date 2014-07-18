@@ -200,14 +200,17 @@ define(function(require) {
 
             // Remove hammer event handlers.
             for (eventType in handlers) {
-                if (eventType.indexOf('mouse') === -1 && eventType !== EventTypes.RESIZE) {
+                if (!/contextmenu|mouse|resize/.test(eventType)) {
                     this._hammer.off(eventType, handlers[eventType]);
                 }
             }
 
             this._mouseAdapter.dispose();
-            this._host.removeEventListener(EventTypes.MOUSE_MOVE, this._eventHandlers[EventTypes.MOUSE_MOVE], false);
-            dependencies.getWindow().removeEventListener(this._resizeEventType, this._eventHandlers[EventTypes.RESIZE], false);
+            this._host.removeEventListener(EventTypes.MOUSE_MOVE, handlers[EventTypes.MOUSE_MOVE], false);
+            this._host.removeEventListener(EventTypes.CONTEXT_MENU, handlers[EventTypes.CONTEXT_MENU], false);
+
+            var window = dependencies.getWindow();
+            window.removeEventListener(this._resizeEventType, handlers[EventTypes.RESIZE], false);
 
             // Destroy the instance.
             DestroyUtil.destroy(this);
@@ -296,6 +299,25 @@ define(function(require) {
         // It makes me cry to have to do this, but 20x operations per second
         // makes it hard to justify style over function.
         //---------------------------------------------------------
+
+        _getContextMenuHandler: function() {
+            var self = this;
+            /**
+             * Handler for double-tap events.
+             * @param {Object} event - The source event.
+             * @private
+             */
+            return function(event) {
+                var gesture = {
+                    center: {
+                        pageX: event.pageX,
+                        pageY: event.pageY
+                    },
+                    srcEvent: event.source
+                };
+                self._dispatchEvent(EventTypes.CONTEXT_MENU, gesture);
+            };
+        },
 
         _getDoubleTapHandler: function() {
             var self = this;
@@ -592,6 +614,7 @@ define(function(require) {
             // Initialize and track event handlers so they can be
             // inspected by property getter and removed on dispose.
             handlers = {};
+            handlers[EventTypes.CONTEXT_MENU] = this._getContextMenuHandler();
             handlers[EventTypes.DOUBLE_TAP] = this._getDoubleTapHandler();
             handlers[EventTypes.DRAG] = this._getDragHandler();
             handlers[EventTypes.DRAG_END] = this._getDragEndHandler();
@@ -636,6 +659,9 @@ define(function(require) {
             this._mouseAdapter.onMouseWheelStart(handlers[EventTypes.MOUSE_WHEEL_START]);
             this._mouseAdapter.onMouseWheelEnd(handlers[EventTypes.MOUSE_WHEEL_END]);
             this._host.addEventListener(EventTypes.MOUSE_MOVE, handlers[EventTypes.MOUSE_MOVE]);
+
+            // Handle contextmenu events.
+            this._host.addEventListener('contextmenu', handlers[EventTypes.CONTEXT_MENU]);
 
             // Initialize the window resize handler.
             dependencies.getWindow().addEventListener(this._resizeEventType, handlers[EventTypes.RESIZE]);
