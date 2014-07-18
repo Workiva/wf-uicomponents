@@ -46,6 +46,56 @@ define(function(require) {
                         }]);
                 });
             });
+
+            describe('initial positioning', function() {
+                function createMap(listWidth, listHeight) {
+                    var itemSizeCollection = new ItemSizeCollection({
+                        maxWidth: listWidth,
+                        maxHeight: listHeight,
+                        items: [{ width: listWidth, height: listHeight }]
+                    });
+
+                    // setup scroll list
+                    var scrollList = new ScrollList($host[0], itemSizeCollection);
+
+                    // Setup list map.
+                    return AwesomeMapFactory.createListMap(scrollList);
+                }
+
+                it('should center scrollList vertically in viewport when scrollList ' +
+                    'height is less than viewport height', function() {
+                    // Setup list map
+                    var map = createMap(75, 100);
+
+                    // Expect the map to be centered vertically in the viewport when created
+                    var mapTopWhenCentered = (400 - 100) / 2;
+                    expect(map.getTranslation().y).toEqual(mapTopWhenCentered);
+                });
+                it('should center scrollList horizontally in viewport when scrollList ' +
+                    'width is less than viewport width', function() {
+                    // Setup list map
+                    var map = createMap(100, 75);
+
+                    // Expect the map to be centered horizontally in the viewport when created
+                    var mapLeftWhenCentered = (400 - 100) / 2;
+                    expect(map.getTranslation().x).toEqual(mapLeftWhenCentered);
+                });
+                it('should position the scrollList at the top of the viewport when ' +
+                    'scrollList height is greater than viewport height', function() {
+                    var map = createMap(75, 500);
+
+                    // Expect the map to be positioned at the top of the viewport
+                    expect(map.getTranslation().y).toEqual(0);
+                });
+                it('should position the scrollList at the left edge of the viewport when ' +
+                    'scrollList width is greater than viewport width', function() {
+                    // Setup list map
+                    var map = createMap(500, 75);
+
+                    // Expect the map to be positioned at the left of the viewport
+                    expect(map.getTranslation().x).toEqual(0);
+                });
+            });
         });
     });
 });
