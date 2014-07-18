@@ -661,50 +661,54 @@ define(function(require) {
                 });
             });
 
-            describe('when scrolling item to item with offset', function() {
-                var createScrollList = function(options){
+            describe('with offset', function() {
+                //With the way this code was structured before, Tim and I decided it would be better to make this function, rather than do a Jasmine beforeEace.  --tconnell 2014-07-17 09:18:51
+                var pageSize = 500;  //This could be variable in real life.  --tconnell 2014-07-18 08:46:48
+                var scale = 2;
+                var scaleToFit = 1; //This math is complicated enough, I am keeping this one for now, but it could easily be something else.  --tconnell 2014-07-18 08:47:53
+                var itemIndex = 2;
+                var itemLayout = { top: pageSize * itemIndex, scaleToFit: scaleToFit };
+                var viewportSize = { width: 200, height: 400 };
+                var offset = {x: 100, y: 200};
+                var createScrollList = function(options) {
                     var scrollList;
                     testScrollList(options, function(newScrollList) {
                         scrollList = newScrollList;
-                        var itemLayout = { top: 1000, scaleToFit: 1 };
-                        var viewportSize = { width: 200, height: 400 };
-
                         spyOn(scrollList._layout, 'getItemLayout').andReturn(itemLayout);
                         spyOn(scrollList._layout, 'getViewportSize').andReturn(viewportSize);
                     });
                     return scrollList;
                 };
 
-                it(', when offset.type is center, should center list map in flow mode', function() {
-                    var scrollList = createScrollList({ mode: 'flow' });
-                    var map = scrollList.getListMap();
-                    var currentState = { translateX: 0, scale: 2 };
+                describe('offset.type is center', function() {
+                    it('should pass centering coords to listmap.panTo in flow mode', function() {
+                        var scrollList = createScrollList({ mode: 'flow' });
+                        var map = scrollList.getListMap();
+                        var currentState = { translateX: 0, scale: scale };
 
-                    spyOn(map, 'panTo');
-                    spyOn(map, 'getCurrentTransformState').andReturn(currentState);
+                        spyOn(map, 'panTo');
+                        spyOn(map, 'getCurrentTransformState').andReturn(currentState);
 
-                    scrollList.scrollToItem({
-                        index: 2,
-                        duration: 0,
-                        center: { x: 100, y: 200 }
+                        scrollList.scrollToItem({
+                            index: itemIndex,
+                            duration: 0,
+                            offset: { x: offset.x, y: offset.y, type: 'center' }
+                        });
+
+                        expect(map.panTo).toHaveBeenCalledWith({
+                            x: -(offset.x * scale * scaleToFit) + (viewportSize.width / 2),
+                            y: -(itemIndex * pageSize * scale * scaleToFit) - (offset.y * scale * scaleToFit) + (viewportSize.height / 2),
+                            duration: 0,
+                            done: undefined
+                        });
                     });
 
-                    expect(map.panTo).toHaveBeenCalledWith({
-                        x: -100,
-                        y: -2200,
-                        duration: 0,
-                        done: undefined
-                    });
-                });
-
-                it(', when offset.type is center, should center item map in other modes', function() {
-                    testScrollList({ mode: 'peek' }, function(scrollList) {
+                    it('should pass centering coords to listmap.panTo in other modes', function() {
+                        var scrollList = createScrollList({ mode: 'peek'});
                         var listMap = scrollList.getListMap();
-                        var listState = { translateX: 0, scale: 1 };
+                        var listState = { translateX: 0, scale: scale };
                         var itemMap = scrollList.getCurrentItemMap();
-                        var itemState = { scale: 2 };
-                        var itemLayout = { top: 1000, scaleToFit: 1 };
-                        var viewportSize = { width: 200, height: 400 };
+                        var itemState = { scale: scale };
 
                         spyOn(listMap, 'panTo').andCallFake(function(options) {
                             options.done();
@@ -714,41 +718,151 @@ define(function(require) {
                         spyOn(itemMap, 'panTo');
                         spyOn(itemMap, 'getCurrentTransformState').andReturn(itemState);
 
-                        spyOn(scrollList._layout, 'getItemLayout').andReturn(itemLayout);
-                        spyOn(scrollList._layout, 'getViewportSize').andReturn(viewportSize);
                         spyOn(scrollList._layout, 'render');
 
                         scrollList.scrollToItem({
-                            index: 2,
+                            index: itemIndex,
                             duration: 0,
-                            center: { x: 100, y: 200 }
+                            offset: { x: offset.x, y: offset.y, type: 'center' }
                         });
 
                         expect(listMap.panTo).toHaveBeenCalledWith({
                             x: 0,
-                            y: -1000,
+                            y: -(itemIndex * pageSize * scale * scaleToFit),
                             duration: 0,
                             done: jasmine.any(Function)
                         });
 
                         expect(itemMap.panTo).toHaveBeenCalledWith({
-                            x: -100,
-                            y: -200,
+                            x: -(offset.x * scale * scaleToFit) + (viewportSize.width / 2),
+                            y: -(offset.y * scale * scaleToFit) + (viewportSize.height / 2),
                             duration: 0,
                             done: jasmine.any(Function)
                         });
                     });
                 });
 
-                // it(', when offset.type is top, should place the item map top at the top of the viewport', function() {
-                // it -- type === top, not flow mode.
+                describe('offset.type is top', function() {
+                    it('should pass coords to listmap.panTo that will place the item and offset at the top of the viewport in flow mode', function() {
+                        var scrollList = createScrollList({ mode: 'flow' });
+                        var map = scrollList.getListMap();
+                        var currentState = { translateX: 0, scale: scale };
 
+                        spyOn(map, 'panTo');
+                        spyOn(map, 'getCurrentTransformState').andReturn(currentState);
 
-                // });
-                // it(', when offset.type is bottom, should place the item map top at the bottom of the viewport', function() {
-                // it -- type === bottom, not flow mode.
+                        scrollList.scrollToItem({
+                            index: itemIndex,
+                            duration: 0,
+                            offset: { x: offset.x, y: offset.y, type: 'top' } //x should have no effect. --tconnell 2014-07-18 09:17:21
+                        });
 
-                // });
+                        expect(map.panTo).toHaveBeenCalledWith({
+                            x: 0,
+                            y: -(itemIndex * pageSize * scale * scaleToFit) - (offset.y * scale * scaleToFit),
+                            duration: 0,
+                            done: undefined
+                        });
+                    });
+                    it('should pass coords to listmap.panTo that will place the item and offset at the top of the viewport in other modes', function() {
+                        var scrollList = createScrollList({ mode: 'peek'});
+                        var listMap = scrollList.getListMap();
+                        var listState = { translateX: 0, scale: scale };
+                        var itemMap = scrollList.getCurrentItemMap();
+                        var itemState = { scale: scale };
+
+                        spyOn(listMap, 'panTo').andCallFake(function(options) {
+                            options.done();
+                        });
+                        spyOn(listMap, 'getCurrentTransformState').andReturn(listState);
+
+                        spyOn(itemMap, 'panTo');
+                        spyOn(itemMap, 'getCurrentTransformState').andReturn(itemState);
+
+                        spyOn(scrollList._layout, 'render');
+
+                        scrollList.scrollToItem({
+                            index: itemIndex,
+                            duration: 0,
+                            offset: { x: offset.x, y: offset.y, type: 'top' }
+                        });
+
+                        expect(listMap.panTo).toHaveBeenCalledWith({
+                            x: 0,
+                            y: -(itemIndex * pageSize * scale * scaleToFit),
+                            duration: 0,
+                            done: jasmine.any(Function)
+                        });
+
+                        expect(itemMap.panTo).toHaveBeenCalledWith({
+                            x: 0,
+                            y: -(offset.y * scale * scaleToFit) ,
+                            duration: 0,
+                            done: jasmine.any(Function)
+                        });
+                    });
+                });
+
+                describe('offset.type is bottom', function() {
+                    it('should call listmap.panTo with coordinates that place the item and offset at the bottom of the viewport in flow mode', function() {
+                        var scrollList = createScrollList({ mode: 'flow' });
+                        var map = scrollList.getListMap();
+                        var currentState = { translateX: 0, scale: scale };
+
+                        spyOn(map, 'panTo');
+                        spyOn(map, 'getCurrentTransformState').andReturn(currentState);
+
+                        scrollList.scrollToItem({
+                            index: itemIndex,
+                            duration: 0,
+                            offset: { x: offset.x, y: offset.y, type: 'bottom' } //x should have no effect. --tconnell 2014-07-18 09:17:17
+                        });
+
+                        expect(map.panTo).toHaveBeenCalledWith({
+                            x: 0,
+                            y: -(itemIndex * pageSize * scale * scaleToFit) - (offset.y * scale * scaleToFit) + viewportSize.height,
+                            duration: 0,
+                            done: undefined
+                        });
+                    });
+                    it('should call listmap.panTo with coordinates that place the item and offset at the bottom of the viewport in other modes', function() {
+                        var scrollList = createScrollList({ mode: 'peek'});
+                        var listMap = scrollList.getListMap();
+                        var listState = { translateX: 0, scale: scale };
+                        var itemMap = scrollList.getCurrentItemMap();
+                        var itemState = { scale: scale };
+
+                        spyOn(listMap, 'panTo').andCallFake(function(options) {
+                            options.done();
+                        });
+                        spyOn(listMap, 'getCurrentTransformState').andReturn(listState);
+
+                        spyOn(itemMap, 'panTo');
+                        spyOn(itemMap, 'getCurrentTransformState').andReturn(itemState);
+
+                        spyOn(scrollList._layout, 'render');
+
+                        scrollList.scrollToItem({
+                            index: itemIndex,
+                            duration: 0,
+                            offset: { x: offset.x, y: offset.y, type: 'bottom' }
+                        });
+
+                        expect(listMap.panTo).toHaveBeenCalledWith({
+                            x: 0,
+                            y: -(itemIndex * pageSize * scale * scaleToFit),
+                            duration: 0,
+                            done: jasmine.any(Function)
+                        });
+
+                        expect(itemMap.panTo).toHaveBeenCalledWith({
+                            x: 0,
+                            y: -(offset.y * scale * scaleToFit) + viewportSize.height,
+                            duration: 0,
+                            done: jasmine.any(Function)
+                        });
+                    });
+                });
             });
         });
 
