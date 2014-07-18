@@ -662,10 +662,10 @@ define(function(require) {
             });
 
             describe('with offset', function() {
-                //With the way this code was structured before, Tim and I decided it would be better to make this function, rather than do a Jasmine beforeEach.  --tconnell 2014-07-17 09:18:51
-                var pageSize = 500;  //This could be variable in real life.  --tconnell 2014-07-18 08:46:48
+                //With the way this code was structured before, Tim and I decided it would be better to make this function, rather than do a Jasmine beforeEach.
+                var pageSize = 500;  //This could be variable in real life.
                 var scale = 2;
-                var scaleToFit = 1; //This math is complicated enough, I am keeping this one for now, but it could easily be something else.  --tconnell 2014-07-18 08:47:53
+                var scaleToFit = 1; //This math is complicated enough, I am keeping this one for now, but it could easily be something else.
                 var itemIndex = 2;
                 var itemLayout = { top: pageSize * itemIndex, scaleToFit: scaleToFit };
                 var viewportSize = { width: 200, height: 400 };

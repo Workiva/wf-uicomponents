@@ -211,7 +211,7 @@ define(function(require) {
             }
 
             if (direction === keys.END) {
-                this._scrollList.scrollToItem({ index: currentPage.index + 1});
+                this._scrollList.scrollToItem({ index: currentPage.index + 1 });
                 currentPosition = this._layout.getVisiblePosition();
                 viewport = this._validateY(currentPosition.bottom - currentPosition.top);
 
@@ -234,7 +234,11 @@ define(function(require) {
             }
             else {
                 var items = this._scrollList.getItemSizeCollection()._items;
-                this._scrollList.scrollToItem({ index: items.length, viewportAnchorLocation: 'center', offset: {y : items[items.length - 1].height } });
+                this._scrollList.scrollToItem({
+                    index: items.length,
+                    viewportAnchorLocation: 'center',
+                    offset: {y : items[items.length - 1].height }
+                });
             }
         },
 
