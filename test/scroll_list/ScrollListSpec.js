@@ -745,7 +745,7 @@ define(function(require) {
                 });
 
                 describe('viewportAnchorLocation is top', function() {
-                    it('should pass coords to listmap.panTo that will place the item and offset at the top of the viewport in flow mode', function() {
+                    it('should pass coords to listmap.panTo that will place the offset within the item at the top of the viewport in flow mode', function() {
                         var scrollList = createScrollList({ mode: 'flow' });
                         var map = scrollList.getListMap();
                         var currentState = { translateX: 0, scale: scale };
@@ -767,7 +767,7 @@ define(function(require) {
                             done: undefined
                         });
                     });
-                    it('should pass coords to listmap.panTo that will place the item and offset at the top of the viewport in other modes', function() {
+                    it('should pass coords to listmap.panTo that will place the offset within the item at the top of the viewport in other modes', function() {
                         var scrollList = createScrollList({ mode: 'peek'});
                         var listMap = scrollList.getListMap();
                         var listState = { translateX: 0, scale: scale };
@@ -808,7 +808,7 @@ define(function(require) {
                 });
 
                 describe('viewportAnchorLocation is bottom', function() {
-                    it('should call listmap.panTo with coordinates that place the item and offset at the bottom of the viewport in flow mode', function() {
+                    it('should call listmap.panTo with coordinates that place the offset within the item at the bottom of the viewport in flow mode', function() {
                         var scrollList = createScrollList({ mode: 'flow' });
                         var map = scrollList.getListMap();
                         var currentState = { translateX: 0, scale: scale };
@@ -830,7 +830,7 @@ define(function(require) {
                             done: undefined
                         });
                     });
-                    it('should call listmap.panTo with coordinates that place the item and offset at the bottom of the viewport in other modes', function() {
+                    it('should call listmap.panTo with coordinates that place the offset within the item at the bottom of the viewport in other modes', function() {
                         var scrollList = createScrollList({ mode: 'peek'});
                         var listMap = scrollList.getListMap();
                         var listState = { translateX: 0, scale: scale };

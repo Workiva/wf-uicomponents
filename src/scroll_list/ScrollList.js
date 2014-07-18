@@ -656,6 +656,7 @@ define(function(require) {
                 //We know that it is weird to have index required, when it is inside the options
                 //object.  But, we thought we should not stray from the interfaces that exist
                 //elsewhere in this class at this time.
+            }
 
             var panToOptions = {
                 x: 0,
@@ -870,31 +871,38 @@ define(function(require) {
         _applyItemOffset: function(panToOptions, offset, itemScaleToFit, viewportAnchorLocation) {
             var viewportSize = this._layout.getViewportSize();
 
-            //All of these translations adjust based on scale, so that when a user asks for the item at 200 px, it always yields the same place, regardless of zoom.
+            //All of these translations adjust based on scale, so that when a user asks for the item
+            //at 200 px, it always yields the same place, regardless of zoom.
             var getTranslation = function(scale) {
+                var scaledOffsetX = itemScaleToFit * offset.x * scale;
+                var scaledOffsetY = itemScaleToFit * offset.y * scale;
+                var translation;
                 if (viewportAnchorLocation === 'top') {
-                    return {
-                        x: panToOptions.x,
-                        y: -(itemScaleToFit * offset.y * scale)
+                    translation = {
+                        x: panToOptions.x, //Just keep what was already there. There is no x concept in top.
+                        y: -scaledOffsetY
                     };
                 }
                 else if (viewportAnchorLocation === 'center') {
-                    return {
-                        x: (viewportSize.width / 2) - (itemScaleToFit * offset.x * scale),
-                        y: (viewportSize.height / 2) - (itemScaleToFit * offset.y * scale),
+                    translation = {
+                        x: (viewportSize.width / 2) - scaledOffsetX,
+                        y: (viewportSize.height / 2) - scaledOffsetY,
                     };
                 }
                 else if (viewportAnchorLocation === 'bottom') {
-                    return {
-                        x: panToOptions.x,
-                        y: viewportSize.height - (itemScaleToFit * offset.y * scale)
+                    translation = {
+                        x: panToOptions.x, //Just keep what was already there.  There is no x concept in bottom.
+                        y: viewportSize.height - scaledOffsetY
                     };
                 }
+                return translation;
             };
 
             var translation = {x: 0, y: 0};
             if (viewportAnchorLocation === 'top') {
-                translation.y = -offset.y; //This may seem obscure.  When positioning from the top, we're actually moving the item off the viewport by this much, so flip the sign.
+                translation.y = -offset.y;
+                //This may seem obscure.  When positioning from the top, we're actually moving the
+                //item off the viewport by this much, so flip the sign.
             }
 
             // If we are using a item map, we need to pan that map separately.
