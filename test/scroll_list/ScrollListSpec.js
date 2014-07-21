@@ -662,14 +662,15 @@ define(function(require) {
             });
 
             describe('with offset', function() {
-                //With the way this code was structured before, Tim and I decided it would be better to make this function, rather than do a Jasmine beforeEach.
-                var pageSize = 500;  //This could be variable in real life.
+                var pageSize = 500;  // This value could be variable per-page in real life.
                 var scale = 2;
-                var scaleToFit = 1; //This math is complicated enough, I am keeping this one for now, but it could easily be something else.
+                // This math is complicated enough, I am keeping scaleToFit at 1
+                // for now, but it could easily be something else in practice.
+                var scaleToFit = 1;
                 var itemIndex = 2;
                 var itemLayout = { top: pageSize * itemIndex, scaleToFit: scaleToFit };
                 var viewportSize = { width: 200, height: 400 };
-                var offset = {x: 100, y: 200};
+                var offset = { x: 100, y: 200 };
                 var createScrollList = function(options) {
                     var scrollList;
                     testScrollList(options, function(newScrollList) {
@@ -698,14 +699,15 @@ define(function(require) {
 
                         expect(map.panTo).toHaveBeenCalledWith({
                             x: -(offset.x * scale * scaleToFit) + (viewportSize.width / 2),
-                            y: -(itemIndex * pageSize * scale * scaleToFit) - (offset.y * scale * scaleToFit) + (viewportSize.height / 2),
+                            y: -(itemIndex * pageSize * scale * scaleToFit) -
+                               (offset.y * scale * scaleToFit) + (viewportSize.height / 2),
                             duration: 0,
                             done: undefined
                         });
                     });
 
                     it('should pass centering coords to listmap.panTo in other modes', function() {
-                        var scrollList = createScrollList({ mode: 'peek'});
+                        var scrollList = createScrollList({ mode: 'peek' });
                         var listMap = scrollList.getListMap();
                         var listState = { translateX: 0, scale: scale };
                         var itemMap = scrollList.getCurrentItemMap();
@@ -745,7 +747,8 @@ define(function(require) {
                 });
 
                 describe('viewportAnchorLocation is top', function() {
-                    it('should pass coords to listmap.panTo that will place the offset within the item at the top of the viewport in flow mode', function() {
+                    it('should pass coords to listmap.panTo that will place the offset ' +
+                       'within the item at the top of the viewport in flow mode', function() {
                         var scrollList = createScrollList({ mode: 'flow' });
                         var map = scrollList.getListMap();
                         var currentState = { translateX: 0, scale: scale };
@@ -757,18 +760,20 @@ define(function(require) {
                             index: itemIndex,
                             duration: 0,
                             viewportAnchorLocation: 'top',
-                            offset: { x: offset.x, y: offset.y } //x should have no effect. --tconnell 2014-07-18 09:17:21
+                            offset: { x: offset.x, y: offset.y } // x should have no effect.
                         });
 
                         expect(map.panTo).toHaveBeenCalledWith({
                             x: 0,
-                            y: -(itemIndex * pageSize * scale * scaleToFit) - (offset.y * scale * scaleToFit),
+                            y: -(itemIndex * pageSize * scale * scaleToFit) -
+                               (offset.y * scale * scaleToFit),
                             duration: 0,
                             done: undefined
                         });
                     });
-                    it('should pass coords to listmap.panTo that will place the offset within the item at the top of the viewport in other modes', function() {
-                        var scrollList = createScrollList({ mode: 'peek'});
+                    it('should pass coords to listmap.panTo that will place the offset ' +
+                       'within the item at the top of the viewport in other modes', function() {
+                        var scrollList = createScrollList({ mode: 'peek' });
                         var listMap = scrollList.getListMap();
                         var listState = { translateX: 0, scale: scale };
                         var itemMap = scrollList.getCurrentItemMap();
@@ -808,7 +813,8 @@ define(function(require) {
                 });
 
                 describe('viewportAnchorLocation is bottom', function() {
-                    it('should call listmap.panTo with coordinates that place the offset within the item at the bottom of the viewport in flow mode', function() {
+                    it('should call listmap.panTo with coordinates that place the offset ' +
+                       'within the item at the bottom of the viewport in flow mode', function() {
                         var scrollList = createScrollList({ mode: 'flow' });
                         var map = scrollList.getListMap();
                         var currentState = { translateX: 0, scale: scale };
@@ -820,18 +826,20 @@ define(function(require) {
                             index: itemIndex,
                             duration: 0,
                             viewportAnchorLocation: 'bottom',
-                            offset: { x: offset.x, y: offset.y } //x should have no effect. --tconnell 2014-07-18 09:17:17
+                            offset: { x: offset.x, y: offset.y } // x should have no effect.
                         });
 
                         expect(map.panTo).toHaveBeenCalledWith({
                             x: 0,
-                            y: -(itemIndex * pageSize * scale * scaleToFit) - (offset.y * scale * scaleToFit) + viewportSize.height,
+                            y: -(itemIndex * pageSize * scale * scaleToFit) -
+                              (offset.y * scale * scaleToFit) + viewportSize.height,
                             duration: 0,
                             done: undefined
                         });
                     });
-                    it('should call listmap.panTo with coordinates that place the offset within the item at the bottom of the viewport in other modes', function() {
-                        var scrollList = createScrollList({ mode: 'peek'});
+                    it('should call listmap.panTo with coordinates that place the offset ' +
+                       'within the item at the bottom of the viewport in other modes', function() {
+                        var scrollList = createScrollList({ mode: 'peek' });
                         var listMap = scrollList.getListMap();
                         var listState = { translateX: 0, scale: scale };
                         var itemMap = scrollList.getCurrentItemMap();

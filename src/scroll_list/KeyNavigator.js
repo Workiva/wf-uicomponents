@@ -244,7 +244,7 @@ define(function(require) {
                 this._scrollList.scrollToItem({
                     index: items.length,
                     viewportAnchorLocation: 'center',
-                    offset: {y : items[items.length - 1].height }
+                    offset: { y: items[items.length - 1].height }
                 });
             }
         },

@@ -653,9 +653,9 @@ define(function(require) {
             */
             if (options.index === undefined) {
                 throw new Error('ScrollList#scrollToItem: index is required.');
-                //We know that it is weird to have index required, when it is inside the options
-                //object.  But, we thought we should not stray from the interfaces that exist
-                //elsewhere in this class at this time.
+                // We know that it is weird to have index required, when it is inside the options
+                // object.  But, we thought we should not stray from the interfaces that exist
+                // elsewhere in this class at this time.
             }
 
             var panToOptions = {
@@ -692,7 +692,9 @@ define(function(require) {
 
             // Calculate the left and top of the target content.
             var currentIndex = layout.getCurrentItemIndex();
-            var targetIndex = Math.max(0, Math.min(options.index || 0, this._itemSizesCollection.getLength() - 1));
+            var targetIndex = Math.max(0,
+                Math.min(options.index || 0, this._itemSizesCollection.getLength() - 1)
+            );
             var itemLayout = layout.getItemLayout(targetIndex);
             var listState = this._listMap.getCurrentTransformState();
 
@@ -701,7 +703,12 @@ define(function(require) {
 
             // If given a content offset within the item, adjust the panToOptions.
             if (options.offset) {
-                this._applyItemOffset(panToOptions, options.offset, itemLayout.scaleToFit, options.viewportAnchorLocation);
+                this._applyItemOffset(
+                    panToOptions,
+                    options.offset,
+                    itemLayout.scaleToFit,
+                    options.viewportAnchorLocation
+                );
             }
 
             this.onCurrentItemChanging.dispatch([this, {
@@ -711,7 +718,9 @@ define(function(require) {
 
             // Render placeholders at the jump target if target is not rendered.
             var itemRange = layout.getRenderedItemRange();
-            if (!itemRange || targetIndex < itemRange.startIndex || targetIndex > itemRange.endIndex) {
+            if (!itemRange ||
+                targetIndex < itemRange.startIndex ||
+                targetIndex > itemRange.endIndex) {
                 layout.setScrollPosition({ top: panToOptions.y, left: panToOptions.x });
                 layout.render();
             }
@@ -865,21 +874,21 @@ define(function(require) {
         },
 
         /**
-         * Companion method to `scrollToItem` responsible for positioning the viewport the item
-         * position in the viewport as part of the scroll operation.
+         * Companion method to `scrollToItem` responsible for calculating and
+         * applying the offset to the map panToOptions, depending on the viewportAnchorLocation
          */
         _applyItemOffset: function(panToOptions, offset, itemScaleToFit, viewportAnchorLocation) {
             var viewportSize = this._layout.getViewportSize();
 
-            //All of these translations adjust based on scale, so that when a user asks for the item
-            //at 200 px, it always yields the same place, regardless of zoom.
+            // All of these translations adjust based on scale, so that when a user asks for
+            // the item at 200 px, it always yields the same place, regardless of zoom.
             var getTranslation = function(scale) {
                 var scaledOffsetX = itemScaleToFit * offset.x * scale;
                 var scaledOffsetY = itemScaleToFit * offset.y * scale;
                 var translation;
                 if (viewportAnchorLocation === 'top') {
                     translation = {
-                        x: panToOptions.x, //Just keep what was already there. There is no x concept in top.
+                        x: panToOptions.x, // Top has no concept of x.  Keep existing.
                         y: -scaledOffsetY
                     };
                 }
@@ -891,19 +900,14 @@ define(function(require) {
                 }
                 else if (viewportAnchorLocation === 'bottom') {
                     translation = {
-                        x: panToOptions.x, //Just keep what was already there.  There is no x concept in bottom.
+                        x: panToOptions.x, // Top has no concept of x.  Keep existing.
                         y: viewportSize.height - scaledOffsetY
                     };
                 }
                 return translation;
             };
 
-            var translation = {x: 0, y: 0};
-            if (viewportAnchorLocation === 'top') {
-                translation.y = -offset.y;
-                //This may seem obscure.  When positioning from the top, we're actually moving the
-                //item off the viewport by this much, so flip the sign.
-            }
+            var translation;
 
             // If we are using a item map, we need to pan that map separately.
             var itemMap = this.getCurrentItemMap();
