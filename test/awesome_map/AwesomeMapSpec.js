@@ -349,7 +349,7 @@ define(function(require) {
                 expect(host).toBe(awesomeMap._host);
             });
 
-            it('should get whether the hit area is enabled', function() {
+            it('should get whether the map is enabled', function() {
                 expect(awesomeMap.isDisabled()).toBe(false);
 
                 awesomeMap.disable();
@@ -413,12 +413,6 @@ define(function(require) {
 
         describe('disabling', function() {
 
-            it('should set display:none on the hit area', function() {
-                awesomeMap.disable();
-
-                expect(awesomeMap._hitArea.style.display).toBe('none');
-            });
-
             it('should cause map to ignore direct user interaction', function() {
                 var gesture = new Gesture();
                 var evt = new InteractionEvent({ simulated: false }, gesture, gesture);
@@ -433,12 +427,6 @@ define(function(require) {
         });
 
         describe('enabling', function() {
-
-            it('should set display:block on the hit area', function() {
-                awesomeMap.enable();
-
-                expect(awesomeMap._hitArea.style.display).toBe('block');
-            });
 
             it('should cause map to respond to direct user interaction', function() {
                 var gesture = new Gesture();
@@ -742,30 +730,59 @@ define(function(require) {
                 ], jasmine.any(Function));
             });
 
-            it('should normalize the event position relative to the viewport origin if disabled', function() {
-                var evt = createInteractionEvent(null);
-                evt.position = {
-                    x: 100,
-                    y: 200
-                };
-                var viewportOffset = {
-                    left: 10,
-                    top: 20
-                };
-                var viewport = awesomeMap.getViewport();
-                spyOn(viewport, 'getBoundingClientRect').andReturn(viewportOffset);
+            describe('normalizing event position relative to viewport origin', function() {
+                var awesomeMap;
+                var eventPosition;
+                var viewportOffset;
+                function dispatchEvent(options) {
+                    awesomeMap = new AwesomeMap($host[0], {
+                        normalizeEventPosition: options.normalizeEventPosition
+                    });
+                    spyOn(awesomeMap, 'isDisabled').andReturn(options.disable);
 
-                spyOn(awesomeMap, 'isDisabled').andReturn(true);
-                spyOn(awesomeMap, 'getCurrentTransformState').andReturn(new TransformState());
-                spyOn(awesomeMap.onInteraction, 'dispatch');
+                    viewportOffset = {
+                        left: 10,
+                        top: 20
+                    };
+                    var evt = createInteractionEvent(null);
+                    evt.position = _.clone(eventPosition = {
+                        x: 100,
+                        y: 200
+                    });
 
-                awesomeMap.handleInteractionEvent(null, { event: evt });
+                    var viewport = awesomeMap.getViewport();
+                    spyOn(viewport, 'getBoundingClientRect').andReturn(viewportOffset);
+                    spyOn(awesomeMap, 'getCurrentTransformState').andReturn(new TransformState());
+                    spyOn(awesomeMap.onInteraction, 'dispatch');
 
-                expect(awesomeMap.onInteraction.dispatch).toHaveBeenCalled();
-                var args = awesomeMap.onInteraction.dispatch.mostRecentCall.args[0];
-                var dispatchedEventPosition = args[1].event.position;
-                expect(dispatchedEventPosition.x).toBe(100 - 10);
-                expect(dispatchedEventPosition.y).toBe(200 - 20);
+                    awesomeMap.handleInteractionEvent(null, { event: evt });
+                }
+                function getDispatchedEventPosition() {
+                    expect(awesomeMap.onInteraction.dispatch).toHaveBeenCalled();
+                    var args = awesomeMap.onInteraction.dispatch.mostRecentCall.args[0];
+                    return args[1].event.position;
+                }
+                afterEach(function() {
+                    awesomeMap.dispose();
+                });
+                it('should not normalize if the map is not disabled', function() {
+                    dispatchEvent({ normalizeEventPosition: true, disable: false });
+                    var pos = getDispatchedEventPosition();
+                    expect(pos.x).toBe(eventPosition.x);
+                    expect(pos.y).toBe(eventPosition.y);
+                });
+                it('should not normalize if the "normalizeEventPosition" option is false', function() {
+                    dispatchEvent({ normalizeEventPosition: false, disable: true });
+                    var pos = getDispatchedEventPosition();
+                    expect(pos.x).toBe(eventPosition.x);
+                    expect(pos.y).toBe(eventPosition.y);
+                });
+                it('should normalize if the "normalizeEventPosition" option is true and the map is disabled', function() {
+                    dispatchEvent({ normalizeEventPosition: true, disable: true });
+                    var pos = getDispatchedEventPosition();
+                    expect(pos.x).toBe(eventPosition.x - viewportOffset.left);
+                    expect(pos.y).toBe(eventPosition.y - viewportOffset.top);
+                });
             });
 
             it('should set current state to end state of event transformation', function() {

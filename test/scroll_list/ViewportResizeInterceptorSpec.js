@@ -46,7 +46,7 @@ define(function(require) {
             awesomeMap.dispose();
         });
 
-        it('should return false to cancel the event and stop propogation to item maps', function() {
+        it('should return false to cancel the event and stop propagation to item maps', function() {
             var gesture = new Gesture();
             var resizeEvent = new InteractionEvent(EventTypes.RESIZE, gesture, gesture);
 

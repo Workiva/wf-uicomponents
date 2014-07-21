@@ -45,6 +45,10 @@ define(function(require) {
      *        NOTE: Ensure that the host has "position: relative|absolute",
      *        otherwise various dimension measurements will fail.
      *
+     * @param {boolean} [options.normalizeEventPosition=true]
+     *        Ensure that emitted events relate their position to origin of the viewport,
+     *        and not the browser page origin.
+     *
      * @param {boolean} [options.touchScrollingEnabled=true]
      *        When touch scrolling is enabled, dragging and swiping will scroll
      *        the list and pan items. When disabled, the following events have
@@ -91,6 +95,7 @@ define(function(require) {
          * @type {Object}
          */
         this._options = _.extend({
+            normalizeEventPosition: true,
             touchScrollingEnabled: true
         }, options);
 
@@ -206,6 +211,8 @@ define(function(require) {
          * @private
          */
         this._customContentDimensions = null;
+
+        this._disabled = false;
 
         /**
          * Whether the instance is disposed.
@@ -426,7 +433,7 @@ define(function(require) {
          * @return {boolean}
          */
         isDisabled: function() {
-            return this._hitArea.style.display === 'none';
+            return this._disabled;
         },
 
         /**
@@ -525,7 +532,7 @@ define(function(require) {
          * @method AwesomeMap#disable
          */
         disable: function() {
-            this._hitArea.style.display = 'none';
+            this._disabled = true;
         },
 
         /**
@@ -565,7 +572,7 @@ define(function(require) {
          * @method AwesomeMap#enable
          */
         enable: function() {
-            this._hitArea.style.display = 'block';
+            this._disabled = false;
         },
 
         /**
@@ -915,7 +922,17 @@ define(function(require) {
          * @private
          */
         _normalizeEventPosition: function(event) {
-            if (!(this.isDisabled() && event.position)) {
+            // Only normalize if directed.
+            if (!this._options.normalizeEventPosition) {
+                return;
+            }
+            // If the hit area is enabled, no need to normalize and the events will be positioned
+            // relative to the hit area, which is laid atop the viewport.
+            if (!this.isDisabled()) {
+                return;
+            }
+            // If this event has no position data (RESIZE), bail.
+            if (!event.position) {
                 return;
             }
             var boundingRect = this._viewport.getBoundingClientRect();

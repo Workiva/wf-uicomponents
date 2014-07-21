@@ -36,14 +36,13 @@ define(function(require) {
      *        The scrollList that the KeyNavigator is associated with.
      *
      */
-
     var KeyNavigator = function (scrollList) {
         this._scrollList = scrollList;
+        this._listener = this._keyNavListener.bind(this);
 
         // Watch for keydown events and if the documentViewer is enabled,
         // translate the event into the appropriate scrolling
-
-        document.addEventListener('keydown', (this._keyNavListener).bind(this));
+        document.addEventListener('keydown', this._listener);
     };
 
     /* Keycodes */
@@ -59,6 +58,14 @@ define(function(require) {
     };
 
     KeyNavigator.prototype = {
+        /**
+         * Dispose of this instance of KeyNavigator
+         * @method KeyNavigator#dispose
+         */
+        dispose: function() {
+            document.removeEventListener('keydown', this._listener);
+        },
+
         /**
          * Determine whether an event needs to be handled
          *
