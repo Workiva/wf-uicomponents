@@ -170,9 +170,12 @@ define(function(require) {
             });
 
             // Set initial transform in order to center the content.
+            var viewportSize = layout.getViewportSize();
+            var layoutSize = layout.getSize();
             map.transform({
-                x: (layout.getViewportSize().width - layout.getSize().width) / 2,
-                y: 0,
+                x: (viewportSize.width - layoutSize.width) / 2,
+                y: (viewportSize.height < layoutSize.height ? 0 :
+                    (viewportSize.height - layoutSize.height) / 2),
                 scale: 1
             });
 
