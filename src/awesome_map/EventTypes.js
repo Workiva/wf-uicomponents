@@ -27,6 +27,12 @@ define(function() {
     var EventTypes = {
 
         /**
+         * User right clicks on desktop.
+         * @type {string}
+         */
+        CONTEXT_MENU: 'contextmenu',
+
+        /**
          * User double taps on touch or double clicks on desktop.
          * @type {string}
          */

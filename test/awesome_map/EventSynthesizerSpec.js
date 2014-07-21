@@ -119,6 +119,13 @@ define(function(require) {
                 });
             });
 
+            it('should register a contextmenu handler on the host element', function() {
+                var handler = handlers[EventTypes.CONTEXT_MENU];
+
+                expect(handler).toBeDefined();
+                expect(host.addEventListener).toHaveBeenCalledWith(EventTypes.CONTEXT_MENU, handler);
+            });
+
             it('should register a double tap handler with hammer', function() {
                 expectHammerHandlerRegistration(EventTypes.DOUBLE_TAP);
             });
@@ -143,7 +150,7 @@ define(function(require) {
                 var handler = handlers[EventTypes.MOUSE_MOVE];
 
                 expect(handler).toBeDefined();
-                expect(host.addEventListener).toHaveBeenCalledWith('mousemove', handler);
+                expect(host.addEventListener).toHaveBeenCalledWith(EventTypes.MOUSE_MOVE, handler);
             });
 
             it('should register a mouse wheel handler with mouse adapter', function() {
@@ -175,7 +182,7 @@ define(function(require) {
                 var handler = handlers[EventTypes.RESIZE];
 
                 expect(handler).toBeDefined();
-                expect(window.addEventListener).toHaveBeenCalledWith('resize', handler);
+                expect(window.addEventListener).toHaveBeenCalledWith(EventTypes.RESIZE, handler);
             });
 
             it('should register a swipe handler with hammer', function() {
@@ -259,7 +266,7 @@ define(function(require) {
                 synthesizer.dispose();
 
                 for (var type in handlers) {
-                    if (type.indexOf('mouse') !== 0 && type !== EventTypes.RESIZE) {
+                    if (!/contextmenu|mouse|resize/.test(type)) {
                         handler = handlers[type];
                         expect(hammer.off).toHaveBeenCalledWith(type, handler);
                     }
@@ -270,6 +277,12 @@ define(function(require) {
                 var handler = handlers[EventTypes.MOUSE_MOVE];
                 synthesizer.dispose();
                 expect(host.removeEventListener).toHaveBeenCalledWith('mousemove', handler, false);
+            });
+
+            it('should remove the host contextmenu handler', function() {
+                var handler = handlers[EventTypes.CONTEXT_MENU];
+                synthesizer.dispose();
+                expect(host.removeEventListener).toHaveBeenCalledWith('contextmenu', handler, false);
             });
 
             it('should dispose the mouse adapter', function() {
@@ -306,6 +319,19 @@ define(function(require) {
                 dispatchEvent = synthesizer._dispatchEvent;
             });
             afterEach(teardown);
+
+            it('should dispatch contextmenu events', function() {
+                var eventType = EventTypes.CONTEXT_MENU;
+                var event = { pageX: 10, pageY: 20, source: {} };
+
+                handlers[eventType](event);
+
+                expect(dispatchEvent).toHaveBeenCalled();
+                expect(dispatchEvent.calls[0].args[0]).toBe(eventType);
+                expect(dispatchEvent.calls[0].args[1].center.pageX).toBe(event.pageX);
+                expect(dispatchEvent.calls[0].args[1].center.pageY).toBe(event.pageY);
+                expect(dispatchEvent.calls[0].args[1].srcEvent).toBe(event.source);
+            });
 
             it('should dispatch double tap events', function() {
                 var eventType = EventTypes.DOUBLE_TAP;
