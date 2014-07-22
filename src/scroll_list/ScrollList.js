@@ -621,41 +621,47 @@ define(function(require) {
         },
 
         /**
-         * Scroll to the specified item index, optionally to an offset within that item.
+         * Scroll to the specified offset within an item index.
          * @method ScrollList#scrollToItem
          * @param {Object} options
          * @param {number} options.index - The index of the item/content to jump to.
-         * @param {string} options.viewportAnchorLocation - Where you want the item
-            (and offset, if set) to show in the viewport.
-            Can be 'top' [default], 'center', or 'bottom.'
-         * @param {{ x: number, y: number}} [options.offset] - An item-relative offset to position
-            the viewport.  Positive numbers move the document to the left and down
-            for x and y, respectively.
+         * @param {string} [options.viewportAnchorLocation=top]
+         *   Where you want the item offset to show in the viewport.
+         *   Can be 'top', 'center', or 'bottom.'
+         *   The anchor location is constrained by any viewing boundaries that exist
+         *   in the document or viewing mode.
+         * @param {{ x: number, y: number}} [options.offset={ x: 0, y: 0 }]
+         *   An item-relative offset to position the viewport.  Positive numbers
+         *   move the viewport to the left and down for x and y, respectively.
+         *   Negative numbers do the reverse.
          * @param {Function} [options.done] - Callback invoked when the jump is complete.
+         * @example
+         * // Scrolls the third page to the top of the viewport.
+         * scrollList.scrollToItem({ 3, 'top'});
+         *
+         * // Scrolls to the third item/page, and places the point 200px down
+         * // the page at the top of the viewport.  x is ignored.
+         * scrollList.scrollToItem({ 3, 'top', { x: 100, y: 200 } });
+         *
+         * // Scrolls the top of the third page to the center of the viewport.
+         * scrollList.scrollToItem({ 3, 'center'});
+         *
+         * // Scrolls to the third item/page, and places the point 100 in from
+         * // the left and 200px down at the cetner of the viewport.
+         * scrollList.scrollToItem({ 3, 'center', { x: 100, y: 200 } });
+         *
+         * // Scrolls the top of the third page to the bottom of the viewport.
+         * // (Basically shows page 2.)
+         * scrollList.scrollToItem({ 3, 'bottom'});
+         *
+         * // Scrolls to the third item/page, and places the point 200px down
+         * // the page to the bottom of the viewport. x is ignored.
+         * scrollList.scrollToItem({ 3, 'bottom', { x: 100, y: 200 } });
+         *
          */
         scrollToItem: function(options) {
-            /*
-                Some answers to potential questions:
-                  * x means nothing to top and bottom.  The viewport x will stay where is was
-                    before calling scrollToItem.
-                  * If you specify bottom with no offset, you will see the previous item in
-                    the viewport...
-                  * ...You may think bottom means put the bottom of the item at the bottom of
-                    the viewport, but it means put the top of the item/offset at the bottom of
-                    the  viewport.  This is consistent with center and top.  It is conceivable that
-                    you would expect the bottom of the item (with no offset) would show at the
-                    bottom of the viewport.  This is not supported right now.
-                  * All viewportAnchorLocations are weird in modes other than flow.  This happens
-                    because the repositioning must obey boundaries.  Since there are boundaries on
-                    every page in peek and single, any type of viewportAnchorLocation will pretty
-                    much show the whole page.  Bottom is particularly useless.  Only if you are
-                    zoomed in quite a bit will you see any results.
-            */
             if (options.index === undefined) {
                 throw new Error('ScrollList#scrollToItem: index is required.');
-                // We know that it is weird to have index required, when it is inside the options
-                // object.  But, we thought we should not stray from the interfaces that exist
-                // elsewhere in this class at this time.
             }
 
             var panToOptions = {
@@ -697,7 +703,6 @@ define(function(require) {
             );
             var itemLayout = layout.getItemLayout(targetIndex);
             var listState = this._listMap.getCurrentTransformState();
-
             panToOptions.x = listState.translateX;
             panToOptions.y = -itemLayout.top * listState.scale;
 
@@ -900,7 +905,7 @@ define(function(require) {
                 }
                 else if (viewportAnchorLocation === 'bottom') {
                     translation = {
-                        x: panToOptions.x, // Top has no concept of x.  Keep existing.
+                        x: panToOptions.x, // Bottom has no concept of x.  Keep existing.
                         y: viewportSize.height - scaledOffsetY
                     };
                 }
