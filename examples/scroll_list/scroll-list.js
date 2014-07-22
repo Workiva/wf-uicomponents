@@ -109,6 +109,7 @@ define(function(require) {
     var totalPages = +urlParams.totalPages || 100;
     var minNumberOfVirtualItems = scrollMode === 'flow' ? (DeviceInfo.desktop ? 15 : 9) : (DeviceInfo.desktop ? 5 : 3);
     var touchScrollingEnabled = Utils.valueOr(urlParams.touchScrollingEnabled, 'true') === 'true';
+    var zoomMode = urlParams.scroll !== 'flow';
 
     var itemSizeCollection = new ItemSizeCollection({
         maxWidth: 1022,
@@ -123,7 +124,8 @@ define(function(require) {
         minNumberOfVirtualItems: minNumberOfVirtualItems,
         padding: 1,
         scaleLimits: { minimum: 0.25, maximum: 3 },
-        touchScrollingEnabled: touchScrollingEnabled
+        touchScrollingEnabled: touchScrollingEnabled,
+        persistZoom: zoomMode
     });
 
     // Instantiate a KeyNavigator
