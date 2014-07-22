@@ -663,6 +663,10 @@ define(function(require) {
             if (options.index === undefined) {
                 throw new Error('ScrollList#scrollToItem: index is required.');
             }
+            options.viewportAnchorLocation = options.viewportAnchorLocation || 'top';
+            options.offset = options.offset || { x: 0, y: 0 };
+            options.offset.x = options.offset.x || 0;
+            options.offset.y = options.offset.y || 0;
 
             var panToOptions = {
                 x: 0,

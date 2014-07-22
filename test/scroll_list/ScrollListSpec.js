@@ -564,7 +564,7 @@ define(function(require) {
                 testScrollList(function(scrollList) {
                     var map = scrollList.getListMap();
                     var currentState = { translateX: 10, scale: 2 };
-                    var itemLayout = { top: 100 };
+                    var itemLayout = { top: 100, scaleToFit: 1 };
                     var layout = scrollList.getLayout();
 
                     spyOn(map, 'panTo');
@@ -589,7 +589,7 @@ define(function(require) {
                     var done = function() {};
                     var map = scrollList.getListMap();
                     var currentState = { translateX: 10, scale: 2 };
-                    var itemLayout = { top: 100 };
+                    var itemLayout = { top: 100, scaleToFit: 1 };
 
                     spyOn(map, 'panTo');
                     spyOn(map, 'getCurrentTransformState').andReturn(currentState);
