@@ -27,6 +27,7 @@ define(function(require) {
     var ScrollModes = require('wf-js-uicomponents/scroll_list/ScrollModes');
     var Utils = require('wf-js-common/Utils');
     var VerticalLayout = require('wf-js-uicomponents/layouts/VerticalLayout');
+    var ZoomPersistanceProvider = require('wf-js-uicomponents/scroll_list/ZoomPersistanceProvider');
 
     function constrain(value, min, max) {
         return Math.max(min, Math.min(max, value));
@@ -91,6 +92,10 @@ define(function(require) {
      *        When touch scrolling is enabled, dragging and swiping will scroll
      *        the list and pan items. When disabled, the mouse wheel and
      *        scrollbar are the only default means of scrolling.
+     *
+     * @param {boolean} [options.persistZoom]
+     *        When persistZoom is enabled, when in peek mode the zoom level
+     *        will persist when changing pages.
      *
      * @example
      *
@@ -310,7 +315,8 @@ define(function(require) {
             mode: ScrollModes.FLOW,
             padding: 0,
             scaleLimits: { minimum: 1, maximum: 3 },
-            touchScrollingEnabled: true
+            touchScrollingEnabled: true,
+            persistZoom: false
         }, options);
 
         /**
@@ -781,6 +787,10 @@ define(function(require) {
 
             this._listMap = AwesomeMapFactory.createListMap(this);
             this._scaleTranslator = new ScaleTranslator(this, this._listMap, 0);
+
+            if (this._options.persistZoom) {
+                this._zoomPersistanceProvider = new ZoomPersistanceProvider(this);
+            }
         },
 
         /**
