@@ -95,7 +95,7 @@ define(function(require) {
      *
      * @param {boolean} [options.persistZoom]
      *        When persistZoom is enabled, when in peek mode the zoom level
-     *        will persist when changing pages.
+     *        will persist when changing pages. Defaults to false.
      *
      * @example
      *
@@ -789,6 +789,9 @@ define(function(require) {
             this._scaleTranslator = new ScaleTranslator(this, this._listMap, 0);
 
             if (this._options.persistZoom) {
+                if (this._options.ScrollModes.FLOW) {
+                    throw new Error('ScrollList#_initialize: cannot persist zoom in flow');
+                }
                 this._zoomPersistanceProvider = new ZoomPersistanceProvider(this);
             }
         },
