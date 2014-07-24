@@ -270,7 +270,7 @@ define(function(require) {
 
             // Let this release event play out before scrolling.
             setTimeout(function() {
-                scrollList.scrollTo({ index: itemIndex, duration: 250 });
+                scrollList.scrollToItem({ index: itemIndex, duration: 250 });
             }, 0);
 
             this._resetPeekState();

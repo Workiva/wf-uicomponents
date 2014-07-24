@@ -70,14 +70,14 @@ define(function(require) {
                 var itemState = new TransformState({ translateY: 0 });
                 var result;
 
-                spyOn(scrollList, 'scrollTo');
+                spyOn(scrollList, 'scrollToItem');
                 spyOn(scrollList, 'getCurrentItem').andReturn({ index: 1 });
                 spyOn(itemMap, 'getCurrentTransformState').andReturn(itemState);
 
                 result = interceptor.handleInteraction(null, { event: evt });
 
                 expect(result).toBe(false);
-                expect(scrollList.scrollTo).toHaveBeenCalledWith({ index: 0, duration: 0 });
+                expect(scrollList.scrollToItem).toHaveBeenCalledWith({ index: 0, duration: 0 });
             });
 
             it('should jump to next item on wheels up when item bottom is visible', function() {
@@ -88,14 +88,14 @@ define(function(require) {
                 viewportDimensions.height = 200;
                 itemDimensions.height = 400;
 
-                spyOn(scrollList, 'scrollTo');
+                spyOn(scrollList, 'scrollToItem');
                 spyOn(scrollList, 'getCurrentItem').andReturn({ index: 0 });
                 spyOn(itemMap, 'getCurrentTransformState').andReturn(itemState);
 
                 result = interceptor.handleInteraction(null, { event: evt });
 
                 expect(result).toBe(false);
-                expect(scrollList.scrollTo).toHaveBeenCalledWith({ index: 1, duration: 0 });
+                expect(scrollList.scrollToItem).toHaveBeenCalledWith({ index: 1, duration: 0 });
             });
 
             it('should ignore on wheels down when item top is not visible', function() {
@@ -103,14 +103,14 @@ define(function(require) {
                 var itemState = new TransformState({ translateY: -100 });
                 var result;
 
-                spyOn(scrollList, 'scrollTo');
+                spyOn(scrollList, 'scrollToItem');
                 spyOn(scrollList, 'getCurrentItem').andReturn({ index: 0});
                 spyOn(itemMap, 'getCurrentTransformState').andReturn(itemState);
 
                 result = interceptor.handleInteraction(null, { event: evt });
 
                 expect(result).not.toBe(false);
-                expect(scrollList.scrollTo).not.toHaveBeenCalled();
+                expect(scrollList.scrollToItem).not.toHaveBeenCalled();
             });
 
             it('should ignore on wheels up when item bottom is not visible', function() {
@@ -121,21 +121,21 @@ define(function(require) {
                 viewportDimensions.height = 200;
                 itemDimensions.height = 400;
 
-                spyOn(scrollList, 'scrollTo');
+                spyOn(scrollList, 'scrollToItem');
                 spyOn(scrollList, 'getCurrentItem').andReturn({ index: 0});
                 spyOn(itemMap, 'getCurrentTransformState').andReturn(itemState);
 
                 result = interceptor.handleInteraction(null, { event: evt });
 
                 expect(result).not.toBe(false);
-                expect(scrollList.scrollTo).not.toHaveBeenCalled();
+                expect(scrollList.scrollToItem).not.toHaveBeenCalled();
             });
 
             it('should ignore wheels down immediately after scrolling overflowing item to top', function() {
                 var evt = createEvent(EventTypes.MOUSE_WHEEL, { deltaY: 10 });
                 var itemState = new TransformState({ translateY: -10 });
 
-                spyOn(scrollList, 'scrollTo');
+                spyOn(scrollList, 'scrollToItem');
                 spyOn(scrollList, 'getCurrentItem').andReturn({ index: 0});
                 spyOn(itemMap, 'getCurrentTransformState').andReturn(itemState);
 
@@ -145,14 +145,14 @@ define(function(require) {
                     itemState.translateY = 0;
                     expect(interceptor.handleInteraction(null, { event: evt })).toBe(false);
 
-                    expect(scrollList.scrollTo.calls.length).toBe(0);
+                    expect(scrollList.scrollToItem.calls.length).toBe(0);
                 });
 
                 waits(100);
 
                 runs(function() {
                     expect(interceptor.handleInteraction(null, { event: evt })).toBe(false);
-                    expect(scrollList.scrollTo.calls.length).toBe(1);
+                    expect(scrollList.scrollToItem.calls.length).toBe(1);
                 });
             });
 
@@ -163,7 +163,7 @@ define(function(require) {
                 viewportDimensions.height = 200;
                 itemDimensions.height = 400;
 
-                spyOn(scrollList, 'scrollTo');
+                spyOn(scrollList, 'scrollToItem');
                 spyOn(scrollList, 'getCurrentItem').andReturn({ index: 0});
                 spyOn(itemMap, 'getCurrentTransformState').andReturn(itemState);
 
@@ -173,14 +173,14 @@ define(function(require) {
                     itemState.translateY = -200;
                     expect(interceptor.handleInteraction(null, { event: evt })).toBe(false);
 
-                    expect(scrollList.scrollTo.calls.length).toBe(0);
+                    expect(scrollList.scrollToItem.calls.length).toBe(0);
                 });
 
                 waits(100);
 
                 runs(function() {
                     expect(interceptor.handleInteraction(null, { event: evt })).toBe(false);
-                    expect(scrollList.scrollTo.calls.length).toBe(1);
+                    expect(scrollList.scrollToItem.calls.length).toBe(1);
                 });
             });
 
@@ -188,7 +188,7 @@ define(function(require) {
                 var evt = createEvent(EventTypes.MOUSE_WHEEL, { deltaY: -10 });
                 var itemState = new TransformState();
 
-                spyOn(scrollList, 'scrollTo');
+                spyOn(scrollList, 'scrollToItem');
                 spyOn(scrollList, 'getCurrentItem').andReturn({ index: 0});
                 spyOn(itemMap, 'getCurrentTransformState').andReturn(itemState);
 
@@ -200,7 +200,7 @@ define(function(require) {
                     interceptor.handleInteraction(null, { event: evt });
                     interceptor.handleInteraction(null, { event: evt });
 
-                    expect(scrollList.scrollTo.calls.length).toBe(1);
+                    expect(scrollList.scrollToItem.calls.length).toBe(1);
                 });
 
                 waits(100);
@@ -208,7 +208,7 @@ define(function(require) {
                 runs(function() {
                     interceptor.handleInteraction(null, { event: evt });
 
-                    expect(scrollList.scrollTo.calls.length).toBe(2);
+                    expect(scrollList.scrollToItem.calls.length).toBe(2);
                 });
             });
 

@@ -84,7 +84,7 @@ define(function(require) {
                 newContentIndex = this._getContentIndex(direction);
 
                 if (newContentIndex !== currentContentIndex && this._isContentBoundaryVisible(direction)) {
-                    this._scrollList.scrollTo({ index: newContentIndex });
+                    this._scrollList.scrollToItem({ index: newContentIndex });
                     return false;
                 }
             }
