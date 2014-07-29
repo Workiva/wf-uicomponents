@@ -498,7 +498,7 @@ define(function(require) {
                 var threshold;
 
                 beforeEach(function() {
-                    threshold = viewportDimensions.height / 2;
+                    threshold = viewportDimensions.height / 3;
                     listState.translateY = -500;
 
                     spyOn(scrollList, 'scrollToItem');
@@ -533,15 +533,15 @@ define(function(require) {
                     expect(scrollList.scrollToItem).not.toHaveBeenCalled();
                 });
 
-                it('should jump to previous item when peeking beyond middle of viewport', function() {
+                it('should jump to previous item when peeking beyond 1/3rd of viewport', function() {
                     shouldJumpToIndex(threshold + 1, 3);
                 });
 
-                it('should jump to next item when peeking beyond beyond middle of viewport', function() {
+                it('should jump to next item when peeking beyond 1/3rd of viewport', function() {
                     shouldJumpToIndex(-(threshold + 1), 5);
                 });
 
-                it('should jump to current item when peek does not exceed middle of viewport', function() {
+                it('should jump to current item when peek does not exceed 1/3rd of viewport', function() {
                     shouldJumpToIndex(threshold - 1, 4);
                 });
             });
