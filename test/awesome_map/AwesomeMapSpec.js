@@ -20,7 +20,6 @@ define(function(require) {
     var $ = require('jquery');
     var _ = require('lodash');
     var AwesomeMap = require('wf-js-uicomponents/awesome_map/AwesomeMap');
-    var BrowserInfo = require('wf-js-common/BrowserInfo');
     var DOMUtil = require('wf-js-common/DOMUtil');
     var EventSynthesizer = require('wf-js-uicomponents/awesome_map/EventSynthesizer');
     var EventTypes = require('wf-js-uicomponents/awesome_map/EventTypes');
@@ -93,7 +92,6 @@ define(function(require) {
                 var host = awesomeMap._host;
                 var viewport = awesomeMap._viewport;
                 var transformationPlane = awesomeMap._transformationPlane;
-                var hitArea = awesomeMap._hitArea;
                 var hostChildren;
                 var viewportChildren;
 
@@ -126,25 +124,13 @@ define(function(require) {
                 expect(transformationPlane.style.right).toBe('');
                 expect(TransformUtil.clearTransformationOrigin).toHaveBeenCalledWith(transformationPlane);
 
-                testElementStyle(hitArea);
-
                 hostChildren = host.childNodes;
                 expect(hostChildren.length).toBe(1);
                 expect(hostChildren[0]).toBe(viewport);
 
                 viewportChildren = viewport.childNodes;
-                expect(viewportChildren.length).toBe(2);
+                expect(viewportChildren.length).toBe(1);
                 expect(viewportChildren[0]).toBe(transformationPlane);
-                expect(viewportChildren[1]).toBe(hitArea);
-            });
-
-            it('should set a background color for the hit area if browsing with IE', function() {
-                spyOn(BrowserInfo, 'getBrowser').andReturn(BrowserInfo.Browsers.IE);
-
-                awesomeMap = new AwesomeMap($host[0]);
-
-                expect(awesomeMap._hitArea.style.backgroundColor.replace(/\s+/g, ''))
-                    .toMatch(/rgba\(255,255,255,0.0\d+\)/);
             });
 
             it('should initialize the current transform state', function() {
