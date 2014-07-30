@@ -263,7 +263,7 @@ define(function(require) {
             else {
                 var peekDelta = this._peekDelta;
                 var viewportHeight = layout.getViewportSize().height;
-                if (Math.abs(peekDelta) > viewportHeight / 2) {
+                if (Math.abs(peekDelta) > viewportHeight / 3) {
                     itemIndex += peekDelta > 0 ? -1 : 1;
                 }
             }
