@@ -17,7 +17,7 @@
   "dependencies": {
     "lodash": "1.3.1",
     "hammerjs": "1.0.5",
-    "wf-common": "git://github.com/WebFilings/wf-common#0.2.1"
+    "wf-common": "git://github.com/WebFilings/wf-common#e61128bebb83b1d2a602fddc32119696a2f8232d"
   },
   "devDependencies": {
     "jquery": "2.0.3",
