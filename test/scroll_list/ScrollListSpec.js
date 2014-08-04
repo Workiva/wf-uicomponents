@@ -21,6 +21,7 @@ define(function(require) {
     var _ = require('lodash');
     var AwesomeMap = require('wf-js-uicomponents/awesome_map/AwesomeMap');
     var DestroyUtil = require('wf-js-common/DestroyUtil');
+    var HitTester = require('wf-js-uicomponents/scroll_list/HitTester');
     var ItemSizeCollection = require('wf-js-uicomponents/layouts/ItemSizeCollection');
     var ScrollList = require('wf-js-uicomponents/scroll_list/ScrollList');
 
@@ -294,6 +295,29 @@ define(function(require) {
                     scrollList.enable();
 
                     expect(map.enable).toHaveBeenCalled();
+                });
+            });
+        });
+
+        describe('hit testing', function() {
+            it('should call hit tester with list map if in "flow" mode', function() {
+                var fakeResult = {};
+                spyOn(HitTester, 'testListMap').andReturn(fakeResult);
+                testScrollList({ mode: 'flow' }, function(scrollList) {
+                    var point = { x: 1, y: 2 };
+                    var result = scrollList.hitTest(point);
+                    expect(HitTester.testListMap).toHaveBeenCalledWith(scrollList, point);
+                    expect(result).toBe(fakeResult);
+                });
+            });
+            it('should call hit tester with item map if not in "flow" mode', function() {
+                var fakeResult = {};
+                spyOn(HitTester, 'testItemMap').andReturn(fakeResult);
+                testScrollList({ mode: '!flow' }, function(scrollList) {
+                    var point = { x: 1, y: 2 };
+                    var result = scrollList.hitTest(point);
+                    expect(HitTester.testItemMap).toHaveBeenCalledWith(scrollList, point);
+                    expect(result).toBe(fakeResult);
                 });
             });
         });

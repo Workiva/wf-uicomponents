@@ -21,6 +21,7 @@ define(function(require) {
     var AwesomeMapFactory = require('wf-js-uicomponents/scroll_list/AwesomeMapFactory');
     var DestroyUtil = require('wf-js-common/DestroyUtil');
     var FitModes = require('wf-js-uicomponents/scroll_list/FitModes');
+    var HitTester = require('wf-js-uicomponents/scroll_list/HitTester');
     var Observable = require('wf-js-common/Observable');
     var PlaceholderRenderer = require('wf-js-uicomponents/scroll_list/PlaceholderRenderer');
     var ScaleTranslator = require('wf-js-uicomponents/scroll_list/ScaleTranslator');
@@ -519,6 +520,20 @@ define(function(require) {
             if (itemMap) {
                 itemMap.enable();
             }
+        },
+
+        /**
+         * Return the index of and position within the item at the given point.
+         * If no item is under the given point, return false.
+         *
+         * @method ScrollList#hitTest
+         * @param  {{ x: number, y: number }} point
+         * @return {boolean|{ index: number, position: { x: number, y: number }}}
+         */
+        hitTest: function(point) {
+            var method = (this._options.mode === ScrollModes.FLOW ?
+                'testListMap' : 'testItemMap');
+            return HitTester[method](this, point);
         },
 
         /**

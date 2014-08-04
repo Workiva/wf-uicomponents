@@ -138,12 +138,15 @@ define(function(require) {
                 scrollList.onInteractionStarted.dispatch([scrollList]);
             });
             map.onInteraction(function(source, args) {
-                var newArgs = { event: args.event };
+                var evt = args.event;
+                var newArgs = { event: evt };
                 var fn = HitTester[options.mode === ScrollModes.FLOW ? 'testListMap' : 'testItemMap'];
-                var hit = fn(scrollList, args.event);
-                if (hit) {
-                    newArgs.itemIndex = hit.index;
-                    newArgs.itemPosition = hit.position;
+                if (evt.position) {
+                    var hit = fn(scrollList, evt.position);
+                    if (hit) {
+                        newArgs.itemIndex = hit.index;
+                        newArgs.itemPosition = hit.position;
+                    }
                 }
                 scrollList.onInteraction.dispatch([scrollList, newArgs]);
             });
