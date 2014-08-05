@@ -167,6 +167,10 @@ define(function(require) {
 
             describe('touch', function() {
 
+                beforeEach(function() {
+                    spyOn(layout, 'getCurrentItemIndex').andReturn(0);
+                });
+
                 it('should initialize peek state by current position', function() {
                     var evt = createEvent(EventTypes.TOUCH);
                     interceptor.handleInteraction(null, { event: evt });
@@ -508,10 +512,12 @@ define(function(require) {
 
                 function shouldJumpToIndex(deltaY, index) {
                     var gesture = { deltaY: deltaY };
+                    var touch = createEvent(EventTypes.TOUCH, gesture);
                     var drag = createEvent(EventTypes.DRAG, gesture);
                     var release = createEvent(EventTypes.RELEASE, gesture);
 
                     // Start peeking and then release
+                    interceptor.handleInteraction(null, { event: touch });
                     interceptor.handleInteraction(null, { event: drag });
                     runs(function() {
                         interceptor.handleInteraction(null, { event: release });
