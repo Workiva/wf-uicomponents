@@ -17,14 +17,12 @@
 define(function(require) {
     'use strict';
 
-    var AwesomeMap = require('wf-js-uicomponents/awesome_map/AwesomeMap');
     var ScrollList = require('wf-js-uicomponents/scroll_list/ScrollList');
     var StopPropagationInterceptor = require('wf-js-uicomponents/scroll_list/StopPropagationInterceptor');
 
     describe('StopPropagationInterceptor', function() {
 
         var scrollList = ScrollList.prototype;
-        var itemMap = AwesomeMap.prototype;
         var interceptor;
 
         beforeEach(function() {
