@@ -55,7 +55,7 @@ define(function(require) {
          */
         createItemMap: function(scrollList, host) {
             var options = scrollList.getOptions();
-            var yBoundaryMode = options.mode === ScrollModes.SINGLE ? 'stop' : 'slow';
+            var yBoundaryMode = options.mode === ScrollModes.FLOW ? 'slow' : 'stop';
             var map = new AwesomeMap(host, {
                 // By the time an event comes through, it has already passed through the list map,
                 // so there's no need to normalize the position again.
