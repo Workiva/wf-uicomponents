@@ -225,7 +225,7 @@ define(function(require) {
                 // Remove positional styles from the content container and append to map.
                 var contentContainer = placeholder.contentContainer;
                 contentContainer.style.top = '0px';
-                contentContainer.style.left = null;
+                contentContainer.style.left = '0px';
                 itemMap.appendContent(contentContainer);
             }
         },
