@@ -171,8 +171,8 @@ define(function(require) {
 
                     renderer.appendPlaceholderToScrollList(itemLayout, placeholder);
 
-                    expect(placeholder.contentContainer.style.top).toBe('');
-                    expect(placeholder.contentContainer.style.left).toBe('');
+                    expect(placeholder.contentContainer.style.top).toBe('0px');
+                    expect(placeholder.contentContainer.style.left).toBe('0px');
                 });
 
                 it('should append the content container to the item map', function() {

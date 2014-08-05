@@ -224,8 +224,8 @@ define(function(require) {
                 itemMap.transform({ x: transformX, y: transformY, scale: 1 });
                 // Remove positional styles from the content container and append to map.
                 var contentContainer = placeholder.contentContainer;
-                contentContainer.style.top = null;
-                contentContainer.style.left = null;
+                contentContainer.style.top = '0px';
+                contentContainer.style.left = '0px';
                 itemMap.appendContent(contentContainer);
             }
         },
