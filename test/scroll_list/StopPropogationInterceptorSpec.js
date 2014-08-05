@@ -18,45 +18,31 @@ define(function(require) {
     'use strict';
 
     var AwesomeMap = require('wf-js-uicomponents/awesome_map/AwesomeMap');
-    var PropagationInterceptor = require('wf-js-uicomponents/scroll_list/PropagationInterceptor');
     var ScrollList = require('wf-js-uicomponents/scroll_list/ScrollList');
+    var StopPropagationInterceptor = require('wf-js-uicomponents/scroll_list/StopPropagationInterceptor');
 
-    describe('PropagationInterceptor', function() {
+    describe('StopPropagationInterceptor', function() {
 
         var scrollList = ScrollList.prototype;
         var itemMap = AwesomeMap.prototype;
         var interceptor;
 
         beforeEach(function() {
-            interceptor = new PropagationInterceptor(scrollList);
-
-            spyOn(itemMap, 'handleInteractionEvent');
-            spyOn(scrollList, 'getCurrentItemMap').andReturn(itemMap);
+            interceptor = new StopPropagationInterceptor(scrollList);
         });
 
-        it('should not transfer cancelled events', function() {
-            var evt = { cancelled: true };
-            var result = interceptor.handleInteraction(null, { event: evt });
-
-            expect(result).toBeUndefined();
-            expect(itemMap.handleInteractionEvent).not.toHaveBeenCalled();
-        });
-
-        it('should not transfer simulated events', function() {
+        it('should not cancel simulated events', function() {
             var evt = { simulated: true };
             var result = interceptor.handleInteraction(null, { event: evt });
 
             expect(result).toBeUndefined();
-            expect(itemMap.handleInteractionEvent).not.toHaveBeenCalled();
         });
 
-        it('should transfer all other events', function() {
+        it('should cancel all other events', function() {
             var evt = {};
             var result = interceptor.handleInteraction(null, { event: evt });
 
             expect(result).toBe(false);
-            expect(itemMap.handleInteractionEvent)
-                .toHaveBeenCalledWith(interceptor, { event: evt });
         });
     });
 });

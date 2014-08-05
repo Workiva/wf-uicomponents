@@ -23,10 +23,10 @@ define(function(require) {
     var DoubleTapZoomInterceptor = require('wf-js-uicomponents/awesome_map/DoubleTapZoomInterceptor');
     var HitTester = require('wf-js-uicomponents/scroll_list/HitTester');
     var MouseWheelNavigationInterceptor = require('wf-js-uicomponents/scroll_list/MouseWheelNavigationInterceptor');
-    var PropagationInterceptor = require('wf-js-uicomponents/scroll_list/PropagationInterceptor');
     var RenderingHooksInterceptor = require('wf-js-uicomponents/scroll_list/RenderingHooksInterceptor');
     var ScaleInterceptor = require('wf-js-uicomponents/awesome_map/ScaleInterceptor');
     var ScrollModes = require('wf-js-uicomponents/scroll_list/ScrollModes');
+    var StopPropagationInterceptor = require('wf-js-uicomponents/scroll_list/StopPropagationInterceptor');
     var SwipeInterceptor = require('wf-js-uicomponents/awesome_map/SwipeInterceptor');
     var SwipeNavigationInterceptor = require('wf-js-uicomponents/scroll_list/SwipeNavigationInterceptor');
     var ViewportResizeInterceptor = require('wf-js-uicomponents/scroll_list/ViewportResizeInterceptor');
@@ -55,7 +55,6 @@ define(function(require) {
          */
         createItemMap: function(scrollList, host) {
             var options = scrollList.getOptions();
-            var yBoundaryMode = options.mode === ScrollModes.FLOW ? 'slow' : 'stop';
             var map = new AwesomeMap(host, {
                 // By the time an event comes through, it has already passed through the list map,
                 // so there's no need to normalize the position again.
@@ -74,7 +73,7 @@ define(function(require) {
             }
             map.addInterceptor(new BoundaryInterceptor({
                 centerContent: true,
-                mode: { x: 'stop', y: yBoundaryMode }
+                mode: 'stop'
             }));
 
             // Wire up observables.
@@ -129,7 +128,7 @@ define(function(require) {
                     map.addInterceptor(new SwipeNavigationInterceptor(scrollList));
                 }
                 map.addInterceptor(new MouseWheelNavigationInterceptor(scrollList));
-                map.addInterceptor(new PropagationInterceptor(scrollList));
+                map.addInterceptor(new StopPropagationInterceptor(scrollList));
             }
             map.addInterceptor(new RenderingHooksInterceptor(scrollList));
 

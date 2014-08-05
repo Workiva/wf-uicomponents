@@ -54,6 +54,17 @@ define(function(require) {
         this._forceJump = false;
 
         /**
+         * The current item index when touch event is detected. This allows some
+         * sanity when dealing with transitions on release events since the
+         * current item index will change as items move across the viewport
+         * during drag events.
+         * typ
+         * @type {number}
+         * @private
+         */
+        this._itemIndexAtTouch = null;
+
+        /**
          * The pixel amount that is being peeked at.
          * @type {number}
          * @private
@@ -102,8 +113,7 @@ define(function(require) {
 
             case EventTypes.TOUCH:
 
-                // Must return after setting peek delta to avoid cancelling touch event.
-                this._setPeekDeltaByCurrentPosition();
+                this._handleTouchEvent();
                 return;
 
             case EventTypes.DRAG:
@@ -263,7 +273,13 @@ define(function(require) {
             else {
                 var peekDelta = this._peekDelta;
                 var viewportHeight = layout.getViewportSize().height;
-                if (Math.abs(peekDelta) > viewportHeight / 3) {
+                // If the item index has not changed during the drag and
+                // have dragged beyond 1/3 of the viewport, then scroll to
+                // adjacent item. If the item index _has_ changed, then the
+                // current item shall be our scroll target.
+                if (this._itemIndexAtTouch === itemIndex &&
+                    Math.abs(peekDelta) > viewportHeight / 3
+                ) {
                     itemIndex += peekDelta > 0 ? -1 : 1;
                 }
             }
@@ -274,6 +290,12 @@ define(function(require) {
             }, 0);
 
             this._resetPeekState();
+        },
+
+        _handleTouchEvent: function() {
+            this._setPeekDeltaByCurrentPosition();
+            var layout = this._scrollList.getLayout();
+            this._itemIndexAtTouch = layout.getCurrentItemIndex();
         },
 
         /**
