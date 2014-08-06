@@ -260,7 +260,12 @@ define(function(require) {
          * @method
          */
         clearTransformationOrigin: function(target) {
-            target.style[BrowserInfo.cssTransformOriginProperty] = '0px 0px 0px';
+            if (BrowserInfo.hasCssTransforms3d) {
+                target.style[BrowserInfo.cssTransformOriginProperty] = '0px 0px 0px';
+            }
+            else {
+                target.style[BrowserInfo.cssTransformOriginProperty] = '0px 0px';
+            }
         },
 
         /**

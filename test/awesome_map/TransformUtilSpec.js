@@ -269,18 +269,8 @@ define(function(require) {
 
         describe('applying transforms', function() {
 
-            var originalHasCssTransforms3d;
-
-            beforeEach(function() {
-                originalHasCssTransforms3d = BrowserInfo.hasCssTransforms3d;
-            });
-
-            afterEach(function() {
-                BrowserInfo.hasCssTransforms3d = originalHasCssTransforms3d;
-            });
-
             it('should use a 3d transform if available', function() {
-                if (BrowserInfo.hasCssTransforms3d || (BrowserInfo.hasCssTransforms3d = true)) {
+                if (BrowserInfo.hasCssTransforms3d) {
                     TransformUtil.applyTransform(target, targetState);
 
                     expect(target.style[transformProp])
@@ -289,7 +279,7 @@ define(function(require) {
             });
 
             it('should use a 2d transform if 3d is not available', function() {
-                if (!BrowserInfo.hasCssTransforms3d || !(BrowserInfo.hasCssTransforms3d = false)) {
+                if (!BrowserInfo.hasCssTransforms3d) {
                     TransformUtil.applyTransform(target, targetState);
 
                     expect(target.style[transformProp])
@@ -317,11 +307,20 @@ define(function(require) {
 
         describe('clearing transform origins', function() {
 
-            it('should zero the transformation origin of the target', function() {
-                TransformUtil.clearTransformationOrigin(target);
+            it('should use 3 values if 3d transform if available', function() {
+                if (BrowserInfo.hasCssTransforms3d) {
+                    TransformUtil.clearTransformationOrigin(target);
 
-                // IE 9 will return '', all others will return '0px 0px 0px'.
-                expect(target.style[originProp]).toMatch(/^$|^0px 0px 0px$/);
+                    expect(target.style[originProp]).toBe('0px 0px 0px');
+                }
+            });
+
+            it('should use 2 values if 3d transform is not available', function() {
+                if (!BrowserInfo.hasCssTransforms3d) {
+                    TransformUtil.clearTransformationOrigin(target);
+
+                    expect(target.style[originProp]).toBe('0px 0px');
+                }
             });
         });
 
