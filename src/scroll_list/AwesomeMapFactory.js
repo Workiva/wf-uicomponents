@@ -64,13 +64,19 @@ define(function(require) {
 
             // Register interceptors.
             map.addInterceptor(new DoubleTapZoomInterceptor());
+            if (options.scaleLimits) {
+                map.addInterceptor(new ScaleInterceptor(options.scaleLimits));
+            }
+            if (options.mode === ScrollModes.PEEK) {
+                map.addInterceptor(new PeekInterceptor(scrollList));
+            }
+            else if (options.mode === ScrollModes.SINGLE) {
+                map.addInterceptor(new SwipeNavigationInterceptor(scrollList));
+            }
             map.addInterceptor(new SwipeInterceptor({
                 animationDuration: 250,
                 constrainToAxes: true
             }));
-            if (options.scaleLimits) {
-                map.addInterceptor(new ScaleInterceptor(options.scaleLimits));
-            }
             map.addInterceptor(new BoundaryInterceptor({
                 centerContent: true,
                 mode: 'stop'
@@ -121,12 +127,6 @@ define(function(require) {
                 }));
             }
             else {
-                if (options.mode === ScrollModes.PEEK) {
-                    map.addInterceptor(new PeekInterceptor(scrollList));
-                }
-                else { // Modes.SINGLE
-                    map.addInterceptor(new SwipeNavigationInterceptor(scrollList));
-                }
                 map.addInterceptor(new MouseWheelNavigationInterceptor(scrollList));
                 map.addInterceptor(new StopPropagationInterceptor(scrollList));
             }

@@ -154,7 +154,7 @@ define(function(require) {
             var contentBottom = contentState.translateY +
                                 Math.floor(contentHeight * contentState.scale);
 
-            var listMap = this._awesomeMap;
+            var listMap = this._scrollList.getListMap();
             var listState = listMap.getCurrentTransformState();
             var listHeight = listMap.getContentDimensions().height;
             var listTop = listState.translateY;
@@ -315,7 +315,8 @@ define(function(require) {
          * crossing the center of the viewport.
          */
         _setPeekDeltaByCurrentPosition: function() {
-            var currentState = this._awesomeMap.getCurrentTransformState();
+            var listMap = this._scrollList.getListMap();
+            var currentState = listMap.getCurrentTransformState();
             var viewportTop = -currentState.translateY / currentState.scale;
 
             var layout = this._scrollList.getLayout();

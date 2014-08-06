@@ -236,8 +236,9 @@ define(function(require) {
         });
 
         $('#jumpToPage').submit(function() {
-            scrollList.scrollTo({
-                index: this.elements.page.value - 1
+            scrollList.scrollToItem({
+                index: this.elements.page.value - 1,
+                offset: { y: 0 }
             });
             $(':focus').blur();
             return false;

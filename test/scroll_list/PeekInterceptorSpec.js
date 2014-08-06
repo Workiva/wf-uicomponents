@@ -48,12 +48,13 @@ define(function(require) {
         beforeEach(function() {
             listMapPlane = document.createElement('div');
 
-            listMap.onInteraction = function() {};
+            itemMap.onInteraction = function() {};
 
             listDimensions = { height: 1000 };
             viewportDimensions = { height: 200 };
             itemDimensions = { height: 200 };
 
+            spyOn(scrollList, 'getListMap').andReturn(listMap);
             spyOn(scrollList, 'getCurrentItemMap').andReturn(itemMap);
             spyOn(scrollList, 'getLayout').andReturn(layout);
             spyOn(listMap, 'getTransformationPlane').andReturn(listMapPlane);
@@ -62,7 +63,7 @@ define(function(require) {
             spyOn(itemMap, 'getContentDimensions').andReturn(itemDimensions);
 
             interceptor = new PeekInterceptor(scrollList);
-            interceptor.register(listMap);
+            interceptor.register(itemMap);
         });
 
         it('should be mixed with InterceptorMixin', function() {
