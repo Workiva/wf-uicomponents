@@ -646,7 +646,7 @@ define(function(require) {
          *   The anchor location is constrained by any viewing boundaries that exist
          *   in the document or viewing mode.
          * @param {{ x: number, y: number}} [options.offset={ x: 0, y: 0 }]
-         *   An item-relative offset to position the viewport.  Positive numbers
+         *   An item-relative offset to position the viewport. Positive numbers
          *   move the viewport to the left and down for x and y, respectively.
          *   Negative numbers do the reverse.
          * @param {Function} [options.done] - Callback invoked when the jump is complete.
@@ -678,10 +678,6 @@ define(function(require) {
             if (options.index === undefined) {
                 throw new Error('ScrollList#scrollToItem: index is required.');
             }
-            options.viewportAnchorLocation = options.viewportAnchorLocation || 'top';
-            options.offset = options.offset || { x: 0, y: 0 };
-            options.offset.x = options.offset.x || 0;
-            options.offset.y = options.offset.y || 0;
 
             var panToOptions = {
                 x: 0,
@@ -727,11 +723,16 @@ define(function(require) {
 
             // If given a content offset within the item, adjust the panToOptions.
             if (options.offset) {
+                var viewportAnchorLocation = options.viewportAnchorLocation || 'top';
+                var offset = options.offset || { x: 0, y: 0 };
+                offset.x = offset.x || 0;
+                offset.y = offset.y || 0;
+
                 this._applyItemOffset(
                     panToOptions,
-                    options.offset,
+                    offset,
                     itemLayout.scaleToFit,
-                    options.viewportAnchorLocation
+                    viewportAnchorLocation
                 );
             }
 
