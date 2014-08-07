@@ -511,12 +511,12 @@ define(function(require) {
             });
 
             it('should accelerate placeholder if css 3d tranforms are available', function() {
-                BrowserInfo.hasCssTransforms3d = true;
+                if (BrowserInfo.hasCssTransforms3d) {
+                    renderer.render(itemLayout);
 
-                renderer.render(itemLayout);
-
-                var placeholder = renderer.get(0).element;
-                expect(placeholder.style[BrowserInfo.cssTransformProperty]).toBe('translateZ(0px)');
+                    var placeholder = renderer.get(0).element;
+                    expect(placeholder.style[BrowserInfo.cssTransformProperty]).toBe('translateZ(0px)');
+                }
             });
 
             it('should not accelerate placeholder if css 3d tranforms are available', function() {
