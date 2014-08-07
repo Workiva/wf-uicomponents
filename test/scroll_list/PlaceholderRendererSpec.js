@@ -350,27 +350,40 @@ define(function(require) {
                 spyOn(renderer, 'appendPlaceholderToScrollList');
                 renderer.render(new ItemLayout({ itemIndex: 0 }));
 
+                spyOn(itemMap, 'clearContent');
                 spyOn(itemMap, 'invalidateViewportDimensions');
             });
 
-            it('should invalidate the viewport dimensions for active item maps', function() {
-                // Attach the fake map to the placheolder.
-                renderer.get(0).map = itemMap;
+            describe('active item maps', function() {
+                beforeEach(function() {
+                    // Attach the fake map to the placheolder.
+                    renderer.get(0).map = itemMap;
 
-                renderer.refresh();
-
-                expect(itemMap.invalidateViewportDimensions).toHaveBeenCalled();
+                    renderer.refresh();
+                });
+                it('should clear the content from the map', function() {
+                    expect(itemMap.clearContent).toHaveBeenCalled();
+                });
+                it('should invalidate the viewport dimensions for the map', function() {
+                    expect(itemMap.clearContent).toHaveBeenCalled();
+                });
             });
 
-            it('should invalidate the viewport dimensions for pooled item maps', function() {
-                // Put the placeholder in the pool, then attach the fake map.
-                var placeholder = renderer.get(0);
-                renderer.remove(0);
-                placeholder.map = itemMap;
+            describe('pooled item maps', function() {
+                beforeEach(function() {
+                    // Put the placeholder in the pool, then attach the fake map.
+                    var placeholder = renderer.get(0);
+                    renderer.remove(0);
+                    placeholder.map = itemMap;
 
-                renderer.refresh();
-
-                expect(itemMap.invalidateViewportDimensions).toHaveBeenCalled();
+                    renderer.refresh();
+                });
+                it('should clear the content from the map', function() {
+                    expect(itemMap.clearContent).toHaveBeenCalled();
+                });
+                it('should invalidate the viewport dimensions for the map', function() {
+                    expect(itemMap.clearContent).toHaveBeenCalled();
+                });
             });
         });
 

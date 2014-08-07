@@ -607,6 +607,7 @@ define(function(require) {
             this._layout.clear();
             this._layout.measure();
             this._renderer.refresh();
+            listMap.clearContent();
             listMap.invalidateViewportDimensions();
             listMap.setContentDimensions(this._layout.getSize());
 

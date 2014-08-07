@@ -450,6 +450,17 @@ define(function(require) {
                 });
             });
 
+            it('should clear the list map content', function() {
+                testScrollList(function(scrollList) {
+                    var map = scrollList.getListMap();
+
+                    spyOn(map, 'clearContent');
+                    scrollList.refresh();
+
+                    expect(map.clearContent).toHaveBeenCalled();
+                });
+            });
+
             it('should invalidate the list map viewport dimensions', function() {
                 testScrollList(function(scrollList) {
                     var map = scrollList.getListMap();

@@ -299,9 +299,10 @@ define(function(require) {
                 allPlaceholders.push(activePlaceholders[itemIndex]);
             });
 
-            // Invalidate the viewport dimensions for each item map.
+            // Reinitialize each item map.
             allPlaceholders.forEach(function(placeholder) {
                 if (placeholder.map) {
+                    placeholder.map.clearContent();
                     placeholder.map.invalidateViewportDimensions();
                 }
             });
