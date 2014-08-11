@@ -9,9 +9,9 @@
   },
   "readmeFilename": "README.md",
   "devDependencies": {
+    "almond": "~0.2.7",
     "grunt": "^0.4.5",
-    "wf-grunt": "git+https://github.com/WebFilings/wf-grunt#21c3a5c33df98ca71b8c9114d1b17fd4ad641aa6",
     "grunt-contrib-requirejs": "~0.4.1",
-    "almond": "~0.2.7"
+    "wf-grunt": "git://github.com/WebFilings/wf-grunt.git#sauce"
   }
 }
