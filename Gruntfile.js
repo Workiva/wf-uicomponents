@@ -2,10 +2,6 @@ module.exports = function(grunt) {
 
     require('wf-grunt').init(grunt, {
         options: {
-            // browserStackCredentials: {
-            //     username: process.env.BROWSER_STACK_USERNAME,
-            //     accessKey: process.env.BROWSER_STACK_ACCESS_KEY
-            // },
             sauceLabsCredentials: {
                 username: process.env.SAUCE_LABS_USERNAME,
                 accessKey: process.env.SAUCE_LABS_ACCESS_KEY
