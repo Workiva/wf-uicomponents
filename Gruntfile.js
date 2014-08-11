@@ -47,15 +47,4 @@ module.exports = function(grunt) {
     });
 
     grunt.loadNpmTasks('grunt-contrib-requirejs');
-    grunt.registerTask('ci', [
-        'jshint',
-        'connect:run',
-        'clean:test',
-        'karma:sauce',
-        'jasmine:integration',
-        'clean:coverage',
-        'jasmine:coverage',
-        'clean:docs',
-        'jsdoc'
-    ]);
 };
