@@ -2,7 +2,8 @@ module.exports = function(grunt) {
 
     require('wf-grunt').init(grunt, {
         options: {
-            sauceLabsCredentials: {
+            sauceLabs: {
+                testName: 'wf-uicomponents unit tests',
                 username: process.env.SAUCE_LABS_USERNAME,
                 accessKey: process.env.SAUCE_LABS_ACCESS_KEY
             },
