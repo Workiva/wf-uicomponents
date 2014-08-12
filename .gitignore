@@ -10,3 +10,4 @@ out/
 _*.runner.html
 npm_debug.log
 *.orig
+*.log
