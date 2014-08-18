@@ -29,7 +29,7 @@ define(function(require) {
      * The PeekInterceptor is used by the ScrollList to enable dragging
      * adjoining content into view and either snapping the content back into
      * place if peeking below a threshold distance or initiating a content jump
-     * if peeking beyond the throshold.
+     * if peeking beyond the threshold.
      *
      * @name PeekInterceptor
      * @constructor
@@ -265,7 +265,9 @@ define(function(require) {
 
             var scrollList = this._scrollList;
             var layout = scrollList.getLayout();
+            var itemRange = layout.getRenderedItemRange();
             var itemIndex = layout.getCurrentItemIndex();
+            var currentItemIndex = itemIndex;
 
             if (this._forceJump) {
                 itemIndex += this._forceJump;
@@ -282,6 +284,15 @@ define(function(require) {
                 ) {
                     itemIndex += peekDelta > 0 ? -1 : 1;
                 }
+            }
+
+            // ninja scroll out-of-range prevention - If you were too fast, then
+            // put the index back in the range.
+            if (itemIndex > itemRange.endIndex) {
+                itemIndex = itemRange.endIndex;
+            }
+            if (itemIndex < itemRange.startIndex) {
+                itemIndex = itemRange.startIndex;
             }
 
             // Let this release event play out before scrolling.
