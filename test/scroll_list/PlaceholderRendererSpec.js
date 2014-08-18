@@ -418,15 +418,15 @@ define(function(require) {
                 expect(listMap.removeContent).toHaveBeenCalledWith(placeholder.element);
             });
 
-            it('should remove the content container from the item map', function() {
+            it('should clear the item map', function() {
                 renderer.render(itemLayout);
-                var itemMap = jasmine.createSpyObj('placeholder.map', ['removeContent']);
+                var itemMap = jasmine.createSpyObj('placeholder.map', ['clearContent']);
                 var placeholder = renderer.get(0);
                 placeholder.map = itemMap;
 
                 renderer.remove(0);
 
-                expect(itemMap.removeContent).toHaveBeenCalledWith(placeholder.contentContainer);
+                expect(itemMap.clearContent).toHaveBeenCalled();
             });
 
             it('should dispatch "onRemoved"', function() {
