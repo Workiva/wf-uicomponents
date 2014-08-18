@@ -420,7 +420,8 @@ define(function(require) {
 
             it('should clear the item map', function() {
                 renderer.render(itemLayout);
-                var itemMap = jasmine.createSpyObj('placeholder.map', ['clearContent']);
+                var itemMap = Object.create(AwesomeMap.prototype);
+                spyOn(itemMap, 'clearContent');
                 var placeholder = renderer.get(0);
                 placeholder.map = itemMap;
 
