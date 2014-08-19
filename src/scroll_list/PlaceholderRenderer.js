@@ -325,7 +325,7 @@ define(function(require) {
 
             this._scrollList.getListMap().removeContent(placeholder.element);
             if (placeholder.map) {
-                placeholder.map.removeContent(placeholder.contentContainer);
+                placeholder.map.clearContent();
             }
 
             this.onRemoved.dispatch([this, {
