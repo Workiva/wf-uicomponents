@@ -570,7 +570,7 @@ define(function(require) {
                     itemRange = {
                         startIndex: 0,
                         endIndex: 8
-                    }
+                    };
 
                     spyOn(scrollList, 'scrollToItem');
                     spyOn(layout, 'getViewportSize').andReturn(viewportDimensions);

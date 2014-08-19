@@ -267,7 +267,6 @@ define(function(require) {
             var layout = scrollList.getLayout();
             var itemRange = layout.getRenderedItemRange();
             var itemIndex = layout.getCurrentItemIndex();
-            var currentItemIndex = itemIndex;
 
             if (this._forceJump) {
                 itemIndex += this._forceJump;
