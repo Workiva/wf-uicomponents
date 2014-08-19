@@ -56,9 +56,6 @@ define(function(require) {
         createItemMap: function(scrollList, host) {
             var options = scrollList.getOptions();
             var map = new AwesomeMap(host, {
-                // By the time an event comes through, it has already passed through the list map,
-                // so there's no need to normalize the position again.
-                normalizeEventPosition: false,
                 touchScrollingEnabled: options.touchScrollingEnabled
             });
 

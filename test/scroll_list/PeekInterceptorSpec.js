@@ -399,16 +399,22 @@ define(function(require) {
             describe('swipes', function() {
 
                 var itemLayout;
+                var itemRange;
                 var duration = 250;
 
                 beforeEach(function() {
                     listState.translateY = -500;
                     itemLayout = { top: -500 };
+                    itemRange = {
+                        startIndex: 0,
+                        endIndex: 8
+                    };
 
                     spyOn(scrollList, 'scrollToItem');
                     spyOn(layout, 'getViewportSize').andReturn(viewportDimensions);
                     spyOn(layout, 'getCurrentItemIndex').andReturn(1);
                     spyOn(layout, 'getItemLayout').andReturn(itemLayout);
+                    spyOn(layout, 'getRenderedItemRange').andReturn(itemRange);
                 });
 
                 describe('up', function() {
@@ -497,18 +503,79 @@ define(function(require) {
                 });
             });
 
+            describe('swipes beyond edges of current itemRange', function() {
+                var itemLayout;
+                var itemRange;
+                var duration = 250;
+
+                beforeEach(function() {
+                    listState.translateY = -500;
+                    itemLayout = { top: -500 };
+                    itemRange = {
+                        startIndex: 3,
+                        endIndex: 5
+                    };
+
+                    spyOn(scrollList, 'scrollToItem');
+                    spyOn(layout, 'getViewportSize').andReturn(viewportDimensions);
+                    spyOn(layout, 'getItemLayout').andReturn(itemLayout);
+                    spyOn(layout, 'getRenderedItemRange').andReturn(itemRange);
+                });
+
+                it('should not scroll to the next item if after the range', function() {
+                    spyOn(layout, 'getCurrentItemIndex').andReturn(5);
+                    var drag = createEvent(EventTypes.DRAG, { deltaY: -150 });
+                    var swipe = createEvent(EventTypes.SWIPE, { direction: 'up' });
+                    var release = createEvent(EventTypes.RELEASE);
+
+                    interceptor.handleInteraction(null, { event: drag });
+                    interceptor.handleInteraction(null, { event: swipe });
+                    runs(function() {
+                        interceptor.handleInteraction(null, { event: release });
+                    });
+                    waits(1);
+                    runs(function() {
+                        expect(scrollList.scrollToItem).toHaveBeenCalledWith({ index: itemRange.endIndex, duration: duration });
+                    });
+                });
+                it('should not scroll to the previous item if before the range', function() {
+                    spyOn(layout, 'getCurrentItemIndex').andReturn(3);
+                    var drag = createEvent(EventTypes.DRAG, { deltaY: 150 });
+                    var swipe = createEvent(EventTypes.SWIPE, { direction: 'down' });
+                    var release = createEvent(EventTypes.RELEASE);
+
+                    // Start peeking, then swipe, then release
+                    expect(interceptor.handleInteraction(null, { event: drag })).toBe(false);
+                    expect(interceptor.handleInteraction(null, { event: swipe })).toBe(false);
+                    runs(function() {
+                        expect(interceptor.handleInteraction(null, { event: release })).toBe(true);
+                    });
+                    waits(1);
+                    runs(function() {
+                        expect(scrollList.scrollToItem).toHaveBeenCalledWith({ index: 3, duration: duration });
+                    });
+                });
+
+            });
+
             describe('releases', function() {
 
                 var currentItemIndex = 4;
                 var threshold;
+                var itemRange;
 
                 beforeEach(function() {
                     threshold = viewportDimensions.height / 3;
                     listState.translateY = -500;
+                    itemRange = {
+                        startIndex: 0,
+                        endIndex: 8
+                    };
 
                     spyOn(scrollList, 'scrollToItem');
                     spyOn(layout, 'getViewportSize').andReturn(viewportDimensions);
                     spyOn(layout, 'getCurrentItemIndex').andReturn(currentItemIndex);
+                    spyOn(layout, 'getRenderedItemRange').andReturn(itemRange);
                 });
 
                 function shouldJumpToIndex(deltaY, index) {
