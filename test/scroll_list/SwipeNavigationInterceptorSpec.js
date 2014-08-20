@@ -83,11 +83,11 @@ define(function(require) {
                 var result;
 
                 spyOn(scrollList, 'getCurrentItem').andReturn({ index: 2 });
-                spyOn(scrollList, 'scrollTo');
+                spyOn(scrollList, 'scrollToItem');
 
                 result = interceptor.handleInteraction(null, { event: evt });
 
-                expect(scrollList.scrollTo).not.toHaveBeenCalled();
+                expect(scrollList.scrollToItem).not.toHaveBeenCalled();
                 expect(result).toBeUndefined();
             });
 
@@ -96,11 +96,11 @@ define(function(require) {
                 var result;
 
                 spyOn(scrollList, 'getCurrentItem').andReturn({ index: 0 });
-                spyOn(scrollList, 'scrollTo');
+                spyOn(scrollList, 'scrollToItem');
 
                 result = interceptor.handleInteraction(null, { event: evt });
 
-                expect(scrollList.scrollTo).not.toHaveBeenCalled();
+                expect(scrollList.scrollToItem).not.toHaveBeenCalled();
                 expect(result).toBeUndefined();
             });
 
@@ -111,11 +111,11 @@ define(function(require) {
                 itemDimensions.height = 200;
 
                 spyOn(scrollList, 'getCurrentItem').andReturn({ index: 0 });
-                spyOn(scrollList, 'scrollTo');
+                spyOn(scrollList, 'scrollToItem');
 
                 result = interceptor.handleInteraction(null, { event: evt });
 
-                expect(scrollList.scrollTo).not.toHaveBeenCalled();
+                expect(scrollList.scrollToItem).not.toHaveBeenCalled();
                 expect(result).toBeUndefined();
             });
 
@@ -127,11 +127,11 @@ define(function(require) {
                 itemState.translateY = -100;
 
                 spyOn(scrollList, 'getCurrentItem').andReturn({ index: 2 });
-                spyOn(scrollList, 'scrollTo');
+                spyOn(scrollList, 'scrollToItem');
 
                 result = interceptor.handleInteraction(null, { event: evt });
 
-                expect(scrollList.scrollTo).not.toHaveBeenCalled();
+                expect(scrollList.scrollToItem).not.toHaveBeenCalled();
                 expect(result).toBeUndefined();
             });
 
@@ -140,11 +140,11 @@ define(function(require) {
                 var result;
 
                 spyOn(scrollList, 'getCurrentItem').andReturn({ index: 0 });
-                spyOn(scrollList, 'scrollTo');
+                spyOn(scrollList, 'scrollToItem');
 
                 result = interceptor.handleInteraction(null, { event: evt });
 
-                expect(scrollList.scrollTo).toHaveBeenCalledWith({ index: 1 });
+                expect(scrollList.scrollToItem).toHaveBeenCalledWith({ index: 1 });
                 expect(result).toBe(false);
             });
 
@@ -153,18 +153,18 @@ define(function(require) {
                 var result;
 
                 spyOn(scrollList, 'getCurrentItem').andReturn({ index: 2 });
-                spyOn(scrollList, 'scrollTo');
+                spyOn(scrollList, 'scrollToItem');
 
                 result = interceptor.handleInteraction(null, { event: evt });
 
-                expect(scrollList.scrollTo).toHaveBeenCalledWith({ index: 1 });
+                expect(scrollList.scrollToItem).toHaveBeenCalledWith({ index: 1 });
                 expect(result).toBe(false);
             });
 
             it('should only handle swipe events', function() {
                 var property, eventType, evt, result;
 
-                spyOn(scrollList, 'scrollTo');
+                spyOn(scrollList, 'scrollToItem');
 
                 for (property in EventTypes) {
                     if (EventTypes.hasOwnProperty(property)) {
@@ -174,7 +174,7 @@ define(function(require) {
                             result = interceptor.handleInteraction(null, { event: evt });
 
                             expect(result).toBeUndefined();
-                            expect(scrollList.scrollTo).not.toHaveBeenCalled();
+                            expect(scrollList.scrollToItem).not.toHaveBeenCalled();
                         }
                     }
                 }

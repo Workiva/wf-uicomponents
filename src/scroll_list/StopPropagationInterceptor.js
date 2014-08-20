@@ -21,21 +21,19 @@ define(function(require) {
     var InterceptorMixin = require('wf-js-uicomponents/awesome_map/InterceptorMixin');
 
     /**
-     * Creates a new PropagationInterceptor for the given {@link ScrollList}.
+     * Creates a new StopPropagationInterceptor for the given {@link ScrollList}.
      *
      * @classdesc
      *
-     * The PropagationInterceptor propagates interaction events from a
-     * list map to the current item map if the event is not cancelled
-     * by the list map.
+     * The StopPropagationInterceptor prevents handling of events on a list map.
      *
-     * @name PropagationInterceptor
+     * @name StopPropagationInterceptor
      * @constructor
      * @mixes InterceptorMixin
      *
      * @param  {ScrollList} scrollList
      */
-    var PropagationInterceptor = function(scrollList) {
+    var StopPropagationInterceptor = function(scrollList) {
 
         //---------------------------------------------------------
         // Private properties
@@ -48,14 +46,14 @@ define(function(require) {
         this._scrollList = scrollList;
     };
 
-    PropagationInterceptor.prototype = {
+    StopPropagationInterceptor.prototype = {
 
         //---------------------------------------------------------
         // Public methods
         //---------------------------------------------------------
 
         /**
-         * Passes interactions to the current item map.
+         * Cancels interactions on the list map.
          * @param {AwesomeMap} source - The source of the event.
          * @param {InteractionEvent} args.event - The interaction event.
          * @return {undefined|false}
@@ -63,19 +61,16 @@ define(function(require) {
         handleInteraction: function(source, args) {
             var event = args.event;
 
-            // The source map can cancel an event after it is handled to prevent transfer.
-            // Also want to let simulations play out on source map only.
-            if (event.cancelled || event.simulated) {
+            // Want to let simulations play out on source map only.
+            if (event.simulated) {
                 return;
             }
-
-            this._scrollList.getCurrentItemMap().handleInteractionEvent(this, { event: event });
 
             return false;
         }
     };
 
-    _.assign(PropagationInterceptor.prototype, InterceptorMixin);
+    _.assign(StopPropagationInterceptor.prototype, InterceptorMixin);
 
-    return PropagationInterceptor;
+    return StopPropagationInterceptor;
 });

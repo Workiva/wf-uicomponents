@@ -23,10 +23,10 @@ define(function(require) {
     var DoubleTapZoomInterceptor = require('wf-js-uicomponents/awesome_map/DoubleTapZoomInterceptor');
     var HitTester = require('wf-js-uicomponents/scroll_list/HitTester');
     var MouseWheelNavigationInterceptor = require('wf-js-uicomponents/scroll_list/MouseWheelNavigationInterceptor');
-    var PropagationInterceptor = require('wf-js-uicomponents/scroll_list/PropagationInterceptor');
     var RenderingHooksInterceptor = require('wf-js-uicomponents/scroll_list/RenderingHooksInterceptor');
     var ScaleInterceptor = require('wf-js-uicomponents/awesome_map/ScaleInterceptor');
     var ScrollModes = require('wf-js-uicomponents/scroll_list/ScrollModes');
+    var StopPropagationInterceptor = require('wf-js-uicomponents/scroll_list/StopPropagationInterceptor');
     var SwipeInterceptor = require('wf-js-uicomponents/awesome_map/SwipeInterceptor');
     var SwipeNavigationInterceptor = require('wf-js-uicomponents/scroll_list/SwipeNavigationInterceptor');
     var ViewportResizeInterceptor = require('wf-js-uicomponents/scroll_list/ViewportResizeInterceptor');
@@ -55,26 +55,28 @@ define(function(require) {
          */
         createItemMap: function(scrollList, host) {
             var options = scrollList.getOptions();
-            var yBoundaryMode = options.mode === ScrollModes.SINGLE ? 'stop' : 'slow';
             var map = new AwesomeMap(host, {
-                // By the time an event comes through, it has already passed through the list map,
-                // so there's no need to normalize the position again.
-                normalizeEventPosition: false,
                 touchScrollingEnabled: options.touchScrollingEnabled
             });
 
             // Register interceptors.
             map.addInterceptor(new DoubleTapZoomInterceptor());
+            if (options.scaleLimits) {
+                map.addInterceptor(new ScaleInterceptor(options.scaleLimits));
+            }
+            if (options.mode === ScrollModes.PEEK) {
+                map.addInterceptor(new PeekInterceptor(scrollList));
+            }
+            else if (options.mode === ScrollModes.SINGLE) {
+                map.addInterceptor(new SwipeNavigationInterceptor(scrollList));
+            }
             map.addInterceptor(new SwipeInterceptor({
                 animationDuration: 250,
                 constrainToAxes: true
             }));
-            if (options.scaleLimits) {
-                map.addInterceptor(new ScaleInterceptor(options.scaleLimits));
-            }
             map.addInterceptor(new BoundaryInterceptor({
                 centerContent: true,
-                mode: { x: 'stop', y: yBoundaryMode }
+                mode: 'stop'
             }));
 
             // Wire up observables.
@@ -122,14 +124,8 @@ define(function(require) {
                 }));
             }
             else {
-                if (options.mode === ScrollModes.PEEK) {
-                    map.addInterceptor(new PeekInterceptor(scrollList));
-                }
-                else { // Modes.SINGLE
-                    map.addInterceptor(new SwipeNavigationInterceptor(scrollList));
-                }
                 map.addInterceptor(new MouseWheelNavigationInterceptor(scrollList));
-                map.addInterceptor(new PropagationInterceptor(scrollList));
+                map.addInterceptor(new StopPropagationInterceptor(scrollList));
             }
             map.addInterceptor(new RenderingHooksInterceptor(scrollList));
 
@@ -138,12 +134,15 @@ define(function(require) {
                 scrollList.onInteractionStarted.dispatch([scrollList]);
             });
             map.onInteraction(function(source, args) {
-                var newArgs = { event: args.event };
+                var evt = args.event;
+                var newArgs = { event: evt };
                 var fn = HitTester[options.mode === ScrollModes.FLOW ? 'testListMap' : 'testItemMap'];
-                var hit = fn(scrollList, args.event);
-                if (hit) {
-                    newArgs.itemIndex = hit.index;
-                    newArgs.itemPosition = hit.position;
+                if (evt.position) {
+                    var hit = fn(scrollList, evt.position);
+                    if (hit) {
+                        newArgs.itemIndex = hit.index;
+                        newArgs.itemPosition = hit.position;
+                    }
                 }
                 scrollList.onInteraction.dispatch([scrollList, newArgs]);
             });

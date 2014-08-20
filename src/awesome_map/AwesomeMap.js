@@ -18,7 +18,6 @@ define(function(require) {
     'use strict';
 
     var _ = require('lodash');
-    var BrowserInfo = require('wf-js-common/BrowserInfo');
     var DestroyUtil = require('wf-js-common/DestroyUtil');
     var DOMUtil = require('wf-js-common/DOMUtil');
     var EventSynthesizer = require('wf-js-uicomponents/awesome_map/EventSynthesizer');
@@ -44,10 +43,6 @@ define(function(require) {
      *        The HTMLElement that hosts the AwesomeMap.
      *        NOTE: Ensure that the host has "position: relative|absolute",
      *        otherwise various dimension measurements will fail.
-     *
-     * @param {boolean} [options.normalizeEventPosition=true]
-     *        Ensure that emitted events relate their position to origin of the viewport,
-     *        and not the browser page origin.
      *
      * @param {boolean} [options.touchScrollingEnabled=true]
      *        When touch scrolling is enabled, dragging and swiping will scroll
@@ -95,7 +90,6 @@ define(function(require) {
          * @type {Object}
          */
         this._options = _.extend({
-            normalizeEventPosition: true,
             touchScrollingEnabled: true
         }, options);
 
@@ -212,6 +206,11 @@ define(function(require) {
          */
         this._customContentDimensions = null;
 
+        /**
+         * Whether the map will handle direct user interaction.
+         * @type {Boolean}
+         * @private
+         */
         this._disabled = false;
 
         /**
@@ -222,18 +221,11 @@ define(function(require) {
         this._disposed = false;
 
         /**
-         * Captures and synthesizes events in the hit area.
+         * Captures and synthesizes events occurring on the viewport.
          * @type {EventSynthesizer}
          * @private
          */
         this._eventSynthesizer = null;
-
-        /**
-         * The hit area used to capture user interaction.
-         * @type {HTMLElement}
-         * @private
-         */
-        this._hitArea = null;
 
         /**
          * The host element.
@@ -643,8 +635,6 @@ define(function(require) {
                 this.invalidateViewportDimensions();
             }
 
-            this._normalizeEventPosition(event);
-
             // Dispatch to observers; they can cancel the event by returning false.
             this.onInteraction.dispatch([
                 this,
@@ -774,7 +764,6 @@ define(function(require) {
          */
         zoomBy: function(options) {
             options.type = 'by';
-            this._setDefaultZoomOrigin(options);
             this._interactionSimulator.simulateZoom(options);
         },
 
@@ -790,7 +779,6 @@ define(function(require) {
          */
         zoomTo: function(options) {
             options.type = 'to';
-            this._setDefaultZoomOrigin(options);
             this._interactionSimulator.simulateZoom(options);
         },
 
@@ -811,13 +799,60 @@ define(function(require) {
 
             this._currentTransformState = new TransformState();
 
-            this._eventSynthesizer = new EventSynthesizer({ host: this._hitArea });
+            this._eventSynthesizer = new EventSynthesizer({ host: this._viewport });
             this._eventSynthesizer.onEventSynthesized(eventHandler);
 
-            this._interactionSimulator = new InteractionSimulator({ target: this._hitArea });
+            this._interactionSimulator = new InteractionSimulator({ target: this._viewport });
             this._interactionSimulator.onEventSimulated(eventHandler);
 
             this._transformationQueue = new TransformationQueue(this);
+        },
+
+        /**
+         * Initializes the HTML elements used by AwesomeMap.
+         */
+        _initializeHTMLElements: function() {
+
+            function applyDefaultStyles(target) {
+                target.style.position = 'absolute';
+                target.style.top = '0px';
+                target.style.bottom = '0px';
+                target.style.left = '0px';
+                target.style.right = '0px';
+            }
+
+            // Viewport
+            this._viewport = document.createElement('div');
+            this._viewport.className = 'awesomeMap-viewport';
+            applyDefaultStyles(this._viewport);
+            this._viewport.style.overflow = 'hidden';
+
+            // Transformation Plane
+            this._transformationPlane = document.createElement('div');
+            this._transformationPlane.className = 'awesomeMap-transformationPlane';
+            this._transformationPlane.style.position = 'absolute';
+            TransformUtil.clearTransformationOrigin(this._transformationPlane);
+
+            // Add the elements to the DOM
+            this._viewport.appendChild(this._transformationPlane);
+
+            this._host.appendChild(this._viewport);
+        },
+
+        /**
+         * Invalidates the cached content dimensions.
+         * @param {boolean} [force=false]
+         *        Forces invalidation even when custom content dimensions are set.
+         */
+        _invalidateContentDimensions: function(force) {
+            var contentDimensions;
+
+            // Do not invalidate if the consumer has set custom content dimensions,
+            // unless we are being forced to!
+            if (force || !this._customContentDimensions) {
+                this._contentDimensions = null;
+                contentDimensions = this.getContentDimensions();
+            }
         },
 
         /**
@@ -850,109 +885,6 @@ define(function(require) {
             }
 
             return false;
-        },
-
-        /**
-         * Initializes the HTML elements used by AwesomeMap.
-         */
-        _initializeHTMLElements: function() {
-
-            function applyDefaultStyles(target) {
-                target.style.position = 'absolute';
-                target.style.top = '0px';
-                target.style.bottom = '0px';
-                target.style.left = '0px';
-                target.style.right = '0px';
-            }
-
-            // Viewport
-            this._viewport = document.createElement('div');
-            this._viewport.className = 'awesomeMap-viewport';
-            applyDefaultStyles(this._viewport);
-            this._viewport.style.overflow = 'hidden';
-
-            // Transformation Plane
-            this._transformationPlane = document.createElement('div');
-            this._transformationPlane.className = 'awesomeMap-transformationPlane';
-            this._transformationPlane.style.position = 'absolute';
-            TransformUtil.clearTransformationOrigin(this._transformationPlane);
-
-            // Hit Area
-            this._hitArea = document.createElement('div');
-            this._hitArea.className = 'awesomeMap-hitArea';
-            applyDefaultStyles(this._hitArea);
-
-            // IE fix! IE will put a canvas element atop everything else :(.
-            // See: http://stackoverflow.com/questions/7070457/z-index-of-canvas-in-ie-9-problem
-            // This buggers things up because the hit area must be atop all content.
-            // The fix: add a transparent-ish background color to the hit area.
-            if (BrowserInfo.getBrowser() === BrowserInfo.Browsers.IE) {
-                this._hitArea.style.backgroundColor = 'rgba(255,255,255,0.01)';
-            }
-
-            // Add the elements to the DOM
-            this._viewport.appendChild(this._transformationPlane);
-            this._viewport.appendChild(this._hitArea);
-
-            this._host.appendChild(this._viewport);
-        },
-
-        /**
-         * Invalidates the cached content dimensions.
-         * @param {boolean} [force=false]
-         *        Forces invalidation even when custom content dimensions are set.
-         */
-        _invalidateContentDimensions: function(force) {
-            var contentDimensions;
-
-            // Do not invalidate if the consumer has set custom content dimensions,
-            // unless we are being forced to!
-            if (force || !this._customContentDimensions) {
-                this._contentDimensions = null;
-                contentDimensions = this.getContentDimensions();
-            }
-        },
-
-        /**
-         * Normalize the position of the interaction event so that it is relative to the top/left
-         * of the viewport. If this map is disabled during after touch but before release,
-         * it will continue receiving events; however, the position of those events will be relative
-         * to the browser window, and not the hit area covering the viewport.
-         * @param {InteractionEvent} event - The interaction event
-         * @private
-         */
-        _normalizeEventPosition: function(event) {
-            // Only normalize if directed.
-            if (!this._options.normalizeEventPosition) {
-                return;
-            }
-            // If the hit area is enabled, no need to normalize and the events will be positioned
-            // relative to the hit area, which is laid atop the viewport.
-            if (!this.isDisabled()) {
-                return;
-            }
-            // If this event has no position data (RESIZE), bail.
-            if (!event.position) {
-                return;
-            }
-            var boundingRect = this._viewport.getBoundingClientRect();
-            event.position.x -= boundingRect.left;
-            event.position.y -= boundingRect.top;
-        },
-
-        /**
-         * Sets the default zoom origin when the map is disabled.
-         * This is necessary because the hit area is hidden when disabled,
-         * and as such the interaction simulator has no metrics to use
-         * to calculate the viewport center.
-         * @param  {Object} options - To options passed into the calling zoom method.
-         */
-        _setDefaultZoomOrigin: function(options) {
-            if (this.isDisabled() && !options.originX && !options.originY) {
-                var viewportDimensions = this.getViewportDimensions();
-                options.originX = viewportDimensions.width / 2;
-                options.originY = viewportDimensions.height / 2;
-            }
         },
 
         /**

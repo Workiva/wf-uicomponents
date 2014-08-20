@@ -21,6 +21,7 @@ define(function(require) {
     var AwesomeMapFactory = require('wf-js-uicomponents/scroll_list/AwesomeMapFactory');
     var DestroyUtil = require('wf-js-common/DestroyUtil');
     var FitModes = require('wf-js-uicomponents/scroll_list/FitModes');
+    var HitTester = require('wf-js-uicomponents/scroll_list/HitTester');
     var Observable = require('wf-js-common/Observable');
     var PlaceholderRenderer = require('wf-js-uicomponents/scroll_list/PlaceholderRenderer');
     var ScaleTranslator = require('wf-js-uicomponents/scroll_list/ScaleTranslator');
@@ -528,6 +529,20 @@ define(function(require) {
         },
 
         /**
+         * Return the index of and position within the item at the given point.
+         * If no item is under the given point, return false.
+         *
+         * @method ScrollList#hitTest
+         * @param  {{ x: number, y: number }} point
+         * @return {boolean|{ index: number, position: { x: number, y: number }}}
+         */
+        hitTest: function(point) {
+            var method = (this._options.mode === ScrollModes.FLOW ?
+                'testListMap' : 'testItemMap');
+            return HitTester[method](this, point);
+        },
+
+        /**
          * Insert items into the list and re-render immediately.
          *
          * @method ScrollList#insertItems
@@ -598,6 +613,7 @@ define(function(require) {
             this._layout.clear();
             this._layout.measure();
             this._renderer.refresh();
+            listMap.clearContent();
             listMap.invalidateViewportDimensions();
             listMap.setContentDimensions(this._layout.getSize());
 
@@ -627,16 +643,47 @@ define(function(require) {
         },
 
         /**
-         * Scroll to the specified item in the list.
-         * @method ScrollList#scrollTo
+         * Scroll to the specified offset within an item index.
+         * @method ScrollList#scrollToItem
          * @param {Object} options
-         * @param {number} options.index - The index of the content to jump to.
-         * @param {{ x: number, y: number }} [options.center] - An item-relative position to center in the viewport.
+         * @param {number} options.index - The index of the item/content to jump to.
+         * @param {string} [options.viewportAnchorLocation=top]
+         *   Where you want the item offset to show in the viewport.
+         *   Can be 'top', 'center', or 'bottom.'
+         *   The anchor location is constrained by any viewing boundaries that exist
+         *   in the document or viewing mode.
+         * @param {{ x: number, y: number}} [options.offset={ x: 0, y: 0 }]
+         *   An item-relative offset to position the viewport. Positive numbers
+         *   move the viewport to the left and down for x and y, respectively.
+         *   Negative numbers do the reverse.
          * @param {Function} [options.done] - Callback invoked when the jump is complete.
+         * @example
+         * // Scrolls the third page to the top of the viewport.
+         * scrollList.scrollToItem({ 3, 'top'});
+         *
+         * // Scrolls to the third item/page, and places the point 200px down
+         * // the page at the top of the viewport.  x is ignored.
+         * scrollList.scrollToItem({ 3, 'top', { x: 100, y: 200 } });
+         *
+         * // Scrolls the top of the third page to the center of the viewport.
+         * scrollList.scrollToItem({ 3, 'center'});
+         *
+         * // Scrolls to the third item/page, and places the point 100 in from
+         * // the left and 200px down at the cetner of the viewport.
+         * scrollList.scrollToItem({ 3, 'center', { x: 100, y: 200 } });
+         *
+         * // Scrolls the top of the third page to the bottom of the viewport.
+         * // (Basically shows page 2.)
+         * scrollList.scrollToItem({ 3, 'bottom'});
+         *
+         * // Scrolls to the third item/page, and places the point 200px down
+         * // the page to the bottom of the viewport. x is ignored.
+         * scrollList.scrollToItem({ 3, 'bottom', { x: 100, y: 200 } });
+         *
          */
-        scrollTo: function(options) {
+        scrollToItem: function(options) {
             if (options.index === undefined) {
-                throw new Error('ScrollList#scrollTo: index is required.');
+                throw new Error('ScrollList#scrollToItem: index is required.');
             }
 
             var panToOptions = {
@@ -673,17 +720,27 @@ define(function(require) {
 
             // Calculate the left and top of the target content.
             var currentIndex = layout.getCurrentItemIndex();
-            var targetIndex = Math.max(0, Math.min(options.index || 0, this._itemSizesCollection.getLength() - 1));
+            var targetIndex = Math.max(0,
+                Math.min(options.index || 0, this._itemSizesCollection.getLength() - 1)
+            );
             var itemLayout = layout.getItemLayout(targetIndex);
             var listState = this._listMap.getCurrentTransformState();
             panToOptions.x = listState.translateX;
             panToOptions.y = -itemLayout.top * listState.scale;
 
-            // If given a content position to center,
-            // place it at the center of the viewport.
-            var position = options.center;
-            if (position) {
-                this._setViewportCenter(position, itemLayout.scaleToFit, panToOptions);
+            // If given a content offset within the item, adjust the panToOptions.
+            if (options.offset) {
+                var viewportAnchorLocation = options.viewportAnchorLocation || 'top';
+                var offset = options.offset || { x: 0, y: 0 };
+                offset.x = offset.x || 0;
+                offset.y = offset.y || 0;
+
+                this._applyItemOffset(
+                    panToOptions,
+                    offset,
+                    itemLayout.scaleToFit,
+                    viewportAnchorLocation
+                );
             }
 
             this.onCurrentItemChanging.dispatch([this, {
@@ -693,7 +750,9 @@ define(function(require) {
 
             // Render placeholders at the jump target if target is not rendered.
             var itemRange = layout.getRenderedItemRange();
-            if (!itemRange || targetIndex < itemRange.startIndex || targetIndex > itemRange.endIndex) {
+            if (!itemRange ||
+                targetIndex < itemRange.startIndex ||
+                targetIndex > itemRange.endIndex) {
                 layout.setScrollPosition({ top: panToOptions.y, left: panToOptions.x });
                 layout.render();
             }
@@ -854,38 +913,62 @@ define(function(require) {
         },
 
         /**
-         * Companion method to `scrollTo` responsible for centering the item
-         * position in the viewport as part of the scroll operation.
+         * Companion method to `scrollToItem` responsible for calculating and
+         * applying the offset to the map panToOptions, depending on the viewportAnchorLocation
          */
-        _setViewportCenter: function(position, itemScaleToFit, panToOptions) {
+        _applyItemOffset: function(panToOptions, offset, itemScaleToFit, viewportAnchorLocation) {
             var viewportSize = this._layout.getViewportSize();
-            var getCenterOffset = function(scale) {
-                return {
-                    x: (viewportSize.width / 2) - (itemScaleToFit * position.x * scale),
-                    y: (viewportSize.height / 2) - (itemScaleToFit * position.y * scale),
-                };
+
+            // All of these translations adjust based on scale, so that when a user asks for
+            // the item at 200 px, it always yields the same place, regardless of zoom.
+            var getTranslation = function(scale) {
+                var scaledOffsetX = itemScaleToFit * offset.x * scale;
+                var scaledOffsetY = itemScaleToFit * offset.y * scale;
+                var translation;
+                if (viewportAnchorLocation === 'top') {
+                    translation = {
+                        x: panToOptions.x, // Top has no concept of x.  Keep existing.
+                        y: -scaledOffsetY
+                    };
+                }
+                else if (viewportAnchorLocation === 'center') {
+                    translation = {
+                        x: (viewportSize.width / 2) - scaledOffsetX,
+                        y: (viewportSize.height / 2) - scaledOffsetY,
+                    };
+                }
+                else if (viewportAnchorLocation === 'bottom') {
+                    translation = {
+                        x: panToOptions.x, // Bottom has no concept of x.  Keep existing.
+                        y: viewportSize.height - scaledOffsetY
+                    };
+                }
+                return translation;
             };
 
+            var translation;
+
             // If we are using a item map, we need to pan that map separately.
-            var offset;
             var itemMap = this.getCurrentItemMap();
             if (itemMap) {
+                var itemMapScale = itemMap.getCurrentTransformState().scale;
+                translation = getTranslation(itemMapScale);
                 var originalDone = panToOptions.done;
                 panToOptions.done = function() {
-                    offset = getCenterOffset(itemMap.getCurrentTransformState().scale);
                     itemMap.panTo({
-                        x: offset.x,
-                        y: offset.y,
+                        x: translation.x,
+                        y: translation.y,
                         duration: 0,
                         done: originalDone
                     });
                 };
             }
-            // If not using a item map, we can pan to the postion directly.
+            // If not using a item map, we can pan to the position directly.
             else {
-                offset = getCenterOffset(this._listMap.getCurrentTransformState().scale);
-                panToOptions.x = offset.x;
-                panToOptions.y += offset.y;
+                var listMapScale = this._listMap.getCurrentTransformState().scale;
+                translation = getTranslation(listMapScale);
+                panToOptions.x = translation.x;
+                panToOptions.y += translation.y;
             }
         },
 

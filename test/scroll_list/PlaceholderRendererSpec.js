@@ -171,8 +171,8 @@ define(function(require) {
 
                     renderer.appendPlaceholderToScrollList(itemLayout, placeholder);
 
-                    expect(placeholder.contentContainer.style.top).toBe('');
-                    expect(placeholder.contentContainer.style.left).toBe('');
+                    expect(placeholder.contentContainer.style.top).toBe('0px');
+                    expect(placeholder.contentContainer.style.left).toBe('0px');
                 });
 
                 it('should append the content container to the item map', function() {
@@ -350,27 +350,40 @@ define(function(require) {
                 spyOn(renderer, 'appendPlaceholderToScrollList');
                 renderer.render(new ItemLayout({ itemIndex: 0 }));
 
+                spyOn(itemMap, 'clearContent');
                 spyOn(itemMap, 'invalidateViewportDimensions');
             });
 
-            it('should invalidate the viewport dimensions for active item maps', function() {
-                // Attach the fake map to the placheolder.
-                renderer.get(0).map = itemMap;
+            describe('active item maps', function() {
+                beforeEach(function() {
+                    // Attach the fake map to the placheolder.
+                    renderer.get(0).map = itemMap;
 
-                renderer.refresh();
-
-                expect(itemMap.invalidateViewportDimensions).toHaveBeenCalled();
+                    renderer.refresh();
+                });
+                it('should clear the content from the map', function() {
+                    expect(itemMap.clearContent).toHaveBeenCalled();
+                });
+                it('should invalidate the viewport dimensions for the map', function() {
+                    expect(itemMap.clearContent).toHaveBeenCalled();
+                });
             });
 
-            it('should invalidate the viewport dimensions for pooled item maps', function() {
-                // Put the placeholder in the pool, then attach the fake map.
-                var placeholder = renderer.get(0);
-                renderer.remove(0);
-                placeholder.map = itemMap;
+            describe('pooled item maps', function() {
+                beforeEach(function() {
+                    // Put the placeholder in the pool, then attach the fake map.
+                    var placeholder = renderer.get(0);
+                    renderer.remove(0);
+                    placeholder.map = itemMap;
 
-                renderer.refresh();
-
-                expect(itemMap.invalidateViewportDimensions).toHaveBeenCalled();
+                    renderer.refresh();
+                });
+                it('should clear the content from the map', function() {
+                    expect(itemMap.clearContent).toHaveBeenCalled();
+                });
+                it('should invalidate the viewport dimensions for the map', function() {
+                    expect(itemMap.clearContent).toHaveBeenCalled();
+                });
             });
         });
 
@@ -405,15 +418,16 @@ define(function(require) {
                 expect(listMap.removeContent).toHaveBeenCalledWith(placeholder.element);
             });
 
-            it('should remove the content container from the item map', function() {
+            it('should clear the item map', function() {
                 renderer.render(itemLayout);
-                var itemMap = jasmine.createSpyObj('placeholder.map', ['removeContent']);
+                var itemMap = Object.create(AwesomeMap.prototype);
+                spyOn(itemMap, 'clearContent');
                 var placeholder = renderer.get(0);
                 placeholder.map = itemMap;
 
                 renderer.remove(0);
 
-                expect(itemMap.removeContent).toHaveBeenCalledWith(placeholder.contentContainer);
+                expect(itemMap.clearContent).toHaveBeenCalled();
             });
 
             it('should dispatch "onRemoved"', function() {
@@ -511,12 +525,12 @@ define(function(require) {
             });
 
             it('should accelerate placeholder if css 3d tranforms are available', function() {
-                BrowserInfo.hasCssTransforms3d = true;
+                if (BrowserInfo.hasCssTransforms3d) {
+                    renderer.render(itemLayout);
 
-                renderer.render(itemLayout);
-
-                var placeholder = renderer.get(0).element;
-                expect(placeholder.style[BrowserInfo.cssTransformProperty]).toBe('translateZ(0px)');
+                    var placeholder = renderer.get(0).element;
+                    expect(placeholder.style[BrowserInfo.cssTransformProperty]).toBe('translateZ(0px)');
+                }
             });
 
             it('should not accelerate placeholder if css 3d tranforms are available', function() {

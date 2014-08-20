@@ -147,7 +147,7 @@ define(function(require) {
                 (deltaY > 0 && contentTop >= 0)) {
 
                 newContentIndex = currentContentIndex + (deltaY < 0 ? 1 : -1);
-                scrollList.scrollTo({ index: newContentIndex, duration: 0 });
+                scrollList.scrollToItem({ index: newContentIndex, duration: 0 });
 
                 return true;
             }

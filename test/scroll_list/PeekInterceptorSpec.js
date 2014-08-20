@@ -1,4 +1,4 @@
-/*
+ /*
  * Copyright 2014 WebFilings, LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -48,12 +48,13 @@ define(function(require) {
         beforeEach(function() {
             listMapPlane = document.createElement('div');
 
-            listMap.onInteraction = function() {};
+            itemMap.onInteraction = function() {};
 
             listDimensions = { height: 1000 };
             viewportDimensions = { height: 200 };
             itemDimensions = { height: 200 };
 
+            spyOn(scrollList, 'getListMap').andReturn(listMap);
             spyOn(scrollList, 'getCurrentItemMap').andReturn(itemMap);
             spyOn(scrollList, 'getLayout').andReturn(layout);
             spyOn(listMap, 'getTransformationPlane').andReturn(listMapPlane);
@@ -62,7 +63,7 @@ define(function(require) {
             spyOn(itemMap, 'getContentDimensions').andReturn(itemDimensions);
 
             interceptor = new PeekInterceptor(scrollList);
-            interceptor.register(listMap);
+            interceptor.register(itemMap);
         });
 
         it('should be mixed with InterceptorMixin', function() {
@@ -77,14 +78,14 @@ define(function(require) {
             var evt = createEvent(EventTypes.DRAG);
             var result;
 
-            spyOn(scrollList, 'scrollTo');
+            spyOn(scrollList, 'scrollToItem');
             spyOn(listMap, 'transform');
 
             evt.simulated = true;
             result = interceptor.handleInteraction(null, { event: evt });
 
             expect(result).toBeUndefined();
-            expect(scrollList.scrollTo).not.toHaveBeenCalled();
+            expect(scrollList.scrollToItem).not.toHaveBeenCalled();
             expect(listMap.transform).not.toHaveBeenCalled();
         });
 
@@ -94,13 +95,13 @@ define(function(require) {
             var result;
 
             spyOn(scrollList, 'isDisabled').andReturn(true);
-            spyOn(scrollList, 'scrollTo');
+            spyOn(scrollList, 'scrollToItem');
             spyOn(listMap, 'transform');
 
             result = interceptor.handleInteraction(null, { event: evt });
 
             expect(result).toBeUndefined();
-            expect(scrollList.scrollTo).not.toHaveBeenCalled();
+            expect(scrollList.scrollToItem).not.toHaveBeenCalled();
             expect(listMap.transform).not.toHaveBeenCalled();
         });
 
@@ -166,6 +167,10 @@ define(function(require) {
             }
 
             describe('touch', function() {
+
+                beforeEach(function() {
+                    spyOn(layout, 'getCurrentItemIndex').andReturn(0);
+                });
 
                 it('should initialize peek state by current position', function() {
                     var evt = createEvent(EventTypes.TOUCH);
@@ -394,16 +399,22 @@ define(function(require) {
             describe('swipes', function() {
 
                 var itemLayout;
+                var itemRange;
                 var duration = 250;
 
                 beforeEach(function() {
                     listState.translateY = -500;
                     itemLayout = { top: -500 };
+                    itemRange = {
+                        startIndex: 0,
+                        endIndex: 8
+                    };
 
-                    spyOn(scrollList, 'scrollTo');
+                    spyOn(scrollList, 'scrollToItem');
                     spyOn(layout, 'getViewportSize').andReturn(viewportDimensions);
                     spyOn(layout, 'getCurrentItemIndex').andReturn(1);
                     spyOn(layout, 'getItemLayout').andReturn(itemLayout);
+                    spyOn(layout, 'getRenderedItemRange').andReturn(itemRange);
                 });
 
                 describe('up', function() {
@@ -421,7 +432,7 @@ define(function(require) {
                         });
                         waits(1);
                         runs(function() {
-                            expect(scrollList.scrollTo).toHaveBeenCalledWith({ index: 2, duration: duration });
+                            expect(scrollList.scrollToItem).toHaveBeenCalledWith({ index: 2, duration: duration });
                         });
                     });
 
@@ -438,7 +449,7 @@ define(function(require) {
                         });
                         waits(1);
                         runs(function() {
-                            expect(scrollList.scrollTo).toHaveBeenCalledWith({ index: 2, duration: duration });
+                            expect(scrollList.scrollToItem).toHaveBeenCalledWith({ index: 2, duration: duration });
                         });
                     });
                 });
@@ -458,7 +469,7 @@ define(function(require) {
                         });
                         waits(1);
                         runs(function() {
-                            expect(scrollList.scrollTo).toHaveBeenCalledWith({ index: 0, duration: duration });
+                            expect(scrollList.scrollToItem).toHaveBeenCalledWith({ index: 0, duration: duration });
                         });
                     });
 
@@ -475,7 +486,7 @@ define(function(require) {
                         });
                         waits(1);
                         runs(function() {
-                            expect(scrollList.scrollTo).toHaveBeenCalledWith({ index: 0, duration: duration });
+                            expect(scrollList.scrollToItem).toHaveBeenCalledWith({ index: 0, duration: duration });
                         });
                     });
                 });
@@ -488,37 +499,100 @@ define(function(require) {
                     expect(interceptor.handleInteraction(null, { event: swipe })).toBe(true);
                     expect(interceptor.handleInteraction(null, { event: release })).toBe(true);
 
-                    expect(scrollList.scrollTo).not.toHaveBeenCalled();
+                    expect(scrollList.scrollToItem).not.toHaveBeenCalled();
                 });
+            });
+
+            describe('swipes beyond edges of current itemRange', function() {
+                var itemLayout;
+                var itemRange;
+                var duration = 250;
+
+                beforeEach(function() {
+                    listState.translateY = -500;
+                    itemLayout = { top: -500 };
+                    itemRange = {
+                        startIndex: 3,
+                        endIndex: 5
+                    };
+
+                    spyOn(scrollList, 'scrollToItem');
+                    spyOn(layout, 'getViewportSize').andReturn(viewportDimensions);
+                    spyOn(layout, 'getItemLayout').andReturn(itemLayout);
+                    spyOn(layout, 'getRenderedItemRange').andReturn(itemRange);
+                });
+
+                it('should not scroll to the next item if after the range', function() {
+                    spyOn(layout, 'getCurrentItemIndex').andReturn(5);
+                    var drag = createEvent(EventTypes.DRAG, { deltaY: -150 });
+                    var swipe = createEvent(EventTypes.SWIPE, { direction: 'up' });
+                    var release = createEvent(EventTypes.RELEASE);
+
+                    interceptor.handleInteraction(null, { event: drag });
+                    interceptor.handleInteraction(null, { event: swipe });
+                    runs(function() {
+                        interceptor.handleInteraction(null, { event: release });
+                    });
+                    waits(1);
+                    runs(function() {
+                        expect(scrollList.scrollToItem).toHaveBeenCalledWith({ index: itemRange.endIndex, duration: duration });
+                    });
+                });
+                it('should not scroll to the previous item if before the range', function() {
+                    spyOn(layout, 'getCurrentItemIndex').andReturn(3);
+                    var drag = createEvent(EventTypes.DRAG, { deltaY: 150 });
+                    var swipe = createEvent(EventTypes.SWIPE, { direction: 'down' });
+                    var release = createEvent(EventTypes.RELEASE);
+
+                    // Start peeking, then swipe, then release
+                    expect(interceptor.handleInteraction(null, { event: drag })).toBe(false);
+                    expect(interceptor.handleInteraction(null, { event: swipe })).toBe(false);
+                    runs(function() {
+                        expect(interceptor.handleInteraction(null, { event: release })).toBe(true);
+                    });
+                    waits(1);
+                    runs(function() {
+                        expect(scrollList.scrollToItem).toHaveBeenCalledWith({ index: 3, duration: duration });
+                    });
+                });
+
             });
 
             describe('releases', function() {
 
                 var currentItemIndex = 4;
                 var threshold;
+                var itemRange;
 
                 beforeEach(function() {
-                    threshold = viewportDimensions.height / 2;
+                    threshold = viewportDimensions.height / 3;
                     listState.translateY = -500;
+                    itemRange = {
+                        startIndex: 0,
+                        endIndex: 8
+                    };
 
-                    spyOn(scrollList, 'scrollTo');
+                    spyOn(scrollList, 'scrollToItem');
                     spyOn(layout, 'getViewportSize').andReturn(viewportDimensions);
                     spyOn(layout, 'getCurrentItemIndex').andReturn(currentItemIndex);
+                    spyOn(layout, 'getRenderedItemRange').andReturn(itemRange);
                 });
 
                 function shouldJumpToIndex(deltaY, index) {
                     var gesture = { deltaY: deltaY };
+                    var touch = createEvent(EventTypes.TOUCH, gesture);
                     var drag = createEvent(EventTypes.DRAG, gesture);
                     var release = createEvent(EventTypes.RELEASE, gesture);
 
                     // Start peeking and then release
+                    interceptor.handleInteraction(null, { event: touch });
                     interceptor.handleInteraction(null, { event: drag });
                     runs(function() {
                         interceptor.handleInteraction(null, { event: release });
                     });
                     waits(1);
                     runs(function() {
-                        expect(scrollList.scrollTo).toHaveBeenCalledWith({
+                        expect(scrollList.scrollToItem).toHaveBeenCalledWith({
                             index: index,
                             duration: 250
                         });
@@ -530,18 +604,18 @@ define(function(require) {
 
                     interceptor.handleInteraction(null, { event: release });
 
-                    expect(scrollList.scrollTo).not.toHaveBeenCalled();
+                    expect(scrollList.scrollToItem).not.toHaveBeenCalled();
                 });
 
-                it('should jump to previous item when peeking beyond middle of viewport', function() {
+                it('should jump to previous item when peeking beyond 1/3rd of viewport', function() {
                     shouldJumpToIndex(threshold + 1, 3);
                 });
 
-                it('should jump to next item when peeking beyond beyond middle of viewport', function() {
+                it('should jump to next item when peeking beyond 1/3rd of viewport', function() {
                     shouldJumpToIndex(-(threshold + 1), 5);
                 });
 
-                it('should jump to current item when peek does not exceed middle of viewport', function() {
+                it('should jump to current item when peek does not exceed 1/3rd of viewport', function() {
                     shouldJumpToIndex(threshold - 1, 4);
                 });
             });

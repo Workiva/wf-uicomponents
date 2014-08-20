@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 define(function(require) {
     'use strict';
 
@@ -26,9 +26,9 @@ define(function(require) {
      *
      * A key navigator watches for keypresses and scrolls the ScrollList
      * in response to Up/Left/Down/Right arrow, Home/End, Ctrl+Home/Ctrl+End,
-     * and PageUp/PageDown. The responses to these actions are intended to 
+     * and PageUp/PageDown. The responses to these actions are intended to
      * approximate standard key navigation behavior in the browser.
-     * 
+     *
      * @name KeyNavigator
      * @constructor
      *
@@ -39,12 +39,11 @@ define(function(require) {
     var KeyNavigator = function (scrollList) {
         this._scrollList = scrollList;
         this._listener = this._keyNavListener.bind(this);
-        
-        // Watch for keydown events and if the documentViewer is enabled, 
+
+        // Watch for keydown events and if the documentViewer is enabled,
         // translate the event into the appropriate scrolling
         document.addEventListener('keydown', this._listener);
     };
-
 
     /* Keycodes */
     var keys = {
@@ -80,12 +79,12 @@ define(function(require) {
                 this._handleKeyPress(event);
             }
         },
-        
+
         /**
          * Identify and handle key press events by passing the event to the appropriate handler
          *
          * @private
-         * @param {Event} event 
+         * @param {Event} event
          *        The event to be handled
          */
 
@@ -94,7 +93,7 @@ define(function(require) {
                 this._scrollList._options.mode === ScrollModes.FLOW) {
                 this._moveX(event.keyCode);
             }
-            
+
             if (event.keyCode === keys.UP || event.keyCode === keys.DOWN) {
                 if (this._scrollList._options.mode === ScrollModes.FLOW) {
                     this._moveY(event.keyCode);
@@ -103,7 +102,7 @@ define(function(require) {
                     this._movePagePrevNext(event.keyCode);
                 }
             }
-            
+
             if (event.keyCode === keys.PAGEUP || event.keyCode === keys.PAGEDOWN) {
                 if (this._scrollList._options.mode === ScrollModes.FLOW) {
                     this._movePage(event.keyCode);
@@ -184,7 +183,7 @@ define(function(require) {
                 this._scrollList.scrollToPosition({ y: this._validateY(currentPosition.top) + visiblePortion });
             }
         },
-        
+
         /**
          * Move to the next or the previous page
          *
@@ -195,10 +194,10 @@ define(function(require) {
         _movePagePrevNext: function(direction) {
             var currentPage = this._scrollList.getCurrentItem().index;
             if (direction === keys.UP || direction === keys.PAGEUP) {
-                this._scrollList.scrollTo({ index: currentPage - 1 });
+                this._scrollList.scrollToItem({ index: currentPage - 1 });
             }
             else {
-                this._scrollList.scrollTo({ index: currentPage + 1 });
+                this._scrollList.scrollToItem({ index: currentPage + 1 });
             }
         },
 
@@ -206,20 +205,20 @@ define(function(require) {
          * Move to the top or the bottom of the current page
          *
          * @private
-         * @param {number} direction 
+         * @param {number} direction
          *        The keyCode indicating whether to go to home or end
          */
         _moveHomeEnd: function(direction) {
             var currentPage = this._scrollList.getCurrentItem();
             var currentPosition;
             var viewport;
-            
+
             if (direction === keys.HOME) {
-                this._scrollList.scrollTo({ index: currentPage.index });
+                this._scrollList.scrollToItem({ index: currentPage.index });
             }
-            
+
             if (direction === keys.END) {
-                this._scrollList.scrollTo({ index: currentPage.index + 1});
+                this._scrollList.scrollToItem({ index: currentPage.index + 1 });
                 currentPosition = this._layout.getVisiblePosition();
                 viewport = this._validateY(currentPosition.bottom - currentPosition.top);
 
@@ -238,11 +237,15 @@ define(function(require) {
          */
         _moveCtrlHomeEnd: function(direction) {
             if (direction === keys.HOME) {
-                this._scrollList.scrollTo({ index: 0 });
+                this._scrollList.scrollToItem({ index: 0 });
             }
             else {
                 var items = this._scrollList.getItemSizeCollection()._items;
-                this._scrollList.scrollTo({ index: items.length, center: {y : items[items.length - 1].height } });
+                this._scrollList.scrollToItem({
+                    index: items.length,
+                    viewportAnchorLocation: 'center',
+                    offset: { y: items[items.length - 1].height }
+                });
             }
         },
 
@@ -250,6 +253,6 @@ define(function(require) {
             return (y < 0) ? -y : y;
         }
     };
-    
+
     return KeyNavigator;
 });

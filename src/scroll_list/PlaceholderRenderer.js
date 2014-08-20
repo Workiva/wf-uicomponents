@@ -224,8 +224,8 @@ define(function(require) {
                 itemMap.transform({ x: transformX, y: transformY, scale: 1 });
                 // Remove positional styles from the content container and append to map.
                 var contentContainer = placeholder.contentContainer;
-                contentContainer.style.top = null;
-                contentContainer.style.left = null;
+                contentContainer.style.top = '0px';
+                contentContainer.style.left = '0px';
                 itemMap.appendContent(contentContainer);
             }
         },
@@ -299,9 +299,10 @@ define(function(require) {
                 allPlaceholders.push(activePlaceholders[itemIndex]);
             });
 
-            // Invalidate the viewport dimensions for each item map.
+            // Reinitialize each item map.
             allPlaceholders.forEach(function(placeholder) {
                 if (placeholder.map) {
+                    placeholder.map.clearContent();
                     placeholder.map.invalidateViewportDimensions();
                 }
             });
@@ -324,7 +325,7 @@ define(function(require) {
 
             this._scrollList.getListMap().removeContent(placeholder.element);
             if (placeholder.map) {
-                placeholder.map.removeContent(placeholder.contentContainer);
+                placeholder.map.clearContent();
             }
 
             this.onRemoved.dispatch([this, {

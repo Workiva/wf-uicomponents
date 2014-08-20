@@ -29,7 +29,7 @@ define(function(require) {
      * The PeekInterceptor is used by the ScrollList to enable dragging
      * adjoining content into view and either snapping the content back into
      * place if peeking below a threshold distance or initiating a content jump
-     * if peeking beyond the throshold.
+     * if peeking beyond the threshold.
      *
      * @name PeekInterceptor
      * @constructor
@@ -52,6 +52,17 @@ define(function(require) {
          * @private
          */
         this._forceJump = false;
+
+        /**
+         * The current item index when touch event is detected. This allows some
+         * sanity when dealing with transitions on release events since the
+         * current item index will change as items move across the viewport
+         * during drag events.
+         * typ
+         * @type {number}
+         * @private
+         */
+        this._itemIndexAtTouch = null;
 
         /**
          * The pixel amount that is being peeked at.
@@ -102,8 +113,7 @@ define(function(require) {
 
             case EventTypes.TOUCH:
 
-                // Must return after setting peek delta to avoid cancelling touch event.
-                this._setPeekDeltaByCurrentPosition();
+                this._handleTouchEvent();
                 return;
 
             case EventTypes.DRAG:
@@ -136,7 +146,7 @@ define(function(require) {
          * @param {InteractionEvent} event
          */
         _handleDragEvent: function(event) {
-            var itemMap = this._scrollList.getCurrentItemMap();
+            var itemMap = this._awesomeMap;
             var viewportHeight = itemMap.getViewportDimensions().height;
             var contentHeight = itemMap.getContentDimensions().height;
             var contentState = itemMap.getCurrentTransformState();
@@ -144,7 +154,7 @@ define(function(require) {
             var contentBottom = contentState.translateY +
                                 Math.floor(contentHeight * contentState.scale);
 
-            var listMap = this._awesomeMap;
+            var listMap = this._scrollList.getListMap();
             var listState = listMap.getCurrentTransformState();
             var listHeight = listMap.getContentDimensions().height;
             var listTop = listState.translateY;
@@ -255,6 +265,7 @@ define(function(require) {
 
             var scrollList = this._scrollList;
             var layout = scrollList.getLayout();
+            var itemRange = layout.getRenderedItemRange();
             var itemIndex = layout.getCurrentItemIndex();
 
             if (this._forceJump) {
@@ -263,17 +274,38 @@ define(function(require) {
             else {
                 var peekDelta = this._peekDelta;
                 var viewportHeight = layout.getViewportSize().height;
-                if (Math.abs(peekDelta) > viewportHeight / 2) {
+                // If the item index has not changed during the drag and
+                // have dragged beyond 1/3 of the viewport, then scroll to
+                // adjacent item. If the item index _has_ changed, then the
+                // current item shall be our scroll target.
+                if (this._itemIndexAtTouch === itemIndex &&
+                    Math.abs(peekDelta) > viewportHeight / 3
+                ) {
                     itemIndex += peekDelta > 0 ? -1 : 1;
                 }
             }
 
+            // ninja scroll out-of-range prevention - If you were too fast, then
+            // put the index back in the range.
+            if (itemIndex > itemRange.endIndex) {
+                itemIndex = itemRange.endIndex;
+            }
+            if (itemIndex < itemRange.startIndex) {
+                itemIndex = itemRange.startIndex;
+            }
+
             // Let this release event play out before scrolling.
             setTimeout(function() {
-                scrollList.scrollTo({ index: itemIndex, duration: 250 });
+                scrollList.scrollToItem({ index: itemIndex, duration: 250 });
             }, 0);
 
             this._resetPeekState();
+        },
+
+        _handleTouchEvent: function() {
+            this._setPeekDeltaByCurrentPosition();
+            var layout = this._scrollList.getLayout();
+            this._itemIndexAtTouch = layout.getCurrentItemIndex();
         },
 
         /**
@@ -293,7 +325,8 @@ define(function(require) {
          * crossing the center of the viewport.
          */
         _setPeekDeltaByCurrentPosition: function() {
-            var currentState = this._awesomeMap.getCurrentTransformState();
+            var listMap = this._scrollList.getListMap();
+            var currentState = listMap.getCurrentTransformState();
             var viewportTop = -currentState.translateY / currentState.scale;
 
             var layout = this._scrollList.getLayout();

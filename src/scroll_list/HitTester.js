@@ -49,14 +49,10 @@ define(function() {
          *
          * @method
          * @param {ScrollList} scrollList
-         * @param {InteractionEvent} event - The interaction event under test.
+         * @param {{ x: number, y: number }} point
          * @return {boolean|{ index: number, position: { x: number, y: number }}}
          */
-        testItemMap: function(scrollList, event) {
-            if (!event.position) {
-                return false;
-            }
-
+        testItemMap: function(scrollList, point) {
             // Item map may not exist after list invalidation, which happens
             // during window/container resize event cycles.
             var itemMap = scrollList.getCurrentItemMap();
@@ -64,7 +60,6 @@ define(function() {
                 return false;
             }
 
-            var position = event.position;
             var state = itemMap.getCurrentTransformState();
             var mapScale = state.scale;
             var layout = scrollList.getLayout();
@@ -81,10 +76,10 @@ define(function() {
                 left: state.translateX + itemLayout.paddingLeft * mapScale
             };
 
-            if (validBounds.left <= position.x && position.x <= validBounds.right &&
-                validBounds.top <= position.y && position.y <= validBounds.bottom) {
+            if (validBounds.left <= point.x && point.x <= validBounds.right &&
+                validBounds.top <= point.y && point.y <= validBounds.bottom) {
 
-                return getHitData(itemLayout, position, validBounds, mapScale);
+                return getHitData(itemLayout, point, validBounds, mapScale);
             }
 
             return false;
@@ -97,16 +92,11 @@ define(function() {
          *
          * @method
          * @param {ScrollList} scrollList
-         * @param {InteractionEvent} event - The interaction event under test.
+         * @param {{ x: number, y: number }} point
          * @return {boolean|{ index: number, position: { x: number, y: number }}}
          */
-        testListMap: function(scrollList, event) {
-            if (!event.position) {
-                return false;
-            }
-
+        testListMap: function(scrollList, point) {
             var listMap = scrollList.getListMap();
-            var position = event.position;
             var state = listMap.getCurrentTransformState();
             var mapScale = state.scale;
 
@@ -129,10 +119,10 @@ define(function() {
                     left: state.translateX + (itemLayout.left - undoLeftBy + itemLayout.paddingLeft) * mapScale
                 };
 
-                if (position.x >= validBounds.left && position.x <= validBounds.right &&
-                    position.y >= validBounds.top && position.y <= validBounds.bottom) {
+                if (point.x >= validBounds.left && point.x <= validBounds.right &&
+                    point.y >= validBounds.top && point.y <= validBounds.bottom) {
 
-                    return getHitData(itemLayout, position, validBounds, mapScale);
+                    return getHitData(itemLayout, point, validBounds, mapScale);
                 }
             }
 
