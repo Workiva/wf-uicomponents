@@ -27,6 +27,7 @@ define(function(require) {
     var ScrollModes = require('wf-js-uicomponents/scroll_list/ScrollModes');
     var TransformState = require('wf-js-uicomponents/awesome_map/TransformState');
     var VerticalLayout = require('wf-js-uicomponents/layouts/VerticalLayout');
+    var requestAnimFrame = require('wf-js-common/requestAnimationFrame');
 
     function createEvent(type, gesture) {
         gesture = gesture || new Gesture();
@@ -35,26 +36,31 @@ define(function(require) {
 
     describe('RenderingHooksInterceptor', function() {
 
-        describe('on transform started', function() {
+        var scrollList;
+        var layout;
+        var interceptor;
+        var map;
+
+        beforeEach(function () {
+            scrollList = _.extend({}, ScrollList.prototype);
+            layout = _.extend({}, VerticalLayout.prototype);
+            interceptor = new RenderingHooksInterceptor(scrollList);
+            map = _.extend({}, AwesomeMap.prototype);
+
+
+            spyOn(scrollList, 'getOptions').andReturn({ mode: ScrollModes.FLOW });
+            spyOn(layout, 'render');
+            spyOn(layout, 'loadContent');
+            spyOn(scrollList, 'getLayout').andReturn(layout);
+
+        });
+
+        describe('handleTransformStarted', function() {
 
             describe('mouse wheel', function() {
-                var scrollList;
-                var layout;
-                var interceptor;
-                var map;
-
-                beforeEach(function () {
-                    scrollList = _.extend({}, ScrollList.prototype);
-                    layout = _.extend({}, VerticalLayout.prototype);
-                    interceptor = new RenderingHooksInterceptor(scrollList);
-                    map = _.extend({}, AwesomeMap.prototype);
-
-                    spyOn(scrollList, 'getOptions').andReturn({ mode: ScrollModes.FLOW });
-                    spyOn(scrollList, 'getLayout').andReturn(layout);
-                    spyOn(layout, 'render');
-                });
 
                 it('should render the layout when scrolling vertically', function() {
+                    spyOn(interceptor, 'renderLayout');
                     // any value different from original Y
                     spyOn(map, 'getTranslation').andReturn({ x: 0, y: 0 });
                     var targetState = new TransformState({ translateY: 10 });
@@ -64,10 +70,11 @@ define(function(require) {
                         targetState: targetState
                     });
 
-                    expect(layout.render).toHaveBeenCalledWith(null);
+                    expect(interceptor.renderLayout).toHaveBeenCalled();
                 });
 
                 it('should render the layout when scrolling horizontally', function() {
+                    spyOn(interceptor, 'renderLayout');
                     // any value different from original X
                     spyOn(map, 'getTranslation').andReturn({ x: 0, y: 0 });
                     var targetState = new TransformState({ translateX: 10 });
@@ -77,12 +84,13 @@ define(function(require) {
                         targetState: targetState
                     });
 
-                    expect(layout.render).toHaveBeenCalledWith(null);
+                    expect(interceptor.renderLayout).toHaveBeenCalled();
                 });
 
                 it('should not render if position does not change', function () {
                     var yValue = 0;
                     var xValue = 0;
+                    spyOn(interceptor, 'renderLayout');
                     spyOn(map, 'getTranslation').andReturn({ x: xValue, y: yValue });
 
                     var targetState = new TransformState({
@@ -94,31 +102,56 @@ define(function(require) {
                         targetState: targetState
                     });
 
-                    expect(layout.render).not.toHaveBeenCalled();
+                    expect(interceptor.renderLayout).not.toHaveBeenCalled();
+                });
+            });
+
+            describe('swipe', function() {
+                it('should render the current state layout', function() {
+                    spyOn(interceptor, 'renderLayout');
+                    var swipeEvent = createEvent(EventTypes.SWIPE);
+                    interceptor.handleTransformStarted(map, { event: swipeEvent });
+
+                    waits(100); // 100 is debounce interval
+                    runs(function() {
+                        expect(interceptor.renderLayout).toHaveBeenCalled();
+                    });
+
+                });
+
+                it('should render the target state layout in a new frame', function() {
+                    spyOn(interceptor, 'renderLayout');
+                    var nextFrameHappened = false;
+                    var swipeEvent = createEvent(EventTypes.SWIPE);
+                    var targetStateStub = {
+                        translateX: 1,
+                        translateY: 1
+                    };
+                    runs(function() {
+                        interceptor.handleTransformStarted(map, {
+                            event: swipeEvent,
+                            targetState: targetStateStub
+                        });
+                        requestAnimFrame(function(){
+                            nextFrameHappened = true;
+                        });
+                    });
+
+                    waitsFor(function(){
+                        return nextFrameHappened
+                    });
+                    runs(function() {
+                        expect(interceptor.renderLayout.calls.length).toEqual(2);
+                        expect(interceptor.renderLayout.calls[0].args[0]).toEqual();
+                        expect(interceptor.renderLayout.calls[1].args[0]).toEqual(targetStateStub);
+                    })
                 });
             });
         });
 
-        describe('on transform finished', function() {
+        describe('handleTransformFinished', function() {
 
             describe('mouse wheel', function() {
-                var scrollList;
-                var layout;
-                var interceptor;
-                var map;
-
-                beforeEach(function () {
-                    scrollList = _.extend({}, ScrollList.prototype);
-                    layout = _.extend({}, VerticalLayout.prototype);
-                    map = _.extend({}, AwesomeMap.prototype);
-
-                    spyOn(scrollList, 'getOptions').andReturn({ mode: ScrollModes.FLOW });
-                    spyOn(scrollList, 'getLayout').andReturn(layout);
-                    spyOn(layout, 'render');
-                    spyOn(layout, 'loadContent');
-
-                    interceptor = new RenderingHooksInterceptor(scrollList);
-                });
 
                 it('should load content when position has changed', function() {
                     // any values different from start x and y should work
@@ -166,6 +199,42 @@ define(function(require) {
                         expect(layout.loadContent).not.toHaveBeenCalled();
                     });
                 });
+            });
+            describe('swipe/release', function() {
+                it('should render the destination layout', function() {
+                    spyOn(map, 'isTransforming').andReturn(true);
+                    spyOn(interceptor, 'renderLayout');
+
+                    var swipeEvent = createEvent(EventTypes.SWIPE);
+                    var releaseEvent = createEvent(EventTypes.RELEASE);
+                    interceptor.handleTransformFinished(map, { event: releaseEvent });
+                    expect(interceptor.renderLayout).toHaveBeenCalled();
+                });
+                it('should render the scrolllist if the sender is done transforming', function() {
+                    spyOn(scrollList, 'render');
+                    spyOn(map, 'isTransforming').andReturn(false);
+
+                    var swipeEvent = createEvent(EventTypes.SWIPE);
+                    var releaseEvent = createEvent(EventTypes.RELEASE);
+                    interceptor.handleTransformFinished(map, { event: releaseEvent });
+                    expect(scrollList.render).toHaveBeenCalled();
+                });
+            });
+        });
+        describe('renderLayout', function() {
+
+            it('should return a positive position for a negative translation', function() {
+                var targetStateStub = {
+                    translateX: -1,
+                    translateY: -1
+                };
+                var expectedPosition = {
+                    top: 1,
+                    left: 1
+                };
+
+                interceptor.renderLayout(targetStateStub);
+                expect(layout.render).toHaveBeenCalledWith(expectedPosition);
             });
         });
     });
