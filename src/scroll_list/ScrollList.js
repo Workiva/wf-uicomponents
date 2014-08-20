@@ -28,7 +28,7 @@ define(function(require) {
     var ScrollModes = require('wf-js-uicomponents/scroll_list/ScrollModes');
     var Utils = require('wf-js-common/Utils');
     var VerticalLayout = require('wf-js-uicomponents/layouts/VerticalLayout');
-    var ZoomPersistanceProvider = require('wf-js-uicomponents/scroll_list/ZoomPersistanceProvider');
+    var ZoomPersistenceRegistrar = require('wf-js-uicomponents/scroll_list/ZoomPersistenceRegistrar');
 
     function constrain(value, min, max) {
         return Math.max(min, Math.min(max, value));
@@ -851,7 +851,7 @@ define(function(require) {
                 if (this._options.ScrollModes.FLOW) {
                     throw new Error('ScrollList#_initialize: cannot persist zoom in flow');
                 }
-                this._zoomPersistanceProvider = new ZoomPersistanceProvider(this);
+                ZoomPersistenceRegistrar.register(this);
             }
         },
 
