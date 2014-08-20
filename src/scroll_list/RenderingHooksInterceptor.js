@@ -24,7 +24,7 @@ define(function(require) {
     var requestAnimFrame = require('wf-js-common/requestAnimationFrame');
 
     /**
-     * Rendering 
+     * Rendering
      * @constructor
      */
     var RenderingHooksInterceptor = function(scrollList) {
@@ -55,9 +55,9 @@ define(function(require) {
                 // visible gaps in content. Then, render intermediate items in
                 // a new frame, as adding them to the DOM all at once can
                 // take a bit before the animation and cause a slight hiccup.
-                this._renderLayout();
+                this.renderLayout();
                 requestAnimFrame(function() {
-                    this._renderLayout(targetState);
+                    this.renderLayout(targetState);
                 }.bind(this));
             }
             // Create placeholders to support mouse wheels.
@@ -68,7 +68,7 @@ define(function(require) {
                     (currentTranslation.y !== targetState.translateY) ||
                     (currentTranslation.x !== targetState.translateX);
                 if (this._didWheelTranslateMap) {
-                    this._renderLayout();
+                    this.renderLayout();
                 }
             }
         },
@@ -78,7 +78,7 @@ define(function(require) {
 
             // Load content when releasing if the sender is done transforming.
             if (eventType === EventTypes.RELEASE) {
-                this._renderLayout();
+                this.renderLayout();
                 if (!sender.isTransforming()) {
                     this._scrollList.render();
                 }
@@ -92,11 +92,13 @@ define(function(require) {
             }
         },
 
-        _renderLayout: function(targetState) {
+        renderLayout: function(targetState) {
             var layout = this._scrollList.getLayout();
+            // Translations are (usually) negative, positions are supposed to be
+            // positive.
             var targetScrollPosition = !targetState ? null : {
-                top: targetState.translateY,
-                left: targetState.translateX
+                top: -targetState.translateY,
+                left: -targetState.translateX
             };
             layout.render(targetScrollPosition);
         }
