@@ -222,6 +222,14 @@ define(function(require) {
          * @param {TransformState} targetState - The transformation target state.
          */
         applyTransform: function(target, targetState) {
+            // Having NaNs can lead to lots of roundabout debugging, so throw
+            if (isNaN(targetState.scale) ||
+                isNaN(targetState.translateX) ||
+                isNaN(targetState.translateY)
+            ) {
+                throw new Error('Invalid targetState');
+            }
+
             var translate;
 
             if (BrowserInfo.hasCssTransforms3d) {
