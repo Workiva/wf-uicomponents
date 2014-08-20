@@ -47,7 +47,6 @@ define(function(require) {
             interceptor = new RenderingHooksInterceptor(scrollList);
             map = _.extend({}, AwesomeMap.prototype);
 
-
             spyOn(scrollList, 'getOptions').andReturn({ mode: ScrollModes.FLOW });
             spyOn(layout, 'render');
             spyOn(layout, 'loadContent');
@@ -60,7 +59,6 @@ define(function(require) {
             describe('mouse wheel', function() {
 
                 it('should render the layout when scrolling vertically', function() {
-                    spyOn(interceptor, 'renderLayout');
                     // any value different from original Y
                     spyOn(map, 'getTranslation').andReturn({ x: 0, y: 0 });
                     var targetState = new TransformState({ translateY: 10 });
@@ -70,11 +68,10 @@ define(function(require) {
                         targetState: targetState
                     });
 
-                    expect(interceptor.renderLayout).toHaveBeenCalled();
+                    expect(layout.render).toHaveBeenCalledWith(null);
                 });
 
                 it('should render the layout when scrolling horizontally', function() {
-                    spyOn(interceptor, 'renderLayout');
                     // any value different from original X
                     spyOn(map, 'getTranslation').andReturn({ x: 0, y: 0 });
                     var targetState = new TransformState({ translateX: 10 });
@@ -84,13 +81,12 @@ define(function(require) {
                         targetState: targetState
                     });
 
-                    expect(interceptor.renderLayout).toHaveBeenCalled();
+                    expect(layout.render).toHaveBeenCalledWith(null);
                 });
 
                 it('should not render if position does not change', function () {
                     var yValue = 0;
                     var xValue = 0;
-                    spyOn(interceptor, 'renderLayout');
                     spyOn(map, 'getTranslation').andReturn({ x: xValue, y: yValue });
 
                     var targetState = new TransformState({
@@ -101,31 +97,33 @@ define(function(require) {
                         event: createEvent(EventTypes.MOUSE_WHEEL),
                         targetState: targetState
                     });
-
-                    expect(interceptor.renderLayout).not.toHaveBeenCalled();
+                    expect(layout.loadContent).not.toHaveBeenCalled();
                 });
             });
 
             describe('swipe', function() {
                 it('should render the current state layout', function() {
-                    spyOn(interceptor, 'renderLayout');
                     var swipeEvent = createEvent(EventTypes.SWIPE);
                     interceptor.handleTransformStarted(map, { event: swipeEvent });
 
                     waits(100); // 100 is debounce interval
                     runs(function() {
-                        expect(interceptor.renderLayout).toHaveBeenCalled();
+                        expect(layout.render).toHaveBeenCalledWith(null);
                     });
 
                 });
 
+                //TOMTODO Too much tested here?
                 it('should render the target state layout in a new frame', function() {
-                    spyOn(interceptor, 'renderLayout');
                     var nextFrameHappened = false;
                     var swipeEvent = createEvent(EventTypes.SWIPE);
                     var targetStateStub = {
-                        translateX: 1,
-                        translateY: 1
+                        translateX: -1,
+                        translateY: -1
+                    };
+                    var expectedPosition = {
+                        top: 1,
+                        left: 1
                     };
                     runs(function() {
                         interceptor.handleTransformStarted(map, {
@@ -141,9 +139,9 @@ define(function(require) {
                         return nextFrameHappened;
                     });
                     runs(function() {
-                        expect(interceptor.renderLayout.calls.length).toEqual(2);
-                        expect(interceptor.renderLayout.calls[0].args[0]).toEqual();
-                        expect(interceptor.renderLayout.calls[1].args[0]).toEqual(targetStateStub);
+                        expect(layout.render.calls.length).toEqual(2);
+                        expect(layout.render.calls[0].args[0]).toEqual(null);
+                        expect(layout.render.calls[1].args[0]).toEqual(expectedPosition);
                     });
                 });
             });
@@ -203,11 +201,10 @@ define(function(require) {
             describe('swipe/release', function() {
                 it('should render the destination layout', function() {
                     spyOn(map, 'isTransforming').andReturn(true);
-                    spyOn(interceptor, 'renderLayout');
 
                     var releaseEvent = createEvent(EventTypes.RELEASE);
                     interceptor.handleTransformFinished(map, { event: releaseEvent });
-                    expect(interceptor.renderLayout).toHaveBeenCalled();
+                    expect(layout.render).toHaveBeenCalledWith(null);
                 });
                 it('should render the scrolllist if the sender is done transforming', function() {
                     spyOn(scrollList, 'render');
@@ -217,22 +214,6 @@ define(function(require) {
                     interceptor.handleTransformFinished(map, { event: releaseEvent });
                     expect(scrollList.render).toHaveBeenCalled();
                 });
-            });
-        });
-        describe('renderLayout', function() {
-
-            it('should return a positive position for a negative translation', function() {
-                var targetStateStub = {
-                    translateX: -1,
-                    translateY: -1
-                };
-                var expectedPosition = {
-                    top: 1,
-                    left: 1
-                };
-
-                interceptor.renderLayout(targetStateStub);
-                expect(layout.render).toHaveBeenCalledWith(expectedPosition);
             });
         });
     });
