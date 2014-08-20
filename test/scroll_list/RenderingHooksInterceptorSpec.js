@@ -138,13 +138,13 @@ define(function(require) {
                     });
 
                     waitsFor(function(){
-                        return nextFrameHappened
+                        return nextFrameHappened;
                     });
                     runs(function() {
                         expect(interceptor.renderLayout.calls.length).toEqual(2);
                         expect(interceptor.renderLayout.calls[0].args[0]).toEqual();
                         expect(interceptor.renderLayout.calls[1].args[0]).toEqual(targetStateStub);
-                    })
+                    });
                 });
             });
         });
@@ -205,7 +205,6 @@ define(function(require) {
                     spyOn(map, 'isTransforming').andReturn(true);
                     spyOn(interceptor, 'renderLayout');
 
-                    var swipeEvent = createEvent(EventTypes.SWIPE);
                     var releaseEvent = createEvent(EventTypes.RELEASE);
                     interceptor.handleTransformFinished(map, { event: releaseEvent });
                     expect(interceptor.renderLayout).toHaveBeenCalled();
@@ -214,7 +213,6 @@ define(function(require) {
                     spyOn(scrollList, 'render');
                     spyOn(map, 'isTransforming').andReturn(false);
 
-                    var swipeEvent = createEvent(EventTypes.SWIPE);
                     var releaseEvent = createEvent(EventTypes.RELEASE);
                     interceptor.handleTransformFinished(map, { event: releaseEvent });
                     expect(scrollList.render).toHaveBeenCalled();
