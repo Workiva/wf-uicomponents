@@ -41,7 +41,7 @@ define(function() {
     function _zoomNextPrevious(scrollList, scale) {
         // Set the scale on the current page in case we jumped to a page that
         // wasn't the next or previous page.
-        scrollList.getCurrentItemMap().transform({
+        scrollList.getCurrentItemMap().zoomTo({
             scale: scale
         });
 
@@ -49,17 +49,21 @@ define(function() {
 
         var previous = scrollList.getItemMap(currentIndex - 1);
         if (previous) {
-            previous.transform({
-                y: -previous.getContentDimensions().height * scale,
+            previous.zoomTo({
                 scale: scale
+            });
+            previous.panTo({
+                y: -previous.getContentDimensions().height * scale
             });
         }
 
         var next = scrollList.getItemMap(currentIndex + 1);
         if (next) {
-            next.transform({
-                y: 0,
+            next.zoomTo({
                 scale: scale
+            });
+            next.panTo({
+                y: 0,
             });
         }
     }
