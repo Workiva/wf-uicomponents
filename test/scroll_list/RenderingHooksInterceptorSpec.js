@@ -113,7 +113,6 @@ define(function(require) {
 
                 });
 
-                //TOMTODO Too much tested here?
                 it('should render the target state layout in a new frame', function() {
                     var nextFrameHappened = false;
                     var swipeEvent = createEvent(EventTypes.SWIPE);

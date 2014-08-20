@@ -55,9 +55,9 @@ define(function(require) {
                 // visible gaps in content. Then, render intermediate items in
                 // a new frame, as adding them to the DOM all at once can
                 // take a bit before the animation and cause a slight hiccup.
-                this.renderLayout();
+                this._renderLayout();
                 requestAnimFrame(function() {
-                    this.renderLayout(targetState);
+                    this._renderLayout(targetState);
                 }.bind(this));
             }
             // Create placeholders to support mouse wheels.
@@ -68,7 +68,7 @@ define(function(require) {
                     (currentTranslation.y !== targetState.translateY) ||
                     (currentTranslation.x !== targetState.translateX);
                 if (this._didWheelTranslateMap) {
-                    this.renderLayout();
+                    this._renderLayout();
                 }
             }
         },
@@ -78,7 +78,7 @@ define(function(require) {
 
             // Load content when releasing if the sender is done transforming.
             if (eventType === EventTypes.RELEASE) {
-                this.renderLayout();
+                this._renderLayout();
                 if (!sender.isTransforming()) {
                     this._scrollList.render();
                 }
@@ -92,7 +92,7 @@ define(function(require) {
             }
         },
 
-        renderLayout: function(targetState) {
+        _renderLayout: function(targetState) {
             var layout = this._scrollList.getLayout();
             // Translations are (usually) negative, positions are supposed to be
             // positive.
