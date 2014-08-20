@@ -2,9 +2,9 @@ define(function(require){
     'use strict';
 
     var $ = require('jquery');
-    var ZoomPersistenceRegistrar = require('wf-js-uicomponents/scroll_list/ZoomPersistenceRegistrar');
-    var ScrollList = require('wf-js-uicomponents/scroll_list/ScrollList');
     var ItemSizeCollection = require('wf-js-uicomponents/layouts/ItemSizeCollection');
+    var ScrollList = require('wf-js-uicomponents/scroll_list/ScrollList');
+    var ScrollModes = require('wf-js-uicomponents/scroll_list/ScrollModes');
     
     describe('ZoomPersistenceRegistrar', function() {
 
@@ -33,14 +33,14 @@ define(function(require){
         beforeEach(function() {
             $element.appendTo(document.body);
             scrollList = new ScrollList($element[0], itemSizeCollection, {
-                mode: 'peek',
+                mode: ScrollModes.PEEK,
                 fit: 'auto',
                 padding: 10,
                 gap: 10,
-                concurrentContentLimit: 3
+                concurrentContentLimit: 3,
+                persistZoom: true
             });
 
-            ZoomPersistenceRegistrar.register(scrollList);
             scrollList.render();
             scrollList.scrollToItem({ index: 1 });
             scrollList.getCurrentItemMap().zoomTo({ scale: 3 });
