@@ -30,24 +30,31 @@ define(function() {
             }
             scale = newScale;
             currentItemIndex = scrollList.getCurrentItem().index;
-            _zoomNextPrevious(scrollList, scale);
+            _zoomNextPrevious(scrollList, scale, currentItemIndex);
         });
         scrollList.onCurrentItemChanged(function() {
+            var previousItemIndex = currentItemIndex;
             currentItemIndex = scrollList.getCurrentItem().index;
-            _zoomNextPrevious(scrollList, scale);
+
+            if (Math.abs(currentItemIndex - previousItemIndex) > 1) {
+                // We jumped more than one page so we need to set the zoom and
+                // page location on the current page in addition to the new
+                // next and previous
+                var current = scrollList.getCurrentItemMap();
+                current.zoomTo({
+                    scale: scale
+                });
+                current.panTo({
+                    y: 0
+                });
+            }
+
+            _zoomNextPrevious(scrollList, scale, currentItemIndex);
         });
     }
 
-    function _zoomNextPrevious(scrollList, scale) {
-        // Set the scale on the current page in case we jumped to a page that
-        // wasn't the next or previous page.
-        scrollList.getCurrentItemMap().zoomTo({
-            scale: scale
-        });
-
-        var currentIndex = scrollList.getCurrentItem().index;
-
-        var previous = scrollList.getItemMap(currentIndex - 1);
+    function _zoomNextPrevious(scrollList, scale, currentItemIndex) {
+        var previous = scrollList.getItemMap(currentItemIndex - 1);
         if (previous) {
             previous.zoomTo({
                 scale: scale
@@ -57,7 +64,7 @@ define(function() {
             });
         }
 
-        var next = scrollList.getItemMap(currentIndex + 1);
+        var next = scrollList.getItemMap(currentItemIndex + 1);
         if (next) {
             next.zoomTo({
                 scale: scale
