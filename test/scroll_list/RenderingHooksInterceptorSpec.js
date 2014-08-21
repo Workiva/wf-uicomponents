@@ -102,18 +102,7 @@ define(function(require) {
             });
 
             describe('swipe', function() {
-                it('should render the current state layout', function() {
-                    var swipeEvent = createEvent(EventTypes.SWIPE);
-                    interceptor.handleTransformStarted(map, { event: swipeEvent });
-
-                    waits(100); // 100 is debounce interval
-                    runs(function() {
-                        expect(layout.render).toHaveBeenCalledWith(null);
-                    });
-
-                });
-
-                it('should render the target state layout in a new frame', function() {
+                it('should render current state layout right away, the target state layout in a new frame, and flip the sign when translations become positions', function() {
                     var nextFrameHappened = false;
                     var swipeEvent = createEvent(EventTypes.SWIPE);
                     var targetStateStub = {
