@@ -698,7 +698,7 @@ define(function(require) {
 
             // Zoom item maps to default scale when scroll completes unless the
             // scroll is paused mid-stream, which can happen in peek mode.
-            if (this._options.mode !== ScrollModes.FLOW) {
+            if (this._options.mode !== ScrollModes.FLOW && !this._options.persistZoom) {
                 panToOptions.done = function() {
                     var endState = self._listMap.getCurrentTransformState();
                     if (endState.translateX === panToOptions.x &&

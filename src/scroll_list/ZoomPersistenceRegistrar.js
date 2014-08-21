@@ -18,7 +18,7 @@ define(function() {
     'use strict';
 
     function _register(scrollList) {
-        var scale;
+        var scale = 1;
         var currentItemIndex = scrollList.getCurrentItem().index;
         scrollList.onScaleChanged(function() {
             if (currentItemIndex !== scrollList.getCurrentItem().index) {
