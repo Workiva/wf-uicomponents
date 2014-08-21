@@ -28,6 +28,7 @@ define(function(require) {
     var ScrollModes = require('wf-js-uicomponents/scroll_list/ScrollModes');
     var Utils = require('wf-js-common/Utils');
     var VerticalLayout = require('wf-js-uicomponents/layouts/VerticalLayout');
+    var ZoomPersistenceRegistrar = require('wf-js-uicomponents/scroll_list/ZoomPersistenceRegistrar');
 
     function constrain(value, min, max) {
         return Math.max(min, Math.min(max, value));
@@ -92,6 +93,10 @@ define(function(require) {
      *        When touch scrolling is enabled, dragging and swiping will scroll
      *        the list and pan items. When disabled, the mouse wheel and
      *        scrollbar are the only default means of scrolling.
+     *
+     * @param {boolean} [options.persistZoom]
+     *        When persistZoom is enabled, when in peek mode the zoom level
+     *        will persist when changing pages. Defaults to false.
      *
      * @example
      *
@@ -311,7 +316,8 @@ define(function(require) {
             mode: ScrollModes.FLOW,
             padding: 0,
             scaleLimits: { minimum: 1, maximum: 3 },
-            touchScrollingEnabled: true
+            touchScrollingEnabled: true,
+            persistZoom: false
         }, options);
 
         /**
@@ -692,7 +698,7 @@ define(function(require) {
 
             // Zoom item maps to default scale when scroll completes unless the
             // scroll is paused mid-stream, which can happen in peek mode.
-            if (this._options.mode !== ScrollModes.FLOW) {
+            if (this._options.mode !== ScrollModes.FLOW && !this._options.persistZoom) {
                 panToOptions.done = function() {
                     var endState = self._listMap.getCurrentTransformState();
                     if (endState.translateX === panToOptions.x &&
@@ -840,6 +846,13 @@ define(function(require) {
 
             this._listMap = AwesomeMapFactory.createListMap(this);
             this._scaleTranslator = new ScaleTranslator(this, this._listMap, 0);
+
+            if (this._options.persistZoom) {
+                if (this._options.mode === ScrollModes.FLOW) {
+                    throw new Error('ScrollList#_initialize: cannot persist zoom in flow mode');
+                }
+                ZoomPersistenceRegistrar.register(this);
+            }
         },
 
         /**
