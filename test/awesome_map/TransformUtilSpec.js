@@ -286,6 +286,27 @@ define(function(require) {
                         .toBe('translate(100px, 100px) scale(2)');
                 }
             });
+
+            it('should throw if scale is NaN', function() {
+                targetState.scale = NaN;
+                expect(function() {
+                    TransformUtil.applyTransform(target, targetState);
+                }).toThrow();
+            });
+
+            it('should throw if translateX is NaN', function() {
+                targetState.translateX = NaN;
+                expect(function() {
+                    TransformUtil.applyTransform(target, targetState);
+                }).toThrow();
+            });
+
+            it('should throw if translateY is NaN', function() {
+                targetState.translateY = NaN;
+                expect(function() {
+                    TransformUtil.applyTransform(target, targetState);
+                }).toThrow();
+            });
         });
 
         describe('applying transitions', function() {
