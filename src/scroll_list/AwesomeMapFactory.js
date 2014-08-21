@@ -112,7 +112,7 @@ define(function(require) {
             if (options.mode === ScrollModes.FLOW) {
                 map.addInterceptor(new DoubleTapZoomInterceptor());
                 map.addInterceptor(new SwipeInterceptor({
-                    animationDuration: 2000,
+                    animationDuration: 1000,
                     constrainToAxes: true
                 }));
                 if (options.scaleLimits) {

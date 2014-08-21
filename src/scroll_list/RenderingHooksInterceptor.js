@@ -24,7 +24,7 @@ define(function(require) {
     var requestAnimFrame = require('wf-js-common/requestAnimationFrame');
 
     /**
-     * Rendering 
+     * Rendering
      * @constructor
      */
     var RenderingHooksInterceptor = function(scrollList) {
@@ -94,9 +94,11 @@ define(function(require) {
 
         _renderLayout: function(targetState) {
             var layout = this._scrollList.getLayout();
+            // Translations are (usually) negative, positions are supposed to be
+            // positive.
             var targetScrollPosition = !targetState ? null : {
-                top: targetState.translateY,
-                left: targetState.translateX
+                top: -targetState.translateY,
+                left: -targetState.translateX
             };
             layout.render(targetScrollPosition);
         }

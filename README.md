@@ -163,3 +163,10 @@ Please see that repo for more information.
 [NPM]: https://npmjs.org/
 [Bower]: http://bower.io/
 
+Development: Hints
+--------------------------------------------------------------------------------
+
+Many variables reference places on a page or scroll list:
+ * Positions should usually be positive numbers.
+ * Translations should usually be negative numbers.  They are negative because
+   they refer to how far a page should move off-screen.
