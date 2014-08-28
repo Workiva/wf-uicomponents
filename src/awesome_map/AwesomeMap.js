@@ -601,14 +601,6 @@ define(function(require) {
             var event = args.event;
             var eventType = event.type;
 
-            // There is no need to worry about mousemove while transforming.
-            // Furthermore, if transforming has finished and there are mousemove
-            // events in the TransformatmionQueue, it will prevent new placeholders
-            // from being rendered at all.
-            if (eventType === EventTypes.MOUSE_MOVE && this.isTransforming()) {
-                return;
-            }
-
             var done = function() {
                 // Let consumers know that an interaction is complete
                 // when a release event is finished processing.

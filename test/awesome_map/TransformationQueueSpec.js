@@ -81,6 +81,21 @@ define(function(require) {
                 expect(items[0].event).toBe(evt);
                 expect(items[0].done).toBe(done);
             });
+
+            it('should not enqueue mousemove events while processing', function() {
+                var evt = createEvent(EventTypes.MOUSE_MOVE);
+                var done = function() {};
+                var items;
+
+                // Create a transformation that does not finish.
+                var transformation = Transformation.prototype;
+                spyOn(transformation, 'execute');
+                queue.processEvents();
+
+                items = queue.enqueue(evt, done);
+
+                expect(items.length).toBe(0);
+            });
         });
 
         describe('processing events', function() {
