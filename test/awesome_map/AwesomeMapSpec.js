@@ -464,6 +464,24 @@ define(function(require) {
             });
         });
 
+        describe('while transforming', function() {
+            var args = {};
+
+            beforeEach(function() {
+                awesomeMap = new AwesomeMap($host[0], { });
+                var gesture = new Gesture();
+                args.event = new InteractionEvent({ simulated: false }, gesture, gesture);
+                spyOn(awesomeMap, 'isTransforming').andReturn(true);
+            });
+
+            it('should not respond to mousemove events', function() {
+                spyOn(awesomeMap._transformationQueue, 'enqueue');
+                args.event.type = EventTypes.MOUSE_MOVE;
+                awesomeMap.handleInteractionEvent(null, args);
+                expect(awesomeMap._transformationQueue.enqueue).not.toHaveBeenCalled();
+            });
+        });
+
         describe('panning', function() {
             it('should pan by relative distance', function() {
                 var finished = false;
