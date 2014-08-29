@@ -19,6 +19,7 @@ define(function(require) {
 
     var Transformation = require('wf-js-uicomponents/awesome_map/Transformation');
     var TransformState = require('wf-js-uicomponents/awesome_map/TransformState');
+    var EventTypes = require('wf-js-uicomponents/awesome_map/EventTypes');
 
     /**
      * Module that facilitates testing dependencies, as the methods can be mocked.
@@ -125,6 +126,10 @@ define(function(require) {
          * @return {Array.<{InteractionEvent, Function}>} - The current queue.
          */
         enqueue: function(event, done) {
+            if (event.type === EventTypes.MOUSE_MOVE) {
+                return this._queue;
+            }
+
             this._queue.push({
                 event: event,
                 done: done
@@ -160,6 +165,7 @@ define(function(require) {
 
                 // If there's nothing left in the queue, return.
                 if (self._queue.length === 0) {
+                    self._processing = false;
                     return;
                 }
 

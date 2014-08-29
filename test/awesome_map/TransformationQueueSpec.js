@@ -81,6 +81,15 @@ define(function(require) {
                 expect(items[0].event).toBe(evt);
                 expect(items[0].done).toBe(done);
             });
+
+            it('should not enqueue mousemove events', function() {
+                var evt = createEvent(EventTypes.MOUSE_MOVE);
+                var done = function() {};
+
+                var items = queue.enqueue(evt, done);
+
+                expect(items.length).toBe(0);
+            });
         });
 
         describe('processing events', function() {
@@ -165,16 +174,12 @@ define(function(require) {
         });
 
         describe('is processing', function() {
-
             var evt;
             var done = jasmine.createSpy('done');
 
-            beforeEach(function() {
+            it('should be true when the queue is processing', function() {
                 evt = createEvent(EventTypes.TOUCH);
                 queue.enqueue(evt, done);
-            });
-
-            it('should be true when the queue is processing', function() {
                 var transformation = jasmine.createSpyObj('Transformation', ['execute']);
 
                 spyOn(TransformationQueue.dependencies, 'createTransformation').andReturn(transformation);
@@ -184,10 +189,18 @@ define(function(require) {
             });
 
             it('should be false when the queue is done processing', function() {
+                evt = createEvent(EventTypes.TOUCH);
+                queue.enqueue(evt, done);
                 queue.processEvents();
 
                 expect(queue.isProcessing()).toBe(false);
             });
+
+            it('should be false after processing an empty queue', function() {
+                queue.processEvents();
+                expect(queue.isProcessing()).toBe(false);
+            });
         });
+
     });
 });
