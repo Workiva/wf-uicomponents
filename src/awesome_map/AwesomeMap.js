@@ -600,7 +600,6 @@ define(function(require) {
             var queue = this._transformationQueue;
             var event = args.event;
             var eventType = event.type;
-
             var done = function() {
                 // Let consumers know that an interaction is complete
                 // when a release event is finished processing.
