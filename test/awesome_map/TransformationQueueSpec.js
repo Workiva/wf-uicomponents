@@ -82,17 +82,11 @@ define(function(require) {
                 expect(items[0].done).toBe(done);
             });
 
-            it('should not enqueue mousemove events while processing', function() {
+            it('should not enqueue mousemove events', function() {
                 var evt = createEvent(EventTypes.MOUSE_MOVE);
                 var done = function() {};
-                var items;
 
-                // Create a transformation that does not finish.
-                var transformation = Object.create(Transformation.prototype);
-                spyOn(transformation, 'execute');
-                queue.processEvents();
-
-                items = queue.enqueue(evt, done);
+                var items = queue.enqueue(evt, done);
 
                 expect(items.length).toBe(0);
             });
