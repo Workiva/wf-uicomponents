@@ -88,7 +88,7 @@ define(function(require) {
                 var items;
 
                 // Create a transformation that does not finish.
-                var transformation = Transformation.prototype;
+                var transformation = Object.create(Transformation.prototype);
                 spyOn(transformation, 'execute');
                 queue.processEvents();
 
