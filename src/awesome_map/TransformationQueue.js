@@ -126,11 +126,7 @@ define(function(require) {
          * @return {Array.<{InteractionEvent, Function}>} - The current queue.
          */
         enqueue: function(event, done) {
-            // There is no need to worry about transforming mousemove events.
-            // Furthermore, if transforming has finished and there are mousemove
-            // events in the TransformatmionQueue, it will prevent new placeholders
-            // from being rendered at all.
-            if (this._processing && event.type === EventTypes.MOUSE_MOVE) {
+            if (event.type === EventTypes.MOUSE_MOVE) {
                 return this._queue;
             }
 
@@ -169,6 +165,7 @@ define(function(require) {
 
                 // If there's nothing left in the queue, return.
                 if (self._queue.length === 0) {
+                    self._processing = false;
                     return;
                 }
 
