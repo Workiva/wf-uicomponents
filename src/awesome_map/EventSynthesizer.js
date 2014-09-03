@@ -17,15 +17,16 @@
 define(function(require) {
     'use strict';
 
-    var Hammer = require('hammerjs');
-    var EventTypes = require('wf-js-uicomponents/awesome_map/EventTypes');
-    var Gesture = require('wf-js-uicomponents/awesome_map/Gesture');
-    var InteractionEvent = require('wf-js-uicomponents/awesome_map/InteractionEvent');
     var BrowserInfo = require('wf-js-common/BrowserInfo');
     var DestroyUtil = require('wf-js-common/DestroyUtil');
+    var DOMUtil = require('wf-js-common/DOMUtil');
+    var EventTypes = require('wf-js-uicomponents/awesome_map/EventTypes');
+    var Gesture = require('wf-js-uicomponents/awesome_map/Gesture');
+    var Hammer = require('hammerjs');
+    var InteractionEvent = require('wf-js-uicomponents/awesome_map/InteractionEvent');
     var MouseAdapter = require('wf-js-common/MouseAdapter');
     var Observable = require('wf-js-common/Observable');
-    var DOMUtil = require('wf-js-common/DOMUtil');
+    var Utils = require('wf-js-common/Utils');
 
     /**
      * Module that facilitates testing dependencies, as the methods can be mocked.
@@ -64,6 +65,9 @@ define(function(require) {
      * @param {HTMLElement} configuration.host
      *        The element that hosts the event synthesizer.
      *
+     * @param {HTMLElement} [configuration.cancelMouseWheelEvents=true]
+     *        Cancel mouse wheel events when handled so that browser window does not shift.
+     *
      * @example
      *
      * var host = document.getElementById('host');
@@ -90,6 +94,12 @@ define(function(require) {
         //---------------------------------------------------------
         // Private properties
         //---------------------------------------------------------
+
+        /**
+         * Cancel mouse wheel events so that browser window does not shift.
+         * @type {boolean}
+         */
+        this._cancelMouseWheelEvents = Utils.valueOr(configuration.cancelMouseWheelEvents, true);
 
         /**
          * The rectangle for the current host.
@@ -450,7 +460,9 @@ define(function(require) {
                 self._lastGesture = null;
 
                 // Prevent bubbling so the screen doesn't shift.
-                BrowserInfo.Events.cancelEvent(event.source);
+                if (self._cancelMouseWheelEvents) {
+                    BrowserInfo.Events.cancelEvent(event.source);
+                }
             };
         },
 

@@ -18,6 +18,7 @@ define(function(require) {
     'use strict';
 
     var $ = require('jquery');
+    var BrowserInfo = require('wf-js-common/BrowserInfo');
     var DestroyUtil = require('wf-js-common/DestroyUtil');
     var EventSynthesizer = require('wf-js-uicomponents/awesome_map/EventSynthesizer');
     var EventTypes = require('wf-js-uicomponents/awesome_map/EventTypes');
@@ -51,8 +52,12 @@ define(function(require) {
             spyOn(host, 'addEventListener');
             spyOn(host, 'removeEventListener');
 
-            createSynthesizer = function() {
-                synthesizer = new EventSynthesizer({ host: $host[0] });
+            createSynthesizer = function(options) {
+                options = options || {};
+                synthesizer = new EventSynthesizer({
+                    host: $host[0],
+                    cancelMouseWheelEvents: !!options.cancelMouseWheelEvents
+                });
                 handlers = synthesizer.getEventHandlers();
             };
 
@@ -423,6 +428,17 @@ define(function(require) {
                 expect(dispatchEvent.calls[0].args[0]).toBe(eventType);
                 expect(dispatchEvent.calls[0].args[1].deltaX).toBe(3);
                 expect(dispatchEvent.calls[0].args[1].deltaY).toBe(5);
+            });
+
+            it('should cancel mouse wheel events if configured', function() {
+                var eventType = EventTypes.MOUSE_WHEEL;
+
+                createSynthesizer({ cancelMouseWheelEvents: true });
+                spyOn(BrowserInfo.Events, 'cancelEvent');
+
+                handlers[eventType]({ distance: { x: 3, y: 5 }, source: {} });
+
+                expect(BrowserInfo.Events.cancelEvent).toHaveBeenCalled();
             });
 
             it('should dispatch mouse wheel start events', function() {
