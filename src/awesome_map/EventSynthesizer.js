@@ -65,7 +65,7 @@ define(function(require) {
      * @param {HTMLElement} configuration.host
      *        The element that hosts the event synthesizer.
      *
-     * @param {HTMLElement} [configuration.cancelMouseWheelEvents=true]
+     * @param {boolean} [configuration.cancelMouseWheelEvents=true]
      *        Cancel mouse wheel events when handled so that browser window does not shift.
      *
      * @example
