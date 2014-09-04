@@ -44,6 +44,10 @@ define(function(require) {
      *        NOTE: Ensure that the host has "position: relative|absolute",
      *        otherwise various dimension measurements will fail.
      *
+     * @param {boolean} [options.cancelMouseWheelEvents=true]
+     *        Cancel wheel events so that the browser hosting the map doesn't
+     *        bounce when attempting to scroll with a mouse.
+     *
      * @param {boolean} [options.touchScrollingEnabled=true]
      *        When touch scrolling is enabled, dragging and swiping will scroll
      *        the list and pan items. When disabled, the following events have
@@ -90,6 +94,7 @@ define(function(require) {
          * @type {Object}
          */
         this._options = _.extend({
+            cancelMouseWheelEvents: true,
             touchScrollingEnabled: true
         }, options);
 
@@ -799,7 +804,10 @@ define(function(require) {
 
             this._currentTransformState = new TransformState();
 
-            this._eventSynthesizer = new EventSynthesizer({ host: this._viewport });
+            this._eventSynthesizer = new EventSynthesizer({
+                host: this._viewport,
+                cancelMouseWheelEvents: this._options.cancelMouseWheelEvents
+            });
             this._eventSynthesizer.onEventSynthesized(eventHandler);
 
             this._interactionSimulator = new InteractionSimulator({ target: this._viewport });
