@@ -173,10 +173,10 @@ define(function(require) {
                 var adjustedLeft = itemLayout.left;
                 var layoutWidth = layoutSize.width;
                 if (layoutWidth < viewportWidth) {
-                    adjustedLeft = Math.round(itemLayout.left - (viewportWidth - layoutWidth) / 2);
+                    adjustedLeft = itemLayout.left - (viewportWidth - layoutWidth) / 2;
                 }
                 else if (layoutWidth > viewportWidth) {
-                    adjustedLeft = Math.round(itemLayout.left + (layoutWidth - viewportWidth) / 2);
+                    adjustedLeft = itemLayout.left + (layoutWidth - viewportWidth) / 2;
                 }
                 var element = placeholder.element;
                 element.style.left = adjustedLeft + 'px';
@@ -206,7 +206,7 @@ define(function(require) {
                 }
                 var itemWidth = itemLayout.outerWidth;
                 if (itemWidth < viewportWidth) {
-                    transformX = Math.round((viewportWidth - itemWidth) / 2);
+                    transformX = (viewportWidth - itemWidth) / 2;
                 }
                 // Ensure we have a item map to work with.
                 var itemMap = placeholder.map;
