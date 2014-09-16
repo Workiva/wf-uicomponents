@@ -790,8 +790,8 @@ define(function(require) {
             // Using some layout options below.
             var options = this.getOptions();
             var flow = options.flow;
-            var gapTop = Math.floor(options.gap / 2);
-            var gapBottom = Math.ceil(options.gap / 2);
+            var gapTop = options.gap / 2;
+            var gapBottom = options.gap / 2;
             var padding = options.padding;
 
             // Loop through the items.

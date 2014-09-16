@@ -69,23 +69,23 @@ define(function(require) {
                 it('should adjust the left position of the placeholder if layout is narrower than viewport', function() {
                     viewportSize.width = 500;
                     layoutSize.width = 400;
-                    itemLayout = { left: 50 };
+                    itemLayout = { left: 50.5 };
                     placeholder = { element: { style: { left: '50px' } } };
 
                     renderer.appendPlaceholderToScrollList(itemLayout, placeholder);
 
-                    expect(placeholder.element.style.left).toBe('0px');
+                    expect(placeholder.element.style.left).toBe('0.5px');
                 });
 
                 it('should adjust the left position of the placeholder if layout is wider than viewport', function() {
                     viewportSize.width = 400;
                     layoutSize.width = 500;
-                    itemLayout = { left: -50 };
+                    itemLayout = { left: -50.5 };
                     placeholder = { element: { style: { left: '-50px' } } };
 
                     renderer.appendPlaceholderToScrollList(itemLayout, placeholder);
 
-                    expect(placeholder.element.style.left).toBe('0px');
+                    expect(placeholder.element.style.left).toBe('-0.5px');
                 });
 
                 it('should leave the left position of the placeholder alone if layout is not narrower than viewport', function() {

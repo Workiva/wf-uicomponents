@@ -25,6 +25,7 @@ define(function(require) {
     var VerticalLayout = require('wf-js-uicomponents/layouts/VerticalLayout');
 
     describe('VerticalLayout', function() {
+        var ITEM_HEIGHT = 200.3;
 
         var viewportSize = { width: 200, height: 500 };
         var $viewport = $('<div>').css({ position: 'absolute', top: -10000 });
@@ -55,11 +56,11 @@ define(function(require) {
             $viewport.empty().appendTo('body').css(viewportSize);
 
             itemMetadata = [
-                { width: 100, height: 200 },
-                { width: 100, height: 200 },
-                { width: 100, height: 200 },
-                { width: 100, height: 200 },
-                { width: 100, height: 200 }
+                { width: 100.1, height: ITEM_HEIGHT },
+                { width: 100.1, height: ITEM_HEIGHT },
+                { width: 100.1, height: ITEM_HEIGHT },
+                { width: 100.1, height: ITEM_HEIGHT },
+                { width: 100.1, height: ITEM_HEIGHT }
             ];
         });
 
@@ -377,7 +378,7 @@ define(function(require) {
                 position = layout.getPositionToRender();
 
                 expect(position.top).toBe(0);
-                expect(position.bottom).toBe(1000);
+                expect(position.bottom).toBe(1001.5);
             });
 
             it('should return correct values when scrolled to top of layout', function() {
@@ -422,7 +423,7 @@ define(function(require) {
                 position = layout.getPositionToRender();
 
                 expect(position.top).toBe(600);
-                expect(position.bottom).toBe(1000);
+                expect(position.bottom).toBe(1001.5);
             });
 
             it('should return correct values when zoomed out', function() {
@@ -649,22 +650,39 @@ define(function(require) {
         });
 
         describe('when measuring', function() {
+            var gap;
+            var padding;
 
             beforeEach(function() {
-                layout = createVerticalLayout({ gap: 10, padding: 20 });
+                gap = 10.1;
+                padding = 20.1;
+                layout = createVerticalLayout({ gap: gap, padding: padding });
                 layout.measure();
             });
 
             it('should measure the maximum layout width', function() {
                 var size = layout.getSize();
 
-                expect(size.width).toBe(140);
+                expect(size.width).toBe(140.3); // width + 2 * padding
             });
 
             it('should measure the total layout height', function() {
                 var size = layout.getSize();
 
-                expect(size.height).toBe(1080);
+                var expected =
+                    padding     +  // padding at the top
+                    ITEM_HEIGHT +
+                    gap         +  // gap between the pages
+                    ITEM_HEIGHT +
+                    gap         +
+                    ITEM_HEIGHT +
+                    gap         +
+                    ITEM_HEIGHT +
+                    gap         +
+                    ITEM_HEIGHT +
+                    padding     ;  // padding at the bottom
+
+                expect(size.height).toBe(expected);
             });
 
             it('should measure the viewport width', function() {
