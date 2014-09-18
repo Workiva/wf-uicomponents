@@ -884,7 +884,7 @@ define(function(require) {
             // If this is not done, then positioning will change and shift if
             // newer, wider items are added dynamically.
             if (flow) {
-                maxWidth = (itemSizeCollection.maxWidth + 2 * padding) * cachedScaleToFit;
+                maxWidth = itemSizeCollection.maxWidth * cachedScaleToFit + 2 * padding;
             }
 
             // Cache the item layouts and total layout size.
