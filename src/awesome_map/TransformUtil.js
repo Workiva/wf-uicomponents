@@ -172,7 +172,6 @@ define(function(require) {
                 // If the transformation has been cancelled,
                 // resolve the promise with the state of the last step; ...
                 if (cancelled) {
-                    // Round off translation values for ease of comparison elsewhere.
                     stepState.translateX = stepState.translateX;
                     stepState.translateY = stepState.translateY;
                     TransformUtil.applyTransform(target, stepState);
