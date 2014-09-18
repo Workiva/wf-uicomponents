@@ -124,8 +124,8 @@ define(function(require) {
          * @param {number} deltaY - The position change along the y-axis.
          */
         panBy: function(deltaX, deltaY) {
-            this.translateX = Math.round(this.translateX + deltaX);
-            this.translateY = Math.round(this.translateY + deltaY);
+            this.translateX = this.translateX + deltaX;
+            this.translateY = this.translateY + deltaY;
         },
 
         /**
@@ -208,7 +208,6 @@ define(function(require) {
         case EventTypes.DRAG_END:
         case EventTypes.DRAG_START:
         case EventTypes.MOUSE_WHEEL:
-
             newState.panBy(gesture.deltaX, gesture.deltaY);
             break;
 

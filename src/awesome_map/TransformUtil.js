@@ -128,8 +128,8 @@ define(function(require) {
 
                     cancelledState = targetState.clone();
                     cancelledState.scale = transform.scaleX; // Note: always scaling XY together.
-                    cancelledState.translateX = Math.ceil(transform.translateX);
-                    cancelledState.translateY = Math.ceil(transform.translateY);
+                    cancelledState.translateX = transform.translateX;
+                    cancelledState.translateY = transform.translateY;
 
                     transitionEndHandler();
                     return cancelledState;
@@ -172,9 +172,8 @@ define(function(require) {
                 // If the transformation has been cancelled,
                 // resolve the promise with the state of the last step; ...
                 if (cancelled) {
-                    // Round off translation values for ease of comparison elsewhere.
-                    stepState.translateX = Math.ceil(stepState.translateX);
-                    stepState.translateY = Math.ceil(stepState.translateY);
+                    stepState.translateX = stepState.translateX;
+                    stepState.translateY = stepState.translateY;
                     TransformUtil.applyTransform(target, stepState);
                     return done(stepState);
                 }

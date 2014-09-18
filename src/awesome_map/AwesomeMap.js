@@ -333,8 +333,8 @@ define(function(require) {
 
             // Cache the dimensions.
             this._contentDimensions = {
-                width: Math.ceil(width),
-                height: Math.ceil(height)
+                width: width,
+                height: height
             };
 
             return this._contentDimensions;

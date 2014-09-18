@@ -790,8 +790,8 @@ define(function(require) {
             // Using some layout options below.
             var options = this.getOptions();
             var flow = options.flow;
-            var gapTop = Math.floor(options.gap / 2);
-            var gapBottom = Math.ceil(options.gap / 2);
+            var gapTop = options.gap / 2;
+            var gapBottom = options.gap / 2;
             var padding = options.padding;
 
             // Loop through the items.
@@ -825,7 +825,7 @@ define(function(require) {
 
             function getHorizontalPosition(outerWidth) {
                 // Currently centering content.
-                return Math.round((viewportWidth - outerWidth) / 2);
+                return (viewportWidth - outerWidth) / 2;
             }
 
             for (i = 0; i < numberOfItems; i++) {
@@ -836,8 +836,8 @@ define(function(require) {
                     itemIndex: i,
                     top: totalHeight,
                     scaleToFit: scaleToFit,
-                    width: Math.floor(size.width * scaleToFit),
-                    height: Math.floor(size.height * scaleToFit),
+                    width: size.width * scaleToFit,
+                    height: size.height * scaleToFit,
                     paddingLeft: padding,
                     paddingRight: padding
                 });
@@ -865,8 +865,7 @@ define(function(require) {
                 else { // !flow
                     layout.bottom = layout.top + viewportHeight;
                     layout.offsetTop = layout.outerHeight < viewportHeight ?
-                        Math.round((viewportHeight - layout.outerHeight) / 2) : 0;
-
+                        (viewportHeight - layout.outerHeight) / 2 : 0;
                     layout.left = 0;
                     layout.right = viewportWidth;
                     layout.offsetLeft = getHorizontalPosition(layout.outerWidth);
@@ -885,7 +884,7 @@ define(function(require) {
             // If this is not done, then positioning will change and shift if
             // newer, wider items are added dynamically.
             if (flow) {
-                maxWidth = (itemSizeCollection.maxWidth + 2 * padding) * cachedScaleToFit;
+                maxWidth = itemSizeCollection.maxWidth * cachedScaleToFit + 2 * padding;
             }
 
             // Cache the item layouts and total layout size.

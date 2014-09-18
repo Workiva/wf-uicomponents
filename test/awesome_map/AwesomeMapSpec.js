@@ -287,9 +287,9 @@ define(function(require) {
             });
 
             it('should get custom content dimensions if set', function() {
-                var content1 = createContent(200, 500);
-                var content2 = createContent(300, 700);
-                var customDimensions = { width: 42000, height: 31000 };
+                var content1 = createContent(200.1, 500.2);
+                var content2 = createContent(300.3, 700.4);
+                var customDimensions = { width: 42000.5 , height: 31000.6 };
                 var contentDimensions;
 
                 awesomeMap.appendContent(content1);
@@ -300,6 +300,7 @@ define(function(require) {
                 expect(contentDimensions.width).toBe(customDimensions.width);
                 expect(contentDimensions.height).toBe(customDimensions.height);
             });
+
         });
 
         describe('properties', function() {
