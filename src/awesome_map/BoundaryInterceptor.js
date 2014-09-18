@@ -354,8 +354,8 @@ define(function(require) {
             var boundaryY = this._getBoundedValue(headroomY, targetState.translateY);
 
             return {
-                x: Math.round(boundaryX),
-                y: Math.round(boundaryY)
+                x: boundaryX,
+                y: boundaryY
             };
         },
 
