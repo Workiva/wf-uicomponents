@@ -18,6 +18,7 @@ define(function(require) {
     'use strict';
 
     var $ = require('jquery');
+    var AsyncSpec = require('../jasmine.async');
     var AwesomeMap = require('wf-js-uicomponents/awesome_map/AwesomeMap');
     var EventTypes = require('wf-js-uicomponents/awesome_map/EventTypes');
     var Gesture = require('wf-js-uicomponents/awesome_map/Gesture');
@@ -25,6 +26,7 @@ define(function(require) {
     var ViewportResizeInterceptor = require('wf-js-uicomponents/scroll_list/ViewportResizeInterceptor');
 
     describe('ViewportResizeInterceptor', function() {
+        var async = new AsyncSpec(this);
         var $host = $('<div>').css({ position: 'absolute', top: -10000, width: 400, height: 400 });
         var fakeScrollList = {
             refresh: function() {}
@@ -55,7 +57,7 @@ define(function(require) {
             expect(result).toBe(false);
         });
 
-        it('should refresh the scroll list 100ms after the last resize event', function() {
+        async.it('should refresh the scroll list 100ms after the last resize event', function(done) {
             var gesture = new Gesture();
             var event = new InteractionEvent(EventTypes.RESIZE, gesture, gesture);
 
@@ -64,11 +66,10 @@ define(function(require) {
 
             expect(fakeScrollList.refresh).not.toHaveBeenCalled();
 
-            waits(100);
-
-            runs(function() {
+            setTimeout(function() {
                 expect(fakeScrollList.refresh).toHaveBeenCalled();
-            });
+                done();
+            }, 100);
         });
     });
 });
