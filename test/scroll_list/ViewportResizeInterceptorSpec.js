@@ -18,7 +18,7 @@ define(function(require) {
     'use strict';
 
     var $ = require('jquery');
-    var AsyncSpec = require('../jasmine.async');
+    var AsyncSpec = require('wf-js-uicomponents/AsyncSpec');
     var AwesomeMap = require('wf-js-uicomponents/awesome_map/AwesomeMap');
     var EventTypes = require('wf-js-uicomponents/awesome_map/EventTypes');
     var Gesture = require('wf-js-uicomponents/awesome_map/Gesture');
