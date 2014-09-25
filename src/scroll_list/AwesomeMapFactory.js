@@ -81,6 +81,37 @@ define(function(require) {
             }));
 
             // Wire up observables.
+            // Emit interaction events from the map that was current at the
+            // start of an interaction.
+            var mapAtInteractionStart = null;
+            map.onInteractionStarted(function(source) {
+                mapAtInteractionStart = scrollList.getCurrentItemMap();
+                if (mapAtInteractionStart !== source) {
+                    return;
+                }
+                scrollList.onInteractionStarted.dispatch([scrollList]);
+            });
+            map.onInteraction(function(source, args) {
+                if (mapAtInteractionStart !== source) {
+                    return;
+                }
+                var evt = args.event;
+                var newArgs = { event: evt };
+                if (evt.position) {
+                    var hit = HitTester.testItemMap(scrollList, evt.position);
+                    if (hit) {
+                        newArgs.itemIndex = hit.index;
+                        newArgs.itemPosition = hit.position;
+                    }
+                }
+                scrollList.onInteraction.dispatch([scrollList, newArgs]);
+            });
+            map.onInteractionFinished(function(source) {
+                if (mapAtInteractionStart !== source) {
+                    return;
+                }
+                scrollList.onInteractionFinished.dispatch([scrollList]);
+            });
             map.onScaleChanged(function(source, args) {
                 scrollList.onScaleChanged.dispatch([scrollList, {
                     event: args.event,
@@ -131,33 +162,34 @@ define(function(require) {
             }
             map.addInterceptor(new RenderingHooksInterceptor(scrollList));
 
-            // Wire up observables.
-            map.onInteractionStarted(function() {
-                scrollList.onInteractionStarted.dispatch([scrollList]);
-            });
-            map.onInteraction(function(source, args) {
-                var evt = args.event;
-                var newArgs = { event: evt };
-                var fn = HitTester[options.mode === ScrollModes.FLOW ? 'testListMap' : 'testItemMap'];
-                if (evt.position) {
-                    var hit = fn(scrollList, evt.position);
-                    if (hit) {
-                        newArgs.itemIndex = hit.index;
-                        newArgs.itemPosition = hit.position;
+            if (options.mode === ScrollModes.FLOW) {
+                // Wire up observables.
+                map.onInteractionStarted(function() {
+                    scrollList.onInteractionStarted.dispatch([scrollList]);
+                });
+                map.onInteraction(function(source, args) {
+                    var evt = args.event;
+                    var newArgs = { event: evt };
+                    if (evt.position) {
+                        var hit = HitTester.testListMap(scrollList, evt.position);
+                        if (hit) {
+                            newArgs.itemIndex = hit.index;
+                            newArgs.itemPosition = hit.position;
+                        }
                     }
-                }
-                scrollList.onInteraction.dispatch([scrollList, newArgs]);
-            });
-            map.onInteractionFinished(function() {
-                scrollList.onInteractionFinished.dispatch([scrollList]);
-            });
-            map.onScaleChanged(function(source, args) {
-                scrollList.getLayout().setScale(args.scale);
-                scrollList.onScaleChanged.dispatch([scrollList, {
-                    event: args.event,
-                    scale: scrollList.getScale()
-                }]);
-            });
+                    scrollList.onInteraction.dispatch([scrollList, newArgs]);
+                });
+                map.onInteractionFinished(function() {
+                    scrollList.onInteractionFinished.dispatch([scrollList]);
+                });
+                map.onScaleChanged(function(source, args) {
+                    scrollList.getLayout().setScale(args.scale);
+                    scrollList.onScaleChanged.dispatch([scrollList, {
+                        event: args.event,
+                        scale: scrollList.getScale()
+                    }]);
+                });
+            }
             map.onTranslationChanged(function(source, args) {
                 scrollList.getLayout().setScrollPosition({
                     top: -args.y,
