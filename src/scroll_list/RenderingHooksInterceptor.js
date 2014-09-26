@@ -30,7 +30,7 @@ define(function(require) {
     var RenderingHooksInterceptor = function(scrollList) {
         this._debouncedRender = _.debounce(function() {
             scrollList.render();
-        }.bind(this), 100);
+        }, 100);
 
         this._scrollList = scrollList;
         this._didWheelTranslateMap = false;
@@ -84,7 +84,7 @@ define(function(require) {
             var layout = this._scrollList.getLayout();
 
             // Render the layout only (placeholders no content) if still transforming;
-            // otherwise, render the list (includes content laoding).
+            // otherwise, render the list (includes content loading).
             if (eventType === EventTypes.RELEASE) {
                 if (sender.isTransforming()) {
                     layout.render();
