@@ -10,7 +10,7 @@ define(function(require) {
     var KeyNavigator = require('wf-js-uicomponents/scroll_list/KeyNavigator');
     var ItemSizeCollection = require('wf-js-uicomponents/layouts/ItemSizeCollection');
     var BrowserInfo = require('wf-js-common/BrowserInfo');
-    var console = require('wf-js-common/consoleDev');
+    var console = require('wf-js-common/console');
     var DeviceInfo = require('wf-js-common/DeviceInfo');
     var DOMUtil = require('wf-js-common/DOMUtil');
     var Url = require('wf-js-common/Url');

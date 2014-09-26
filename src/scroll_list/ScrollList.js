@@ -94,7 +94,7 @@ define(function(require) {
      *        the list and pan items. When disabled, the mouse wheel and
      *        scrollbar are the only default means of scrolling.
      *
-     * @param {boolean} [options.persistZoom]
+     * @param {boolean} [options.persistZoom=false]
      *        When persistZoom is enabled, when in peek mode the zoom level
      *        will persist when changing pages. Defaults to false.
      *
