@@ -42,94 +42,89 @@ define(function(require) {
         var map;
 
         beforeEach(function () {
-            scrollList = _.extend({}, ScrollList.prototype);
             layout = _.extend({}, VerticalLayout.prototype);
-            interceptor = new RenderingHooksInterceptor(scrollList);
-            map = _.extend({}, AwesomeMap.prototype);
-
-            spyOn(scrollList, 'getOptions').andReturn({ mode: ScrollModes.FLOW });
             spyOn(layout, 'render');
             spyOn(layout, 'loadContent');
+            scrollList = _.extend({}, ScrollList.prototype);
             spyOn(scrollList, 'getLayout').andReturn(layout);
-
+            spyOn(scrollList, 'getOptions').andReturn({ mode: ScrollModes.FLOW });
+            spyOn(scrollList, 'render');
+            interceptor = new RenderingHooksInterceptor(scrollList);
+            map = _.extend({}, AwesomeMap.prototype);
         });
 
         describe('handleTransformStarted', function() {
 
             describe('mouse wheel', function() {
-
+                function test(newTransformState, shouldInvokeRender) {
+                    spyOn(map, 'getTranslation').andReturn({ x: 0, y: 0 });
+                    var targetState = new TransformState(newTransformState);
+                    interceptor.handleTransformStarted(map, {
+                        event: createEvent(EventTypes.MOUSE_WHEEL),
+                        targetState: targetState
+                    });
+                    if (!!shouldInvokeRender) {
+                        expect(layout.render).toHaveBeenCalledWith({
+                            preserveStaleItems: true
+                        });
+                    }
+                    else {
+                        expect(layout.render).not.toHaveBeenCalled();
+                    }
+                }
                 it('should render the layout when scrolling vertically', function() {
-                    // any value different from original Y
-                    spyOn(map, 'getTranslation').andReturn({ x: 0, y: 0 });
-                    var targetState = new TransformState({ translateY: 10 });
-
-                    interceptor.handleTransformStarted(map, {
-                        event: createEvent(EventTypes.MOUSE_WHEEL),
-                        targetState: targetState
-                    });
-
-                    expect(layout.render).toHaveBeenCalledWith(null);
+                    test({ translateY: -10 }, true);
                 });
-
                 it('should render the layout when scrolling horizontally', function() {
-                    // any value different from original X
-                    spyOn(map, 'getTranslation').andReturn({ x: 0, y: 0 });
-                    var targetState = new TransformState({ translateX: 10 });
-
-                    interceptor.handleTransformStarted(map, {
-                        event: createEvent(EventTypes.MOUSE_WHEEL),
-                        targetState: targetState
-                    });
-
-                    expect(layout.render).toHaveBeenCalledWith(null);
+                    test({ translateX: -10 }, true);
                 });
-
                 it('should not render if position does not change', function () {
-                    var yValue = 0;
-                    var xValue = 0;
-                    spyOn(map, 'getTranslation').andReturn({ x: xValue, y: yValue });
-
-                    var targetState = new TransformState({
-                        translateX: xValue,
-                        translateY: yValue
-                    });
-                    interceptor.handleTransformStarted(map, {
-                        event: createEvent(EventTypes.MOUSE_WHEEL),
-                        targetState: targetState
-                    });
-                    expect(layout.loadContent).not.toHaveBeenCalled();
+                    test({ translateX: 0, translateY: 0 }, false);
                 });
             });
 
             describe('swipe', function() {
-                it('should render current state layout right away, the target state layout in a new frame, and flip the sign when translations become positions', function() {
+                var fakeTargetState;
+                beforeEach(function() {
                     var nextFrameHappened = false;
                     var swipeEvent = createEvent(EventTypes.SWIPE);
-                    var targetStateStub = {
+                    fakeTargetState = {
                         translateX: -1,
                         translateY: -1
-                    };
-                    var expectedPosition = {
-                        top: 1,
-                        left: 1
                     };
                     runs(function() {
                         interceptor.handleTransformStarted(map, {
                             event: swipeEvent,
-                            targetState: targetStateStub
+                            targetState: fakeTargetState
                         });
                         requestAnimFrame(function(){
                             nextFrameHappened = true;
                         });
                     });
-
                     waitsFor(function(){
                         return nextFrameHappened;
                     });
+                });
+                it('should render the layout immediately', function() {
+                    runs(function() {
+                        expect(layout.render).toHaveBeenCalled();
+                        var firstCall = layout.render.calls[0];
+                        expect(firstCall.args[0]).toEqual({
+                            preserveStaleItems: true
+                        });
+                    });
+                });
+                it('should render the layout to the target scroll position in a new frame', function() {
                     runs(function() {
                         expect(layout.render.calls.length).toEqual(2);
-                        expect(layout.render.calls[0].args[0]).toEqual(null);
-                        expect(layout.render.calls[1].args[0]).toEqual(expectedPosition);
+                        var secondCall = layout.render.calls[1];
+                        var expectedPosition = {
+                            left: -fakeTargetState.translateX,
+                            top: -fakeTargetState.translateY
+                        };
+                        expect(secondCall.args[0]).toEqual({
+                            targetScrollPosition: expectedPosition
+                        });
                     });
                 });
             });
@@ -138,64 +133,49 @@ define(function(require) {
         describe('handleTransformFinished', function() {
 
             describe('mouse wheel', function() {
-
-                it('should load content when position has changed', function() {
+                function test(endTransformState, ready) {
                     // any values different from start x and y should work
                     spyOn(map, 'getTranslation').andReturn({ x: 0, y: 0 });
-                    var targetState = new TransformState({
+                    var targetState = endTransformState || new TransformState();
+
+                    var evt = createEvent(EventTypes.MOUSE_WHEEL);
+                    interceptor.handleTransformStarted(map, {
+                        event: evt,
+                        targetState: targetState
+                    });
+
+                    interceptor.handleTransformFinished(map, {
+                        event: evt
+                    });
+
+                    waits(100); // 100 is debounce interval
+                    runs(ready);
+                }
+                it('should render the scroll list when position has changed', function() {
+                    var endTransformState = new TransformState({
                         translateX: 1,
                         translateY: 1
                     });
-
-                    var evt = createEvent(EventTypes.MOUSE_WHEEL);
-                    interceptor.handleTransformStarted(map, {
-                        event: evt,
-                        targetState: targetState
-                    });
-
-                    interceptor.handleTransformFinished(map, {
-                        event: evt
-                    });
-
-                    waits(100); // 100 is debounce interval
-                    runs(function() {
-                        expect(layout.loadContent).toHaveBeenCalled();
+                    test(endTransformState, function() {
+                        expect(scrollList.render).toHaveBeenCalled();
                     });
                 });
-
                 it('should not load content when position has not changed', function() {
-                    spyOn(map, 'getTranslation').andReturn({ x: 0, y: 0 });
-                    var targetState = new TransformState({
-                        translateX: 0,
-                        translateY: 0
-                    });
-
-                    var evt = createEvent(EventTypes.MOUSE_WHEEL);
-                    interceptor.handleTransformStarted(map, {
-                        event: evt,
-                        targetState: targetState
-                    });
-
-                    interceptor.handleTransformFinished(map, {
-                        event: evt
-                    });
-
-                    waits(100); // 100 is debounce interval
-                    runs(function() {
-                        expect(layout.loadContent).not.toHaveBeenCalled();
+                    var initialTransformState = new TransformState();
+                    test(initialTransformState, function() {
+                        expect(scrollList.render).not.toHaveBeenCalled();
                     });
                 });
             });
             describe('swipe/release', function() {
-                it('should render the destination layout', function() {
+                it('should render the layout if still transforming', function() {
                     spyOn(map, 'isTransforming').andReturn(true);
 
                     var releaseEvent = createEvent(EventTypes.RELEASE);
                     interceptor.handleTransformFinished(map, { event: releaseEvent });
-                    expect(layout.render).toHaveBeenCalledWith(null);
+                    expect(layout.render).toHaveBeenCalled();
                 });
-                it('should render the scrolllist if the sender is done transforming', function() {
-                    spyOn(scrollList, 'render');
+                it('should render the list if the sender is done transforming', function() {
                     spyOn(map, 'isTransforming').andReturn(false);
 
                     var releaseEvent = createEvent(EventTypes.RELEASE);
