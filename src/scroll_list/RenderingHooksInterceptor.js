@@ -28,8 +28,8 @@ define(function(require) {
      * @constructor
      */
     var RenderingHooksInterceptor = function(scrollList) {
-        this._debouncedLoad = _.debounce(function() {
-            scrollList.getLayout().loadContent();
+        this._debouncedRender = _.debounce(function() {
+            scrollList.render();
         }, 100);
 
         this._scrollList = scrollList;
@@ -47,6 +47,7 @@ define(function(require) {
 
             var eventType = args.event.type;
             var targetState = args.targetState;
+            var layout = this._scrollList.getLayout();
 
             // Create placeholders to support smooth swipe animations.
             if (eventType === EventTypes.SWIPE) {
@@ -55,31 +56,40 @@ define(function(require) {
                 // visible gaps in content. Then, render intermediate items in
                 // a new frame, as adding them to the DOM all at once can
                 // take a bit before the animation and cause a slight hiccup.
-                this._renderLayout();
+                var targetScrollPosition = {
+                    left: -targetState.translateX,
+                    top: -targetState.translateY
+                };
+                layout.render({ preserveStaleItems: true });
                 requestAnimFrame(function() {
-                    this._renderLayout(targetState);
+                    layout.render({ targetScrollPosition: targetScrollPosition });
                 }.bind(this));
             }
             // Create placeholders to support mouse wheels.
             else if (eventType === EventTypes.MOUSE_WHEEL) {
                 // Prevent unnecessary rendering for scrolls at boundaries
                 var currentTranslation = sender.getTranslation();
-                this._didWheelTranslateMap =
+                this._didWheelTranslateMap = (
                     (currentTranslation.y !== targetState.translateY) ||
-                    (currentTranslation.x !== targetState.translateX);
+                    (currentTranslation.x !== targetState.translateX)
+                );
                 if (this._didWheelTranslateMap) {
-                    this._renderLayout();
+                    layout.render({ preserveStaleItems: true });
                 }
             }
         },
 
         handleTransformFinished: function(sender, args) {
             var eventType = args.event.type;
+            var layout = this._scrollList.getLayout();
 
-            // Load content when releasing if the sender is done transforming.
+            // Render the layout only (placeholders no content) if still transforming;
+            // otherwise, render the list (includes content loading).
             if (eventType === EventTypes.RELEASE) {
-                this._renderLayout();
-                if (!sender.isTransforming()) {
+                if (sender.isTransforming()) {
+                    layout.render();
+                }
+                else {
                     this._scrollList.render();
                 }
             }
@@ -87,20 +97,9 @@ define(function(require) {
             else if (eventType === EventTypes.MOUSE_WHEEL) {
                 // Mousewheels at boundary should be ignored
                 if (this._didWheelTranslateMap) {
-                    this._debouncedLoad();
+                    this._debouncedRender();
                 }
             }
-        },
-
-        _renderLayout: function(targetState) {
-            var layout = this._scrollList.getLayout();
-            // Translations are (usually) negative, positions are supposed to be
-            // positive.
-            var targetScrollPosition = !targetState ? null : {
-                top: -targetState.translateY,
-                left: -targetState.translateX
-            };
-            layout.render(targetScrollPosition);
         }
     };
 

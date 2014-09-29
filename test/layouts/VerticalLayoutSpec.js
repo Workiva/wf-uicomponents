@@ -941,7 +941,7 @@ define(function(require) {
 
                 spyOn(renderer, 'render');
 
-                layout.render(targetScrollPosition);
+                layout.render({ targetScrollPosition: targetScrollPosition });
 
                 expect(renderer.render.calls.length).toBe(5);
                 expect(renderer.render).toHaveBeenCalledWith(layout.getItemLayout(0));
@@ -1021,7 +1021,9 @@ define(function(require) {
                 spyOn(renderer, 'remove');
                 spyOn(layout.onCurrentItemIndexChanged, 'dispatch');
 
-                layout.render({ top: 0, left: 0 });
+                layout.render({
+                    targetScrollPosition: { top: 0, left: 0 }
+                });
 
                 expect(layout.onCurrentItemIndexChanged.dispatch).not.toHaveBeenCalled();
             });

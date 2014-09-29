@@ -712,9 +712,14 @@ define(function(require) {
          * the range between the current and target scroll positions.
          *
          * @method VerticalLayout#render
-         * @param {{ top: number, left: number }} targetScrollPosition
+         * @param {{ top: number, left: number }} [options.targetScrollPosition]
+         * @param {boolean} [options.preserveStaleItems=false]
          */
-        render: function(targetScrollPosition) {
+        render: function(options) {
+            options = options || {};
+            var targetScrollPosition = options.targetScrollPosition;
+            var preserveStaleItems = !!options.preserveStaleItems;
+
             var renderer = this._renderer;
 
             var range = this.getItemRangeToRender(targetScrollPosition);
@@ -728,7 +733,7 @@ define(function(require) {
             var currentItemIndex = this.getCurrentItemIndex();
 
             // Remove stale placeholders.
-            if (lastRange) {
+            if (lastRange && !preserveStaleItems) {
 
                 // Remove placeholders that precede the new range.
                 i = Math.min(range.startIndex - 1, lastRange.endIndex);
