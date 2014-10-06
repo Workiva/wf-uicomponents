@@ -761,7 +761,6 @@ define(function(require) {
             }
 
             // Perform the scroll.
-            console.log('pan to')
             this._listMap.panTo(panToOptions);
         },
 
