@@ -193,20 +193,20 @@ define(function(require) {
                 // Reversing direction if:
                 // - dragging down with peek into next content item still visible, or
                 // - dragging up with peek into previous content item still visible.
-                if ((deltaY > 0 && peekDelta + deltaY < 0) ||
-                    (deltaY < 0 && peekDelta + deltaY > 0)) {
+//                if ((deltaY > 0 && peekDelta + deltaY < 0) ||
+//                    (deltaY < 0 && peekDelta + deltaY > 0)) {
 
                     newY = currentY + deltaY;
                     this._peekDelta += deltaY;
-                }
+//                }
                 // Stop peeking if:
                 // - dragging down and deltaY will bring content to bottom of viewport, or
                 // - dragging up and deltaY will bring content to top of viewport
-                else if (deltaY !== 0) {
-
-                    newY = currentY - this._peekDelta;
-                    this._resetPeekState();
-                }
+//                else if (deltaY !== 0) {
+//
+//                    newY = currentY - this._peekDelta;
+//                    this._resetPeekState();
+//                }
             }
             else {
                 // Modify event to impose boundary condition on item map if:
@@ -295,8 +295,13 @@ define(function(require) {
             }
 
             // Let this release event play out before scrolling.
+            var done = function () {
+                scrollList.onScrollToItemFinished.dispatch();
+            };
+
             setTimeout(function() {
-                scrollList.scrollToItem({ index: itemIndex, duration: 250 });
+                scrollList.onScrollToItemStarted.dispatch();
+                scrollList.scrollToItem({ index: itemIndex, duration: 250, done: done });
             }, 0);
 
             this._resetPeekState();

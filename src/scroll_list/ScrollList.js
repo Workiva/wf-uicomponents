@@ -176,6 +176,8 @@ define(function(require) {
          *        })
          */
         this.onContentRemoved = Observable.newObservable();
+        this.onScrollToItemFinished = Observable.newObservable();
+        this.onScrollToItemStarted = Observable.newObservable();
 
         /**
          * Observable for subscribing to changes to the currently visible item.
@@ -712,6 +714,7 @@ define(function(require) {
                             }
                         }
                     }
+
                     if (options.done) {
                         options.done();
                     }
@@ -758,6 +761,7 @@ define(function(require) {
             }
 
             // Perform the scroll.
+            console.log('pan to')
             this._listMap.panTo(panToOptions);
         },
 
