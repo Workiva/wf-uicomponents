@@ -186,7 +186,7 @@ define(function(require) {
          * @param {Function} callback
          *        Invoked with no parameters
          */
-        
+
         this.onScrollToItemFinished = Observable.newObservable();
         /**
          * Observable for subscribing to scroll to events

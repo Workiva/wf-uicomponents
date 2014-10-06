@@ -132,6 +132,7 @@ define(function(require) {
             else {
                 drag = this._createDragEvent(x, y, duration);
             }
+
             this._dispatchEach([touch], [drag], [release, options.done]);
         },
 
@@ -337,6 +338,7 @@ define(function(require) {
         _dispatchEach: function() {
             var self = this;
             var eventParameters = Array.prototype.slice.call(arguments, 0);
+
             eventParameters.forEach(function(params) {
                 self.onEventSimulated.dispatch([self, {
                     event: params[0],
