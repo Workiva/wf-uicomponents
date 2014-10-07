@@ -280,14 +280,8 @@ define(function(require) {
                 itemIndex = itemRange.startIndex;
             }
 
-            // Let this release event play out before scrolling.
-            var done = function () {
-                scrollList.onScrollToItemFinished.dispatch();
-            };
-
             setTimeout(function() {
-                scrollList.onScrollToItemStarted.dispatch();
-                scrollList.scrollToItem({ index: itemIndex, duration: 250, done: done });
+                scrollList.scrollToItem({ index: itemIndex, duration: 250});
             }, 0);
 
             this._resetPeekState();

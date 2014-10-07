@@ -708,6 +708,20 @@ define(function(require) {
                 throw new Error('ScrollList#scrollToItem: index is required.');
             }
 
+            this.onScrollToItemStarted.dispatch();
+            var that = this;
+            if(options.done){
+                var currentDone = options.done;
+                options.done = function(){
+                    currentDone();
+                    that.onScrollToItemFinished.dispatch();
+                }
+            }else{
+                options.done = function(){
+                    that.onScrollToItemFinished.dispatch();
+                }
+            }
+
             var panToOptions = {
                 x: 0,
                 y: 0,
