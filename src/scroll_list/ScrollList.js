@@ -178,9 +178,9 @@ define(function(require) {
         this.onContentRemoved = Observable.newObservable();
 
         /**
-         * Observable for subscribing to scroll to events
+         * Observable for subscribing to scroll to events.
          * This event occurs when the peek interceptor decides
-         * to snap to the top of a page
+         * to snap to the top of a page.
          *
          * @method ScrollList#onScrollToItemFinished
          * @param {Function} callback
@@ -189,9 +189,9 @@ define(function(require) {
 
         this.onScrollToItemFinished = Observable.newObservable();
         /**
-         * Observable for subscribing to scroll to events
+         * Observable for subscribing to scroll to events.
          * This event occurs when the resulting call to scrollToItem
-         * finishes its animation
+         * finishes its animation.
          *
          * @method ScrollList#onScrollToItemStarted
          * @param {Function} callback
