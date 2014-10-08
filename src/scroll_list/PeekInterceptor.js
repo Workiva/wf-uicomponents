@@ -146,7 +146,7 @@ define(function(require) {
          * @param {InteractionEvent} event
          */
         _handleDragEvent: function(event) {
-            var itemMap = this._awesomeMap;
+            var itemMap = this._scrollList.getCurrentItemMap();
             var viewportHeight = itemMap.getViewportDimensions().height;
             var contentHeight = itemMap.getContentDimensions().height;
             var contentState = itemMap.getCurrentTransformState();
@@ -190,9 +190,23 @@ define(function(require) {
             // Undo peeking:
             else if (peekDelta !== 0) {
 
-                // Reversing direction
-                newY = currentY + deltaY;
-                this._peekDelta += deltaY;
+                // Reversing direction if:
+                // - dragging down with peek into next content item still visible, or
+                // - dragging up with peek into previous content item still visible.
+                if ((deltaY > 0 && peekDelta + deltaY < 0) ||
+                    (deltaY < 0 && peekDelta + deltaY > 0)) {
+
+                    newY = currentY + deltaY;
+                    this._peekDelta += deltaY;
+                }
+                // Stop peeking if:
+                // - dragging down and deltaY will bring content to bottom of viewport, or
+                // - dragging up and deltaY will bring content to top of viewport
+                else if (deltaY !== 0) {
+
+                    newY = currentY - this._peekDelta;
+                    this._resetPeekState();
+                }
             }
             else {
                 // Modify event to impose boundary condition on item map if:
