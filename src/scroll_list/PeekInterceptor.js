@@ -294,6 +294,7 @@ define(function(require) {
                 itemIndex = itemRange.startIndex;
             }
 
+            // Let this release event play out before scrolling.
             setTimeout(function() {
                 scrollList.scrollToItem({ index: itemIndex, duration: 250});
             }, 0);
