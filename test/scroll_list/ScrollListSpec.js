@@ -639,7 +639,7 @@ define(function(require) {
                         x: currentState.translateX,
                         y: -itemLayout.top * currentState.scale,
                         duration: 0,
-                        done: done
+                        done: jasmine.any(Function)
                     });
                 });
             });
@@ -737,7 +737,7 @@ define(function(require) {
                             y: -(itemIndex * pageSize * scale * scaleToFit) -
                                (offset.y * scale * scaleToFit) + (viewportSize.height / 2),
                             duration: 0,
-                            done: undefined
+                            done: jasmine.any(Function)
                         });
                     });
 
@@ -803,7 +803,7 @@ define(function(require) {
                             y: -(itemIndex * pageSize * scale * scaleToFit) -
                                (offset.y * scale * scaleToFit),
                             duration: 0,
-                            done: undefined
+                            done: jasmine.any(Function)
                         });
                     });
                     it('should pass coords to listmap.panTo that will place the offset ' +
@@ -869,7 +869,7 @@ define(function(require) {
                             y: -(itemIndex * pageSize * scale * scaleToFit) -
                               (offset.y * scale * scaleToFit) + viewportSize.height,
                             duration: 0,
-                            done: undefined
+                            done: jasmine.any(Function)
                         });
                     });
                     it('should call listmap.panTo with coordinates that place the offset ' +

@@ -715,11 +715,11 @@ define(function(require) {
                 options.done = function(){
                     currentDone();
                     that.onScrollToItemFinished.dispatch();
-                }
+                };
             }else{
                 options.done = function(){
                     that.onScrollToItemFinished.dispatch();
-                }
+                };
             }
 
             var panToOptions = {
