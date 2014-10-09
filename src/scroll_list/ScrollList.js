@@ -709,16 +709,17 @@ define(function(require) {
             }
 
             this.onScrollToItemStarted.dispatch();
-            var that = this;
-            if(options.done){
+            var self = this;
+            if(options.done) {
                 var currentDone = options.done;
-                options.done = function(){
+                options.done = function() {
                     currentDone();
-                    that.onScrollToItemFinished.dispatch();
+                    self.onScrollToItemFinished.dispatch();
                 };
-            }else{
-                options.done = function(){
-                    that.onScrollToItemFinished.dispatch();
+            }
+            else {
+                options.done = function() {
+                    self.onScrollToItemFinished.dispatch();
                 };
             }
 
@@ -729,7 +730,6 @@ define(function(require) {
                 done: options.done
             };
 
-            var self = this;
             var layout = this._layout;
 
             // Zoom item maps to default scale when scroll completes unless the
