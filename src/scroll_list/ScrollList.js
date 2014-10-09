@@ -710,7 +710,7 @@ define(function(require) {
 
             this.onScrollToItemStarted.dispatch();
             var self = this;
-            if(options.done) {
+            if (options.done) {
                 var currentDone = options.done;
                 options.done = function() {
                     currentDone();
