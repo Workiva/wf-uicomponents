@@ -178,6 +178,28 @@ define(function(require) {
         this.onContentRemoved = Observable.newObservable();
 
         /**
+         * Observable for subscribing to scroll to events.
+         * This event occurs when the peek interceptor decides
+         * to snap to the top of a page.
+         *
+         * @method ScrollList#onScrollToItemFinished
+         * @param {Function} callback
+         *        Invoked with no parameters
+         */
+
+        this.onScrollToItemFinished = Observable.newObservable();
+        /**
+         * Observable for subscribing to scroll to events.
+         * This event occurs when the resulting call to scrollToItem
+         * finishes its animation.
+         *
+         * @method ScrollList#onScrollToItemStarted
+         * @param {Function} callback
+         *        Invoked with no parameters
+         */
+        this.onScrollToItemStarted = Observable.newObservable();
+
+        /**
          * Observable for subscribing to changes to the currently visible item.
          * @method ScrollList#onCurrentItemChanged
          * @param {Function} callback
@@ -686,6 +708,21 @@ define(function(require) {
                 throw new Error('ScrollList#scrollToItem: index is required.');
             }
 
+            this.onScrollToItemStarted.dispatch();
+            var self = this;
+            if (options.done) {
+                var currentDone = options.done;
+                options.done = function() {
+                    currentDone();
+                    self.onScrollToItemFinished.dispatch();
+                };
+            }
+            else {
+                options.done = function() {
+                    self.onScrollToItemFinished.dispatch();
+                };
+            }
+
             var panToOptions = {
                 x: 0,
                 y: 0,
@@ -693,7 +730,6 @@ define(function(require) {
                 done: options.done
             };
 
-            var self = this;
             var layout = this._layout;
 
             // Zoom item maps to default scale when scroll completes unless the
@@ -712,6 +748,7 @@ define(function(require) {
                             }
                         }
                     }
+
                     if (options.done) {
                         options.done();
                     }

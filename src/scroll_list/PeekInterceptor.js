@@ -146,7 +146,7 @@ define(function(require) {
          * @param {InteractionEvent} event
          */
         _handleDragEvent: function(event) {
-            var itemMap = this._awesomeMap;
+            var itemMap = this._scrollList.getCurrentItemMap();
             var viewportHeight = itemMap.getViewportDimensions().height;
             var contentHeight = itemMap.getContentDimensions().height;
             var contentState = itemMap.getCurrentTransformState();
