@@ -395,10 +395,12 @@ define(function(require) {
             element.style.left = itemLayout.left + 'px';
             element.style.width = itemLayout.right - itemLayout.left + 'px';
             element.style.height = itemLayout.bottom - itemLayout.top + 'px';
-            // Ensure that placeholders are composited individually so that
-            // the browser rendering engine doesn't generate enormous layers
-            // for the container when transitioning.
-            if (BrowserInfo.hasCssTransforms3d) {
+            // Ensure that placeholders are composited individually so that the
+            // browser rendering engine doesn't generate enormous layers for
+            // the container when transitioning. Safari doesn't work properly
+            // with 3d transforms.
+            var browserName = BrowserInfo.getBrowser();
+            if (BrowserInfo.hasCssTransforms3d && browserName !== 'Safari') {
                 element.style[BrowserInfo.cssTransformProperty] = 'translateZ(0px)';
             }
 

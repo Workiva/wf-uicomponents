@@ -525,11 +525,22 @@ define(function(require) {
             });
 
             it('should accelerate placeholder if css 3d tranforms are available', function() {
-                if (BrowserInfo.hasCssTransforms3d) {
+                if (BrowserInfo.hasCssTransforms3d && BrowserInfo.getBrowser() !== 'Safari') {
                     renderer.render(itemLayout);
 
                     var placeholder = renderer.get(0).element;
                     expect(placeholder.style[BrowserInfo.cssTransformProperty]).toBe('translateZ(0px)');
+                }
+            });
+
+            it('should not accelerate placeholder on safari', function() {
+                if (BrowserInfo.hasCssTransforms3d) {
+                    spyOn(BrowserInfo, 'getBrowser').andReturn('Safari');
+                    renderer.render(itemLayout);
+
+                    expect(BrowserInfo.getBrowser).toHaveBeenCalled();
+                    var placeholder = renderer.get(0).element;
+                    expect(placeholder.style[BrowserInfo.cssTransformProperty]).toBe('');
                 }
             });
 
