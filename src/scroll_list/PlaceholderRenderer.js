@@ -18,7 +18,6 @@ define(function(require) {
     'use strict';
 
     var AwesomeMapFactory = require('wf-js-uicomponents/scroll_list/AwesomeMapFactory');
-    var BrowserInfo = require('wf-js-common/BrowserInfo');
     var DestroyUtil = require('wf-js-common/DestroyUtil');
     var Observable = require('wf-js-common/Observable');
     var ScrollModes = require('wf-js-uicomponents/scroll_list/ScrollModes');
@@ -395,14 +394,6 @@ define(function(require) {
             element.style.left = itemLayout.left + 'px';
             element.style.width = itemLayout.right - itemLayout.left + 'px';
             element.style.height = itemLayout.bottom - itemLayout.top + 'px';
-            // Ensure that placeholders are composited individually so that the
-            // browser rendering engine doesn't generate enormous layers for
-            // the container when transitioning. Safari doesn't work properly
-            // with 3d transforms.
-            var browserName = BrowserInfo.getBrowser();
-            if (BrowserInfo.hasCssTransforms3d && browserName !== 'Safari') {
-                element.style[BrowserInfo.cssTransformProperty] = 'translateZ(0px)';
-            }
 
             this._placeholders[itemIndex] = placeholder;
 
