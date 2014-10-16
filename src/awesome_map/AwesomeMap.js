@@ -601,6 +601,9 @@ define(function(require) {
          * @param {Function} [args.done] - Callback invoked after the event is handled.
          */
         handleInteractionEvent: function(source, args) {
+            if (['dragstart', 'drag', 'dragend'].indexOf(args.event.type) !== -1) {
+                return;
+            }
             var self = this;
             var queue = this._transformationQueue;
             var event = args.event;
