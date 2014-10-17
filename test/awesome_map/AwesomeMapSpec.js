@@ -698,7 +698,7 @@ define(function(require) {
                 expect(TransformUtil.applyTransform).toHaveBeenCalledWith(
                     awesomeMap.getTransformationPlane(),
                     awesomeMap.getCurrentTransformState(),
-                    true
+                    true /* use2d */
                 );
             });
 

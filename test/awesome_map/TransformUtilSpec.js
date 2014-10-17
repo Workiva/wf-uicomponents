@@ -288,7 +288,7 @@ define(function(require) {
             });
 
             it('should use a 2d transform if 2d is requested', function() {
-                TransformUtil.applyTransform(target, targetState, true);
+                TransformUtil.applyTransform(target, targetState, true /* use2d */);
 
                 expect(target.style[transformProp])
                     .toBe('translate(100px, 100px) scale(2)');

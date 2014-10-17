@@ -220,6 +220,7 @@ define(function(require) {
          * @method
          * @param {HTMLElement} target - The element to transform.
          * @param {TransformState} targetState - The transformation target state.
+         * @param {Boolean} use2d - Force the use of a 2d transform.
          */
         applyTransform: function(target, targetState, use2d) {
             // Having NaNs can lead to lots of roundabout debugging, so throw
