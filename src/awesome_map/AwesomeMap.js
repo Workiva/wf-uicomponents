@@ -609,6 +609,12 @@ define(function(require) {
                 // Let consumers know that an interaction is complete
                 // when a release event is finished processing.
                 if (eventType === EventTypes.RELEASE || eventType === EventTypes.MOUSE_WHEEL_END) {
+                    // Apply a 2d version of the transformation. This forces
+                    // the browser to repaint so we don't end up with blurry
+                    // content.
+                    TransformUtil.applyTransform(self.getTransformationPlane(),
+                            self.getCurrentTransformState(), true);
+
                     self.onInteractionFinished.dispatch([self]);
                     if (self._deferInteractionStarted) {
                         self.onInteractionStarted.dispatch([self]);

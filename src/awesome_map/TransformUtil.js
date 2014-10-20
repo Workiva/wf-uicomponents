@@ -220,8 +220,9 @@ define(function(require) {
          * @method
          * @param {HTMLElement} target - The element to transform.
          * @param {TransformState} targetState - The transformation target state.
+         * @param {Boolean} use2d - Force the use of a 2d transform.
          */
-        applyTransform: function(target, targetState) {
+        applyTransform: function(target, targetState, use2d) {
             // Having NaNs can lead to lots of roundabout debugging, so throw
             if (isNaN(targetState.scale) ||
                 isNaN(targetState.translateX) ||
@@ -232,7 +233,7 @@ define(function(require) {
 
             var translate;
 
-            if (BrowserInfo.hasCssTransforms3d) {
+            if (BrowserInfo.hasCssTransforms3d && !use2d) {
                 translate = 'translate3d(' +
                     targetState.translateX + 'px, ' +
                     targetState.translateY + 'px, ' +

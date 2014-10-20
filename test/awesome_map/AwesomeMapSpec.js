@@ -689,6 +689,19 @@ define(function(require) {
                 expect(awesomeMap.setCurrentTransformState).toHaveBeenCalled();
             });
 
+            it('should apply a 2d transform at the end of the interaction', function() {
+                var evt = createInteractionEvent(EventTypes.MOUSE_WHEEL_END);
+
+                spyOn(TransformUtil, 'applyTransform');
+                awesomeMap.handleInteractionEvent(null, { event: evt });
+
+                expect(TransformUtil.applyTransform).toHaveBeenCalledWith(
+                    awesomeMap.getTransformationPlane(),
+                    awesomeMap.getCurrentTransformState(),
+                    true /* use2d */
+                );
+            });
+
             it('should dispatch "onInteractionFinished" observable on mouse wheel end events', function() {
                 var evt = createInteractionEvent(EventTypes.MOUSE_WHEEL_END);
 
