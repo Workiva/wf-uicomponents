@@ -37,7 +37,7 @@ define(function(require) {
             return new Hammer(host, {
                 hold_threshold: 10,
                 hold_timeout: 250,
-                swipe_velocity: 0.17,
+                swipe_velocity: .7,
                 transform_min_scale: 0.05
             });
         },
