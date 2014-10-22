@@ -8,7 +8,7 @@ require([
     'wf-js-uicomponents/awesome_map/SwipeInterceptor',
     'wf-js-common/DeviceInfo',
     'wf-js-common/DOMUtil',
-    'wf-js-common/console',
+    'wf-js-common/consoleDev',
     'wf-js-common/Compatibility',
     'hammerjs.fakemultitouch',
     'hammerjs.showtouches',
