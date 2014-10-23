@@ -33,7 +33,7 @@ define(function(require) {
         name: 'swipe',
         index: 40,
         defaults: {
-            // set 0 for unlimited, but this can conflict with transform
+            // Set 0 for unlimited, but this can conflict with transform.
             swipe_max_touches  : 1,
             swipe_velocity     : 0.7
         },
@@ -45,7 +45,7 @@ define(function(require) {
                 moves.push(ev);
             }
             else if (ev.eventType === Hammer.EVENT_END) {
-                // max touches
+                // Enforce the max touchs option.
                 if (inst.options.swipe_max_touches > 0 &&
                     ev.touches.length > inst.options.swipe_max_touches) {
                     return;
@@ -60,8 +60,8 @@ define(function(require) {
                 ev.velocityY = getVelocity('y');
                 ev.direction = getDirection();
 
-                // when the distance we moved is too small we skip this gesture
-                // or we can be already in dragging
+                // If either of the velocities are greater than the
+                // configured threshold, trigger a swipe event.
                 if (ev.velocityX > inst.options.swipe_velocity ||
                     ev.velocityY > inst.options.swipe_velocity
                 ) {
