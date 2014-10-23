@@ -18,6 +18,7 @@ define(function(require) {
     'use strict';
 
     var BrowserInfo = require('wf-js-common/BrowserInfo');
+    var CustomSwipeGesture = require('wf-js-uicomponents/awesome_map/CustomSwipeGesture');
     var DestroyUtil = require('wf-js-common/DestroyUtil');
     var DOMUtil = require('wf-js-common/DOMUtil');
     var EventTypes = require('wf-js-uicomponents/awesome_map/EventTypes');
@@ -34,10 +35,10 @@ define(function(require) {
     var dependencies = {
         createHammerInstance: function(host) {
             /* jshint camelcase:false */
+            Hammer.gestures.Swipe = CustomSwipeGesture;
             return new Hammer(host, {
                 hold_threshold: 10,
                 hold_timeout: 250,
-                swipe_velocity: 0.17,
                 transform_min_scale: 0.05
             });
         },
