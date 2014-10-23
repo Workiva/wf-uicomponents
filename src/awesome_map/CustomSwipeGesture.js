@@ -3,13 +3,13 @@ define(function(require) {
 
     var Hammer = require('hammerjs');
 
-    var STACK_EVALUATION_DEPTH = 2;
+    var EVALUATION_DEPTH = 2;
     var FRICTION = 2;
-    var moveStack = [];
+    var moves = [];
 
     function getDirection() {
-        var end = moveStack[0];
-        var start = moveStack[moveStack.length - 1];
+        var start = moves[0];
+        var end = moves[moves.length - 1];
         var deltaX = Math.abs(end.deltaX - start.deltaX);
         var deltaY = Math.abs(end.deltaY - start.deltaY);
         if (deltaX >= deltaY) {
@@ -20,8 +20,8 @@ define(function(require) {
 
     function getVelocity(axis) {
         var deltaProp = axis === 'x' ? 'deltaX' : 'deltaY';
-        var end = moveStack[0];
-        var start = moveStack[moveStack.length - 1];
+        var start = moves[0];
+        var end = moves[moves.length - 1];
         var deltaDistance = end[deltaProp] - start[deltaProp];
         var deltaTime = end.timeStamp - start.timeStamp;
         return Math.abs(deltaDistance / deltaTime / FRICTION);
@@ -39,10 +39,10 @@ define(function(require) {
         },
         handler: function swipeGesture(ev, inst) {
             if (ev.eventType === Hammer.EVENT_START) {
-                moveStack = [ev, ev];
+                moves = [ev, ev];
             }
             else if (ev.eventType === Hammer.EVENT_MOVE) {
-                moveStack.unshift(ev);
+                moves.push(ev);
             }
             else if (ev.eventType === Hammer.EVENT_END) {
                 // max touches
@@ -55,7 +55,7 @@ define(function(require) {
                 // in an attempt to provide for a more "instantaneous" velocity.
                 // By default, hammer calcs velocity and direction over the
                 // entire interaction, from start to end.
-                moveStack.splice(STACK_EVALUATION_DEPTH);
+                moves.splice(0, Math.max(0, moves.length - EVALUATION_DEPTH));
                 ev.velocityX = getVelocity('x');
                 ev.velocityY = getVelocity('y');
                 ev.direction = getDirection();
