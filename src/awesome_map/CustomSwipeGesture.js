@@ -1,4 +1,5 @@
 define(function(require) {
+    /* jshint camelcase:false */
     'use strict';
 
     var Hammer = require('hammerjs');
@@ -24,7 +25,7 @@ define(function(require) {
         var end = moves[moves.length - 1];
         var deltaDistance = end[deltaProp] - start[deltaProp];
         var deltaTime = end.timeStamp - start.timeStamp;
-        return Math.abs(deltaDistance / deltaTime / FRICTION);
+        return Math.abs(deltaDistance / deltaTime);
     }
 
     // Default hammerjs Swipe gesture is here:
@@ -56,15 +57,17 @@ define(function(require) {
                 // By default, hammer calcs velocity and direction over the
                 // entire interaction, from start to end.
                 moves.splice(0, Math.max(0, moves.length - EVALUATION_DEPTH));
-                ev.velocityX = getVelocity('x');
-                ev.velocityY = getVelocity('y');
-                ev.direction = getDirection();
+                var velocityX = getVelocity('x');
+                var velocityY = getVelocity('y');
 
                 // If either of the velocities are greater than the
                 // configured threshold, trigger a swipe event.
-                if (ev.velocityX > inst.options.swipe_velocity ||
-                    ev.velocityY > inst.options.swipe_velocity
+                if (velocityX > inst.options.swipe_velocity ||
+                    velocityY > inst.options.swipe_velocity
                 ) {
+                    ev.velocityX = velocityX / FRICTION;
+                    ev.velocityY = velocityY / FRICTION;
+                    ev.direction = getDirection();
                     // trigger swipe events
                     inst.trigger(this.name, ev);
                     inst.trigger(this.name + ev.direction, ev);

@@ -2,11 +2,9 @@ define(function(require) {
     'use strict';
 
     var $ = require('jquery');
-    var BrowserInfo = require('wf-js-common/BrowserInfo');
     var console = require('wf-js-common/console');
     var DeviceInfo = require('wf-js-common/DeviceInfo');
     var DOMUtil = require('wf-js-common/DOMUtil');
-    var Hammer = require('hammerjs');
     var ItemSizeCollection = require('wf-js-uicomponents/layouts/ItemSizeCollection');
     var KeyNavigator = require('wf-js-uicomponents/scroll_list/KeyNavigator');
     var ScrollBar = require('wf-js-uicomponents/scroll_bar/ScrollBar');
