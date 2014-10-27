@@ -551,6 +551,82 @@ define(function(require) {
         },
 
         /**
+         * Given a screen position, finds the nearest position on the ScrollList
+         * item.
+         *
+         * @param  {Number} itemIndex
+         * @param  {{x: {Number}, y: {Number}}} position
+         * @return {{x: {Number}, y: {Number}}}
+         */
+        restrictPositionToItemContainer: function(itemIndex, position) {
+            var BUFFER = 1; // bump the event position 1 pixel inside the item container
+            var placeholderRenderer = this.getRenderer();
+            var placeholder = placeholderRenderer.get(itemIndex);
+            var pageElement = placeholder.contentContainer;
+            var rect = pageElement.getBoundingClientRect();
+            var adjustedposition = {
+                x: position.x,
+                y: position.y
+            };
+            if (position.x >= rect.right - BUFFER) {
+                adjustedposition.x = rect.right - BUFFER;
+            }
+            if (position.x <= rect.left + BUFFER) {
+                adjustedposition.x = rect.left + BUFFER;
+            }
+            if (position.y <= rect.top + BUFFER) {
+                adjustedposition.y = rect.top + BUFFER;
+            }
+            if (position.y >= rect.bottom + BUFFER) {
+                adjustedposition.y = rect.bottom - BUFFER;
+            }
+            return adjustedposition;
+        },
+
+        /**
+         * Given a screen position, computes the nearest item and the nearest
+         * position on that item. If the scrollList is in Peek or Single mode it
+         * finds the nearest position on the item being displayed. If the
+         * scrollList is in Flow mode it determines which item the event position
+         * is next to and calculates the nearest point on that item. If a valid
+         * location cannot be found null is returned.
+         *
+         * @param  {{x: {Number}, y: {Number}}} position
+         * @return {{x: {Number}, y: {Number}}|null}
+         */
+        restrictPositionToNearestItem: function(position) {
+            var TOLERANCE = 2;
+            var scrollMode = this.getOptions().mode;
+            var layout = this.getLayout();
+            var placeholderRenderer = this.getRenderer();
+            var placeholder;
+
+            if (scrollMode === ScrollModes.PEEK || scrollMode === ScrollModes.SINGLE) {
+                var itemIndex = layout.getCurrentItemIndex();
+                placeholder = placeholderRenderer.get(itemIndex);
+                return this.restrictPositionToItemContainer(itemIndex, position);
+            } else {
+                var itemRange = layout.getRenderedItemRange();
+                for (var i = itemRange.startIndex; i <= itemRange.endIndex; i++) {
+                    placeholder = placeholderRenderer.get(i);
+                    var el = placeholder.contentContainer;
+                    var rect = el.getBoundingClientRect();
+                    var isAboveFirstItem = (i === itemRange.startIndex &&
+                        position.y <= rect.top - TOLERANCE);
+                    var isBelowLastItem = (i === itemRange.endIndex &&
+                        position.y >= rect.bottom + TOLERANCE);
+                    var isNextToItem = (position.y >= rect.top - TOLERANCE &&
+                        position.y <= rect.bottom + TOLERANCE);
+                    if (isAboveFirstItem || isBelowLastItem || isNextToItem) {
+                        return this.restrictPositionToItemContainer(i, position);
+                    }
+                }
+            }
+
+            return null;
+        },
+
+        /**
          * Return the index of and position within the item at the given point.
          * If no item is under the given point, return false.
          *
