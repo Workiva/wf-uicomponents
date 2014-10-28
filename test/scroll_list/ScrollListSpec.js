@@ -1071,5 +1071,193 @@ define(function(require) {
                 });
             });
         });
+
+        describe('when snapping a position to a particular list item', function() {
+            var expectedBuffer = 1; // bump 1 pixel inside the container edge
+            var mockListItemElementRect;
+            function setup(scrollList) {
+                mockListItemElementRect = {
+                    left: 100,
+                    right: 950,
+                    top: 250,
+                    bottom: 1350
+                };
+                var mockContentContainer = {
+                    getBoundingClientRect: function() {
+                        return mockListItemElementRect;
+                    }
+                };
+                var mockPlaceholder = {
+                    contentContainer: mockContentContainer
+                };
+                var mockPlaceholderRenderer = {
+                    get: function() {
+                        return mockPlaceholder;
+                    }
+                };
+                spyOn(scrollList, 'getRenderer').andReturn(mockPlaceholderRenderer);
+            }
+            it('should return the original position if it is already over the item', function() {
+                testScrollList(function(scrollList) {
+                    setup(scrollList);
+                    var positionOnItem = { x: 500, y: 300 };
+                    var position = scrollList.restrictPositionToItemContainer(0, positionOnItem);
+                    expect(position.x).toEqual(positionOnItem.x);
+                    expect(position.y).toEqual(positionOnItem.y);
+                });
+            });
+            it('should return a postion inside the left edge of the item container when left of it', function() {
+                testScrollList(function(scrollList){
+                    setup(scrollList);
+                    var positionLeftOfItem = { x: 0, y: 300 };
+                    var position = scrollList.restrictPositionToItemContainer(0, positionLeftOfItem);
+                    expect(position.x).toEqual(mockListItemElementRect.left + expectedBuffer);
+                    expect(position.y).toEqual(positionLeftOfItem.y);
+                });
+            });
+            it('should return a postion inside the right edge of the item container when right of it', function() {
+                testScrollList(function(scrollList){
+                    setup(scrollList);
+                    var positionRightOfItem = { x: 1000, y: 300 };
+                    var position = scrollList.restrictPositionToItemContainer(0, positionRightOfItem);
+                    expect(position.x).toEqual(mockListItemElementRect.right - expectedBuffer);
+                    expect(position.y).toEqual(positionRightOfItem.y);
+                });
+            });
+            it('should return a postion inside the top edge of the item container when above it', function() {
+                testScrollList(function(scrollList){
+                    setup(scrollList);
+                    var positionAboveItem = { x: 500, y: 0 };
+                    var position = scrollList.restrictPositionToItemContainer(0, positionAboveItem);
+                    expect(position.x).toEqual(positionAboveItem.x);
+                    expect(position.y).toEqual(mockListItemElementRect.top + expectedBuffer);
+                });
+            });
+            it('should return a postion inside the bottom edge of the item container when below it', function() {
+                testScrollList(function(scrollList){
+                    setup(scrollList);
+                    var positionBelowItem = { x: 500, y: 1500 };
+                    var position = scrollList.restrictPositionToItemContainer(0, positionBelowItem);
+                    expect(position.x).toEqual(positionBelowItem.x);
+                    expect(position.y).toEqual(mockListItemElementRect.bottom - expectedBuffer);
+                });
+            });
+        });
+
+        describe('when snapping a postion to the nearest item container', function() {
+            describe('when in single or peek mode', function() {
+                var mockPostionOverItem;
+                var currentItemIndex = 5;
+                function setup(scrollList) {
+                    mockPostionOverItem = { x: 100, y: 100 };
+                    spyOn(scrollList, 'restrictPositionToItemContainer').andReturn(mockPostionOverItem);
+                    var mockVerticalLayout = {
+                        getCurrentItemIndex: function() {
+                            return currentItemIndex;
+                        }
+                    };
+                    spyOn(scrollList, 'getLayout').andReturn(mockVerticalLayout);
+                }
+                it('should compute a the nearest position on the current item container', function() {
+                    testScrollList({ mode: 'peek' }, function(scrollList) {
+                        setup(scrollList);
+                        var position = { x: 0, y: 0 };
+                        var positionOnItem = scrollList.restrictPositionToNearestItem(position);
+                        expect(scrollList.restrictPositionToItemContainer).toHaveBeenCalledWith(
+                            currentItemIndex, position
+                        );
+                        expect(positionOnItem).toBe(mockPostionOverItem);
+                    });
+                });
+            });
+
+            describe('when in flow mode', function() {
+                var mockPlaceholders;
+                var mockPositions = [
+                    { position: 'on item container one' },
+                    { position: 'on item container two' },
+                    { position: 'on item container three' }
+                ];
+                function createPlaceholder(left, right, top, bottom) {
+                    var mockListItemElementRect = {
+                        left: left,
+                        right: right,
+                        top: top,
+                        bottom: bottom
+                    };
+                    var mockContentContainer = {
+                        getBoundingClientRect: function() {}
+                    };
+                    spyOn(mockContentContainer, 'getBoundingClientRect').andReturn(
+                        mockListItemElementRect
+                    );
+                    var mockPlaceholder = {
+                        contentContainer: mockContentContainer
+                    };
+                    return mockPlaceholder;
+                }
+                function setup(scrollList) {
+                    var itemOnePlaceholder = createPlaceholder(10, 60, 10, 100);
+                    var itemTwoPlaceholder = createPlaceholder(10, 60, 101, 191);
+                    var itemThreePlaceholder = createPlaceholder(10, 60, 192, 283);
+                    mockPlaceholders = [
+                        itemOnePlaceholder, itemTwoPlaceholder, itemThreePlaceholder
+                    ];
+                    var mockPlaceholderRenderer = {
+                        get: function(/*itemIndex*/) {}
+                    };
+                    spyOn(mockPlaceholderRenderer, 'get').andCallFake(function(itemIndex) {
+                        return mockPlaceholders[itemIndex];
+                    });
+                    var mockVerticalLayout = {
+                        getRenderedItemRange: function() {
+                            return {
+                                startIndex: 0,
+                                endIndex: 2
+                            };
+                        }
+                    };
+                    spyOn(scrollList, 'getLayout').andReturn(mockVerticalLayout);
+                    spyOn(scrollList, 'getRenderer').andReturn(mockPlaceholderRenderer);
+                    spyOn(scrollList, 'restrictPositionToItemContainer').andCallFake(
+                        function(itemIndex) {
+                            return mockPositions[itemIndex];
+                        }
+                    );
+                }
+                it('should return a position on the first item container when event is above it', function() {
+                    testScrollList({ mode: 'flow' }, function(scrollList){
+                        setup(scrollList);
+                        var position = { x: 30, y: -5 };
+                        var updatedPosition = scrollList.restrictPositionToNearestItem(position);
+                        expect(updatedPosition).toBe(mockPositions[0]);
+                    });
+                });
+                it('should return a position on the final item container when event is below it', function() {
+                    testScrollList({ mode: 'flow' }, function(scrollList){
+                        setup(scrollList);
+                        var position = { x: 30, y: 500 };
+                        var updatedPosition = scrollList.restrictPositionToNearestItem(position);
+                        expect(updatedPosition).toBe(mockPositions[2]);
+                    });
+                });
+                it('should return a position on the item container to the left of the event', function() {
+                    testScrollList({ mode: 'flow' }, function(scrollList){
+                        setup(scrollList);
+                        var position = { x: 500, y: 150 };
+                        var updatedPosition = scrollList.restrictPositionToNearestItem(position);
+                        expect(updatedPosition).toBe(mockPositions[1]);
+                    });
+                });
+                it('should return a position on the item container to the right of the event', function() {
+                    testScrollList({ mode: 'flow' }, function(scrollList){
+                        setup(scrollList);
+                        var position = { x: -50, y: 50 };
+                        var updatedPosition = scrollList.restrictPositionToNearestItem(position);
+                        expect(updatedPosition).toBe(mockPositions[0]);
+                    });
+                });
+            });
+        });
     });
 });
