@@ -606,24 +606,33 @@ define(function(require) {
                 return this.restrictPositionToItemContainer(itemIndex, position);
             } else {
                 var itemRange = layout.getRenderedItemRange();
-                var minVerticalDistance;
-                var nearestItemIndex = -1;
+                var minDistance;
+                var nearestItemIndex;
                 for (var i = itemRange.startIndex; i <= itemRange.endIndex; i++) {
                     placeholder = placeholderRenderer.get(i);
                     var el = placeholder.contentContainer;
                     var rect = el.getBoundingClientRect();
-                    if (position.y > rect.top && position.y <= rect.bottom) {
-                        return this.restrictPositionToItemContainer(i, position);
+                    var yDistance = 0;
+                    if (position.y < rect.top || position.y > rect.bottom) {
+                        yDistance = (
+                            position.y < rect.top ? rect.top - position.y : position.y - rect.bottom
+                        );
                     }
-                    var verticalDistance = (
-                        position.y < rect.top ? rect.top - position.y : position.y - rect.bottom
-                    );
-                    if (!minVerticalDistance || verticalDistance < minVerticalDistance) {
-                        minVerticalDistance = verticalDistance;
+                    var xDistance = 0;
+                    if (position.x < rect.left || position.x > rect.right) {
+                        xDistance = (
+                            position.x < rect.left ? rect.left - position.x : position.x - rect.right
+                        );
+                    }
+                    var distance = xDistance * xDistance + yDistance * yDistance;
+                    if (i === itemRange.startIndex || distance < minDistance) {
+                        minDistance = distance;
                         nearestItemIndex = i;
                     }
                 }
-                if (nearestItemIndex > -1) {
+                if (minDistance === 0) {
+                    return position;
+                } else {
                     return this.restrictPositionToItemContainer(nearestItemIndex, position);
                 }
             }

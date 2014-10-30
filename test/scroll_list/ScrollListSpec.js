@@ -1225,6 +1225,14 @@ define(function(require) {
                         }
                     );
                 }
+                it('should return the original position when event is over an item', function() {
+                    testScrollList({ mode: 'flow' }, function(scrollList){
+                        setup(scrollList);
+                        var position = { x: 30, y: 150 };
+                        var updatedPosition = scrollList.restrictPositionToNearestItem(position);
+                        expect(updatedPosition).toBe(position);
+                    });
+                });
                 it('should return a position on the first item container when event is above it', function() {
                     testScrollList({ mode: 'flow' }, function(scrollList){
                         setup(scrollList);
