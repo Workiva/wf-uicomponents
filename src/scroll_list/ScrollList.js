@@ -595,7 +595,6 @@ define(function(require) {
          * @return {{x: {Number}, y: {Number}}|null}
          */
         restrictPositionToNearestItem: function(position) {
-            var TOLERANCE = 2;
             var scrollMode = this.getOptions().mode;
             var layout = this.getLayout();
             var placeholderRenderer = this.getRenderer();
@@ -607,19 +606,25 @@ define(function(require) {
                 return this.restrictPositionToItemContainer(itemIndex, position);
             } else {
                 var itemRange = layout.getRenderedItemRange();
+                var minVerticalDistance;
+                var nearestItemIndex = -1;
                 for (var i = itemRange.startIndex; i <= itemRange.endIndex; i++) {
                     placeholder = placeholderRenderer.get(i);
                     var el = placeholder.contentContainer;
                     var rect = el.getBoundingClientRect();
-                    var isAboveFirstItem = (i === itemRange.startIndex &&
-                        position.y <= rect.top - TOLERANCE);
-                    var isBelowLastItem = (i === itemRange.endIndex &&
-                        position.y >= rect.bottom + TOLERANCE);
-                    var isNextToItem = (position.y >= rect.top - TOLERANCE &&
-                        position.y <= rect.bottom + TOLERANCE);
-                    if (isAboveFirstItem || isBelowLastItem || isNextToItem) {
+                    if (position.y > rect.top && position.y <= rect.bottom) {
                         return this.restrictPositionToItemContainer(i, position);
                     }
+                    var verticalDistance = (
+                        position.y < rect.top ? rect.top - position.y : position.y - rect.bottom
+                    );
+                    if (!minVerticalDistance || verticalDistance < minVerticalDistance) {
+                        minVerticalDistance = verticalDistance;
+                        nearestItemIndex = i;
+                    }
+                }
+                if (nearestItemIndex > -1) {
+                    return this.restrictPositionToItemContainer(nearestItemIndex, position);
                 }
             }
 
