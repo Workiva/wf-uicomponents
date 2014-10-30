@@ -613,17 +613,20 @@ define(function(require) {
                     var el = placeholder.contentContainer;
                     var rect = el.getBoundingClientRect();
                     var yDistance = 0;
-                    if (position.y < rect.top || position.y > rect.bottom) {
-                        yDistance = (
-                            position.y < rect.top ? rect.top - position.y : position.y - rect.bottom
-                        );
+                    if (position.y < rect.top) {
+                        yDistance = rect.top - position.y;
+                    } else if (position.y > rect.bottom) {
+                        yDistance = position.y - rect.bottom;
                     }
                     var xDistance = 0;
-                    if (position.x < rect.left || position.x > rect.right) {
-                        xDistance = (
-                            position.x < rect.left ? rect.left - position.x : position.x - rect.right
-                        );
+                    if (position.x < rect.left) {
+                        xDistance = rect.left - position.x;
+                    } else if (position.x > rect.right) {
+                        xDistance = position.x - rect.right;
                     }
+                    // Distance here is the square of the distance from the position
+                    // to the item. We'll compare the squared distance so we don't
+                    // have to take the square root here.
                     var distance = xDistance * xDistance + yDistance * yDistance;
                     if (i === itemRange.startIndex || distance < minDistance) {
                         minDistance = distance;
