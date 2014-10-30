@@ -1197,9 +1197,9 @@ define(function(require) {
                     return mockPlaceholder;
                 }
                 function setup(scrollList) {
-                    var itemOnePlaceholder = createPlaceholder(10, 60, 10, 100);
-                    var itemTwoPlaceholder = createPlaceholder(10, 60, 101, 191);
-                    var itemThreePlaceholder = createPlaceholder(10, 60, 192, 283);
+                    var itemOnePlaceholder = createPlaceholder(10, 60, 10, 90);
+                    var itemTwoPlaceholder = createPlaceholder(10, 60, 110, 190);
+                    var itemThreePlaceholder = createPlaceholder(10, 60, 210, 290);
                     mockPlaceholders = [
                         itemOnePlaceholder, itemTwoPlaceholder, itemThreePlaceholder
                     ];
@@ -1225,6 +1225,14 @@ define(function(require) {
                         }
                     );
                 }
+                it('should return the original position when event is over an item', function() {
+                    testScrollList({ mode: 'flow' }, function(scrollList){
+                        setup(scrollList);
+                        var position = { x: 30, y: 150 };
+                        var updatedPosition = scrollList.restrictPositionToNearestItem(position);
+                        expect(updatedPosition).toBe(position);
+                    });
+                });
                 it('should return a position on the first item container when event is above it', function() {
                     testScrollList({ mode: 'flow' }, function(scrollList){
                         setup(scrollList);
@@ -1255,6 +1263,22 @@ define(function(require) {
                         var position = { x: -50, y: 50 };
                         var updatedPosition = scrollList.restrictPositionToNearestItem(position);
                         expect(updatedPosition).toBe(mockPositions[0]);
+                    });
+                });
+                it('should return a position on the nearer container below the event', function() {
+                    testScrollList({ mode: 'flow' }, function(scrollList){
+                        setup(scrollList);
+                        var position = { x: 30, y: 201 };
+                        var updatedPosition = scrollList.restrictPositionToNearestItem(position);
+                        expect(updatedPosition).toBe(mockPositions[2]);
+                    });
+                });
+                it('should return a position on the nearer container above the event', function() {
+                    testScrollList({ mode: 'flow' }, function(scrollList){
+                        setup(scrollList);
+                        var position = { x: 30, y: 199 };
+                        var updatedPosition = scrollList.restrictPositionToNearestItem(position);
+                        expect(updatedPosition).toBe(mockPositions[1]);
                     });
                 });
             });

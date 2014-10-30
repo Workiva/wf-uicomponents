@@ -595,7 +595,6 @@ define(function(require) {
          * @return {{x: {Number}, y: {Number}}|null}
          */
         restrictPositionToNearestItem: function(position) {
-            var TOLERANCE = 2;
             var scrollMode = this.getOptions().mode;
             var layout = this.getLayout();
             var placeholderRenderer = this.getRenderer();
@@ -607,19 +606,37 @@ define(function(require) {
                 return this.restrictPositionToItemContainer(itemIndex, position);
             } else {
                 var itemRange = layout.getRenderedItemRange();
+                var minDistance;
+                var nearestItemIndex;
                 for (var i = itemRange.startIndex; i <= itemRange.endIndex; i++) {
                     placeholder = placeholderRenderer.get(i);
                     var el = placeholder.contentContainer;
                     var rect = el.getBoundingClientRect();
-                    var isAboveFirstItem = (i === itemRange.startIndex &&
-                        position.y <= rect.top - TOLERANCE);
-                    var isBelowLastItem = (i === itemRange.endIndex &&
-                        position.y >= rect.bottom + TOLERANCE);
-                    var isNextToItem = (position.y >= rect.top - TOLERANCE &&
-                        position.y <= rect.bottom + TOLERANCE);
-                    if (isAboveFirstItem || isBelowLastItem || isNextToItem) {
-                        return this.restrictPositionToItemContainer(i, position);
+                    var yDistance = 0;
+                    if (position.y < rect.top) {
+                        yDistance = rect.top - position.y;
+                    } else if (position.y > rect.bottom) {
+                        yDistance = position.y - rect.bottom;
                     }
+                    var xDistance = 0;
+                    if (position.x < rect.left) {
+                        xDistance = rect.left - position.x;
+                    } else if (position.x > rect.right) {
+                        xDistance = position.x - rect.right;
+                    }
+                    // Distance here is the square of the distance from the position
+                    // to the item. We'll compare the squared distance so we don't
+                    // have to take the square root here.
+                    var distance = xDistance * xDistance + yDistance * yDistance;
+                    if (i === itemRange.startIndex || distance < minDistance) {
+                        minDistance = distance;
+                        nearestItemIndex = i;
+                    }
+                }
+                if (minDistance === 0) {
+                    return position;
+                } else {
+                    return this.restrictPositionToItemContainer(nearestItemIndex, position);
                 }
             }
 
