@@ -167,6 +167,7 @@ define(function(require) {
             expect(listMap.transform).toHaveBeenCalled();
         });
 
+        // TODO: Fix this test so it reliably passes in OS X Safari
         xit('should adjust the position of the scrollbar when the scrollList translation changes', function() {
             initialize();
             spyOn(scrollBar, '_placeScrollBar');
