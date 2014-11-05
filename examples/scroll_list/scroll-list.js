@@ -1,18 +1,14 @@
 define(function(require) {
     'use strict';
 
-    var Hammer = require('hammerjs');
-    require('hammerjs.fakemultitouch');
-    require('hammerjs.showtouches');
     var $ = require('jquery');
-    var ScrollBar = require('wf-js-uicomponents/scroll_bar/ScrollBar');
-    var ScrollList = require('wf-js-uicomponents/scroll_list/ScrollList');
-    var KeyNavigator = require('wf-js-uicomponents/scroll_list/KeyNavigator');
-    var ItemSizeCollection = require('wf-js-uicomponents/layouts/ItemSizeCollection');
-    var BrowserInfo = require('wf-js-common/BrowserInfo');
     var console = require('wf-js-common/console');
     var DeviceInfo = require('wf-js-common/DeviceInfo');
     var DOMUtil = require('wf-js-common/DOMUtil');
+    var ItemSizeCollection = require('wf-js-uicomponents/layouts/ItemSizeCollection');
+    var KeyNavigator = require('wf-js-uicomponents/scroll_list/KeyNavigator');
+    var ScrollBar = require('wf-js-uicomponents/scroll_bar/ScrollBar');
+    var ScrollList = require('wf-js-uicomponents/scroll_list/ScrollList');
     var Url = require('wf-js-common/Url');
     var Utils = require('wf-js-common/Utils');
 
@@ -200,15 +196,6 @@ define(function(require) {
     });
 
     scrollList.render();
-
-    //---------------------------------------------------------
-    // Hammer touch simulation
-    //---------------------------------------------------------
-
-    if (BrowserInfo.getBrowser() !== 'MSIE') {
-        Hammer.plugins.showTouches();
-        Hammer.plugins.fakeMultitouch();
-    }
 
     //---------------------------------------------------------
     // UI control wiring

@@ -178,6 +178,27 @@ define(function(require) {
             expect(scrollBarContainerEl).not.toBe(undefined);
         });
 
+        it('should scroll to position when the scrollBar is moved', function() {
+            initialize();
+            var scrollBarEl = document.getElementById('scroll-bar');
+            var e1 = document.createEvent('Event');
+            e1.initEvent('mousedown', true, false);
+            var e2 = document.createEvent('Event');
+            e2.initEvent('mousemove', true, false);
+            var e3 = document.createEvent('Event');
+            e3.initEvent('mouseup', true, false);
+
+            var listMap = scrollList.getListMap();
+            spyOn(listMap, 'transform');
+
+            scrollBarEl.dispatchEvent(e1);
+            scrollBarEl.dispatchEvent(e2);
+            scrollBarEl.dispatchEvent(e3);
+
+            expect(listMap.transform).toHaveBeenCalled();
+        });
+
+        // TODO: Fix this test so it reliably passes in OS X Safari
         xit('should adjust the position of the scrollbar when the scrollList translation changes', function() {
             initialize();
             spyOn(scrollBar, '_placeScrollBar');

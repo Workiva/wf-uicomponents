@@ -85,9 +85,6 @@ define(function(require) {
                 it('should set hold timeout to 250 ms', function() {
                     expect(hammer.options.hold_timeout).toBe(250);
                 });
-                it('should set swipe velocity to 1', function() {
-                    expect(hammer.options.swipe_velocity).toBe(1);
-                });
                 it('should set transform min scale to 0.05', function() {
                     expect(hammer.options.transform_min_scale).toBe(0.05);
                 });
