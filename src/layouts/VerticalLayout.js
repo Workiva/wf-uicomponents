@@ -308,6 +308,13 @@ define(function(require) {
                 this._invalidatePosition();
             }
 
+            var newLeft = scrollPosition.left;
+            var oldLeft = this._scrollPosition.left;
+
+            if (newLeft !== oldLeft) {
+                this._invalidatePosition();
+            }
+
             this._scrollPosition = scrollPosition;
         },
 
