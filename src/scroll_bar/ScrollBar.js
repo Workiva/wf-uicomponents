@@ -21,6 +21,8 @@ define(function(require) {
     var EventTypes = require('wf-js-uicomponents/awesome_map/EventTypes');
     var DestroyUtil = require('wf-js-common/DestroyUtil');
 
+    var DEFAULT_MIN_SIZE = 16;
+
     /**
      * Creates a new ScrollBar with the given ScrollList and options.
      *
@@ -42,9 +44,13 @@ define(function(require) {
      *        An object with optional classes and ids to be placed on the
      *        scrollbarEL and scrollbarContainerEL.
      *
-     * @param {number} options.minHeight
-     *        The minimum height, in pixels, of the ScrollBar
-     *        If not provided, the minHeight will default to 16
+     * @param {number} options.minSize
+     *        The minimum height or width, in pixels, of the ScrollBar
+     *        If not provided, the minSize will default to 16
+     *
+     * @param {string} options.orientation
+     *        The orientation of the scrollbar, can be either 'horizontal'
+     *        or 'vertical'. Defaults to 'vertical'.
      *
      *
      * @example
@@ -56,14 +62,14 @@ define(function(require) {
      * options.scrollbarClass = "scrollbar";
      * options.scrollbarContainerId = "scrollbar-container";
      * options.scrollbarContainerClass = "scrollbar-container";
-     * options.minHeight = 8;
+     * options.minSize = 8;
+     * options.orientation = 'vertical';
      *
      * scrollBar = new ScrollBar(scrollList, parent, options);
      */
 
     var ScrollBar = function(scrollList, parent, options) {
-        var offset;
-        var that = this;
+        var self = this;
 
         if (!scrollList) {
             throw new Error('ScrollBar#ScrollBar: scrollList is required');
@@ -81,6 +87,8 @@ define(function(require) {
 
         this._options = options;
 
+        this._isVertical = this._options.orientation === 'vertical';
+
         this._disposed = false;
 
         this._layout = scrollList.getLayout();
@@ -88,17 +96,21 @@ define(function(require) {
         this._TOTAL_ITEMS = scrollList.getItemSizeCollection ? scrollList.getItemSizeCollection()._items.length :
                             scrollList.getItemMetadata().length;
 
-        this._visibleHeight = this._layout.getVisiblePosition().bottom - this._layout.getVisiblePosition().top;
-
-        this._virtualHeight = this._layout.getSize().height - this._visibleHeight;
-
-        this._scrollableVirtualHeight = this._layout.getSize().height;
+        var visiblePosition = this._layout.getVisiblePosition();
+        var size = this._layout.getSize();
+        if (this._isVertical) {
+            this._visibleSize = visiblePosition.bottom - visiblePosition.top;
+            this._virtualSize = size.height - this._visibleSize;
+            this._scrollableVirtualSize = size.height;
+        } else {
+            this._visibleSize = visiblePosition.right - visiblePosition.left;
+            this._virtualSize = size.width - this._visibleSize;
+            this._scrollableVirtualSize = size.width;
+        }
 
         this._listMap = this._scrollList.getListMap();
 
         this._setUpDOM();
-
-        this._availableScrollbarHeight = this._visibleHeight - this._scrollbarHeight;
 
         // Set scrollbarScrolling to initially false
         this._scrollbarScrolling = false;
@@ -106,38 +118,38 @@ define(function(require) {
         this._clickOffset = null;
 
         // Get the initial position, in case it's not at 0, and set the scrollbar position
-        that._placeScrollBar(that, that._elements.scrollbar);
+        self._placeScrollBar();
 
         // Match the scroll bar positioning to the users scrolling
         this._listMap.onTranslationChanged(function() {
             requestAnimFrame(function() {
-                if (!that._scrollbarScrolling && !that._disposed) {
-                    that._placeScrollBar();
+                if (!self._scrollbarScrolling && !self._disposed) {
+                    self._placeScrollBar();
                 }
             });
         });
 
         // Make necessary adjustments when the users zooms in or out
         this._listMap.onScaleChanged(function() {
-            that._adjustScale();
-            that._placeScrollBar();
+            self._adjustScale();
+            self._placeScrollBar();
         });
 
         this._scrollList.onItemsInserted(function() {
-            that._TOTAL_ITEMS = scrollList.getItemSizeCollection()._items.length;
-            that._adjustScale();
-            that._placeScrollBar();
+            self._TOTAL_ITEMS = scrollList.getItemSizeCollection()._items.length;
+            self._adjustScale();
+            self._placeScrollBar();
         });
 
         // Make adjustments when the scrollList is resized
         this._scrollList.onInteraction(function(scrollList, args) {
             if (args.event.type === EventTypes.RESIZE) {
-                that._resize = true;
+                self._resize = true;
             }
 
-            if (args.event.type === EventTypes.RELEASE && that._resize === true) {
-                that._adjustScale();
-                that._resize = false;
+            if (args.event.type === EventTypes.RELEASE && self._resize === true) {
+                self._adjustScale();
+                self._resize = false;
             }
         });
         
@@ -151,26 +163,31 @@ define(function(require) {
 
         this._mouseupHandler = function() {
             // _stopUpdatingScrollbar unbinds the 'mousemove' and 'mouseup' handlers from the document
-            that._stopUpdatingScrollbar();
+            self._stopUpdatingScrollbar();
         };
 
         this._mousemoveHandler = function(e) {
-            that._updateScrollBar(e, that._clickOffset);
+            self._updateScrollBar(e, self._clickOffset);
         };
 
         // Attach handlers for scrolling the ScrollBar
         this._mousedownHandler = function(event) {
             // _mouseupHandler will ensure that, in the event that the mousemove event is not caught,
             // the event handlers will be unbound before being bound again.
-            that._mouseupHandler();
+            self._mouseupHandler();
 
-            offset = that._elements.scrollbar.offsetTop + that._elements.scrollbarContainer.offsetTop;
-            that._clickOffset = event.clientY - offset + that._elements.scrollbarContainer.offsetTop;
-            that._scrollbarScrolling = true;
+            var offset;
+            if (self._isVertical) {
+                offset = self._elements.scrollbar.offsetTop + self._elements.scrollbarContainer.offsetTop;
+                self._clickOffset = event.clientY - offset + self._elements.scrollbarContainer.offsetTop;
+            } else {
+                offset = self._elements.scrollbar.offsetLeft + self._elements.scrollbarContainer.offsetLeft;
+                self._clickOffset = event.clientX - offset + self._elements.scrollbarContainer.offsetLeft;
+            }
+            self._scrollbarScrolling = true;
 
-            document.addEventListener('mousemove', that._mousemoveHandler);
-
-            document.addEventListener('mouseup', that._mouseupHandler);
+            document.addEventListener('mousemove', self._mousemoveHandler);
+            document.addEventListener('mouseup', self._mouseupHandler);
         };
 
         this._elements.scrollbar.addEventListener('mousedown', this._mousedownHandler);
@@ -204,76 +221,110 @@ define(function(require) {
          * @private
          */
         _setUpDOM: function() {
-            // Create the scrollbar's container
-            var scrollbarContainerEL = document.createElement('div');
-            var scrollbarEL = document.createElement('div');
-
-            // Set the given classes and ids scrollbar and it's container
+            var scrollbarEl = document.createElement('div');
             if (this._options.scrollbarId) {
-                scrollbarEL.setAttribute('id', this._options.scrollbarId);
+                scrollbarEl.setAttribute('id', this._options.scrollbarId);
             }
             if (this._options.scrollbarClass) {
-                scrollbarEL.className += ' ' + this._options.scrollbarClass;
+                scrollbarEl.className += ' ' + this._options.scrollbarClass;
             }
+
+            var scrollbarContainerEl = document.createElement('div');
             if (this._options.scrollbarContainerId) {
-                scrollbarContainerEL.setAttribute('id', this._options.scrollbarContainerId);
+                scrollbarContainerEl.setAttribute('id', this._options.scrollbarContainerId);
             }
             if (this._options.scrollbarContainerClass) {
-                scrollbarContainerEL.className += ' ' + this._options.scrollbarContainerClass;
+                scrollbarContainerEl.className += ' ' + this._options.scrollbarContainerClass;
             }
 
             // Append the scrollbar and it's parent container to the given parent element
-            scrollbarContainerEL.appendChild(scrollbarEL);
-            this._parent.appendChild(scrollbarContainerEL);
+            scrollbarContainerEl.appendChild(scrollbarEl);
+            this._parent.appendChild(scrollbarContainerEl);
 
-            this._elements = { scrollbar: scrollbarEL, scrollbarContainer: scrollbarContainerEL };
+            this._elements = { scrollbar: scrollbarEl, scrollbarContainer: scrollbarContainerEl };
 
             this._adjustScale();
 
-            // Set the container height to the viewport height
-            scrollbarContainerEL.style.height = this._layout.getViewportSize().height + 'px';
-            // Set the scrollbar height
-            scrollbarEL.style.height = this._scrollbarHeight + 'px';
+            // Set the container size to the viewport size and the scroll bar size to the set size.
+            var viewportSize = this._layout.getViewportSize();
+            if (this._isVertical) {
+                scrollbarContainerEl.style.height = viewportSize.height + 'px';
+                scrollbarEl.style.height = this._scrollbarSize + 'px';
+            } else {
+                scrollbarContainerEl.style.width = viewportSize.width + 'px';
+                scrollbarEl.style.width = this._scrollbarSize + 'px';
+            }
         },
 
         /**
          * Position the scrollbar based on the current position of the ScrollList
          */
         _placeScrollBar: function() {
-            var currentPosition = this._layout.getVisiblePosition().top;
-            var translatedPosition = Math.round(this._availableScrollbarHeight / this._virtualHeight * currentPosition);
+            var visiblePosition = this._layout.getVisiblePosition();
+            var currentPosition;
+            if (this._isVertical) {
+                currentPosition = visiblePosition.top;
+            } else {
+                currentPosition = visiblePosition.left;
+            }
+
+            var translatedPosition = Math.round(
+                    this._availableScrollbarSize / this._virtualSize * currentPosition);
             translatedPosition = Math.max(0, translatedPosition);
-            translatedPosition = Math.min(translatedPosition, this._availableScrollbarHeight);
-            this._elements.scrollbar.style.top = translatedPosition + 'px';
+            translatedPosition = Math.min(translatedPosition, this._availableScrollbarSize);
+
+            if (this._isVertical) {
+                this._elements.scrollbar.style.top = translatedPosition + 'px';
+            } else {
+                this._elements.scrollbar.style.left = translatedPosition + 'px';
+            }
         },
 
         /**
          * Position the scrollbar based on the position of a click event
          */
         _updateScrollBar: function(event, clickOffset) {
-            var scrollbarPos = Math.max(0, event.clientY - clickOffset);
-            var scrollListPos = scrollbarPos;
+            var scrollbarPos;
+            if (this._isVertical) {
+                scrollbarPos = Math.max(0, event.clientY - clickOffset);
+            } else {
+                scrollbarPos = Math.max(0, event.clientX - clickOffset);
+            }
             // Don't go past the bounds of the scrollbar container
-            scrollbarPos = Math.min(scrollbarPos, this._availableScrollbarHeight);
-            this._elements.scrollbar.style.top = scrollbarPos + 'px';
+            scrollbarPos = Math.min(scrollbarPos, this._availableScrollbarSize);
 
+            if (this._isVertical) {
+                this._elements.scrollbar.style.top = scrollbarPos + 'px';
+            } else {
+                this._elements.scrollbar.style.left = scrollbarPos + 'px';
+            }
+
+            var scrollListPos = scrollbarPos;
             // Use the ratio of scrollbar position inside the scrolling area to calculate
             // the current item we should be interested in.
-            var positionOfInterest = (scrollListPos * this._scale / this._availableScrollbarHeight) * this._virtualHeight;
-
+            var positionOfInterest = (scrollListPos * this._scale / this._availableScrollbarSize) * this._virtualSize;
             // Ensure that positionOfInterest isn't undefined.
             if (!positionOfInterest) {
                 positionOfInterest = 0;
             }
-            positionOfInterest = Math.min(positionOfInterest, this._virtualHeight * this._scale);
+            positionOfInterest = Math.min(positionOfInterest, this._virtualSize * this._scale);
 
-            var x = this._listMap.getCurrentTransformState().translateX;
-
-            this._listMap.transform({
-                x: x,
-                y: -positionOfInterest,
-                scale: this._scale
-            });
+            var transformState = this._listMap.getCurrentTransformState();
+            if (this._isVertical) {
+                var x = transformState.translateX;
+                this._listMap.transform({
+                    x: x,
+                    y: -positionOfInterest,
+                    scale: this._scale
+                });
+            } else {
+                var y = transformState.translateY;
+                this._listMap.transform({
+                    x: -positionOfInterest,
+                    y: y,
+                    scale: this._scale
+                });
+            }
 
             this._scrollList.render();
         },
@@ -291,29 +342,60 @@ define(function(require) {
         /**
          * Calculate the scroll bar height based on the viewport height and the scaled virtual height
          */
-        _calculateScrollBarHeight: function() {
+        _calculateScrollBarSize: function() {
             // Calculate the size of the scrollbar depending on the virtual height
-            // The scrollbar shouldn't be shorter than MIN_HEIGHT
-            var MIN_HEIGHT = this._options.minHeight || 8;
-            var scrollBarHeight = Math.max(MIN_HEIGHT, (this._visibleHeight / this._scrollableVirtualHeight) * this._layout.getViewportSize().height);
-            if (scrollBarHeight >= this._layout.getViewportSize().height) {
-                scrollBarHeight = 0;
+            // The scrollbar shouldn't be shorter than MIN_SIZE
+            var MIN_SIZE = this._options.minSize || DEFAULT_MIN_SIZE;
+
+            var viewportSize = this._layout.getViewportSize();
+            var scrollBarSize;
+            if (this._isVertical) {
+                scrollBarSize = Math.max(
+                        MIN_SIZE, (this._visibleSize / this._scrollableVirtualSize) * viewportSize.height);
+                if (scrollBarSize >= viewportSize.height) {
+                    scrollBarSize = 0;
+                }
+            } else {
+                scrollBarSize = Math.max(
+                        MIN_SIZE, (this._visibleSize / this._scrollableVirtualSize) * viewportSize.width);
+                if (scrollBarSize >= viewportSize.width) {
+                    scrollBarSize = 0;
+                }
             }
-            return scrollBarHeight;
+            return scrollBarSize;
         },
 
         /**
          * Scale the virtual height and re-calculate the scroll bar height
          */
         _adjustScale: function() {
-            this._scale = this._listMap.getCurrentTransformState().scale;
-            this._visibleHeight = this._layout.getVisiblePosition().bottom - this._layout.getVisiblePosition().top;
-            this._virtualHeight = this._layout.getSize().height - this._visibleHeight;
-            this._scrollableVirtualHeight = this._layout.getSize().height;
-            this._scrollbarHeight = this._calculateScrollBarHeight();
-            this._elements.scrollbar.style.height = this._scrollbarHeight + 'px';
-            this._elements.scrollbarContainer.style.height = this._layout.getViewportSize().height + 'px';
-            this._availableScrollbarHeight = this._layout.getViewportSize().height - this._scrollbarHeight;
+            var transformState = this._listMap.getCurrentTransformState();
+            var visiblePosition = this._layout.getVisiblePosition();
+            var size = this._layout.getSize();
+            var viewportSize = this._layout.getViewportSize();
+
+            this._scale = transformState.scale;
+            
+            if (this._isVertical) {
+                this._visibleSize = visiblePosition.bottom - visiblePosition.top;
+                this._virtualSize = size.height - this._visibleSize;
+                this._scrollableVirtualSize = size.height;
+            } else {
+                this._visibleSize = visiblePosition.right - visiblePosition.left;
+                this._virtualSize = size.width - this._visibleSize;
+                this._scrollableVirtualSize = size.width;
+            }
+            this._scrollbarSize = this._calculateScrollBarSize();
+
+            if (this._isVertical) {
+                this._elements.scrollbar.style.height = this._scrollbarSize + 'px';
+                this._elements.scrollbarContainer.style.height = viewportSize.height + 'px';
+                this._availableScrollbarSize = viewportSize.height - this._scrollbarSize;
+            } else {
+                this._elements.scrollbar.style.width = this._scrollbarSize + 'px';
+                this._elements.scrollbarContainer.style.width = viewportSize.width + 'px';
+                this._availableScrollbarSize = viewportSize.width - this._scrollbarSize;
+            }
         }
 
     };
