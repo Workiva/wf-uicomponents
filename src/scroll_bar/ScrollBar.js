@@ -87,7 +87,7 @@ define(function(require) {
 
         this._options = options;
 
-        this._isVertical = this._options.orientation === 'vertical';
+        this._isVertical = !(this._options.orientation === 'horizontal');
 
         this._disposed = false;
 
@@ -199,6 +199,14 @@ define(function(require) {
         //---------------------------------------------------------
         // Public methods
         //---------------------------------------------------------
+
+        /**
+         * Find out whether the scrollbar is vertical.
+         * @return bool
+         */
+        isVertical: function() {
+            return this._isVertical;
+        },
 
         /**
          * Destruct the ScrollBar created HTML elements
