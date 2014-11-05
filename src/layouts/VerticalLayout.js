@@ -629,11 +629,12 @@ define(function(require) {
         },
 
         /**
-         * Gets the top, bottom and center of the visible range of the list,
-         * based on the current scroll position.
+         * Gets the top, bottom and center of the visible range of the list, as
+         * well as the left and right, based on the current scroll position. We
+         * provide left and right to allow horizontal scrolling.
          *
          * @method VerticalLayout#getVisiblePosition
-         * @return {{ top: number, bottom: number, center: number }}
+         * @return {{ top: number, bottom: number, center: number, left: number, right: number }}
          */
         getVisiblePosition: function() {
             if (this._cache.visiblePosition) {
@@ -642,13 +643,17 @@ define(function(require) {
 
             var result;
             var scrollTop = this._scrollPosition.top;
+            var scrollLeft = this._scrollPosition.left;
             var viewportHeight = this.getViewportSize().height;
+            var viewportWidth = this.getViewportSize().width;
 
             // Cache and return the visible position.
             result = {
                 top: this._unscale(scrollTop),
                 bottom: this._unscale(scrollTop + viewportHeight),
-                center: this._unscale(scrollTop + viewportHeight / 2)
+                center: this._unscale(scrollTop + viewportHeight / 2),
+                left: this._unscale(scrollLeft),
+                right: this._unscale(scrollLeft + viewportWidth)
             };
             this._cache.visiblePosition = result;
             return result;
