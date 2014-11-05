@@ -24,7 +24,7 @@ define(function(require) {
 
     describe('ScrollBar', function() {
 
-        var itemSizeCollection, scrollList, scrollBar, parentEl, options, initialize;
+        var itemSizeCollection, scrollList, scrollBar, parentEl, options;
         var $parent;
 
         itemSizeCollection = new ItemSizeCollection({
@@ -45,7 +45,7 @@ define(function(require) {
             options.orientation = orientation;
 
             scrollBar = new ScrollBar(scrollList, parentEl, options);
-        };
+        }
 
         function checkScrollBarAtBottom () {
             var scrollBarEL = document.getElementById('scroll-bar');
