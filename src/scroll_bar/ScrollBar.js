@@ -87,7 +87,7 @@ define(function(require) {
 
         this._options = options;
 
-        this._isVertical = !(this._options.orientation === 'horizontal');
+        this._isVertical = this._options.orientation === 'horizontal' ? false : true;
 
         this._disposed = false;
 
