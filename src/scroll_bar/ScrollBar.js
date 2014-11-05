@@ -172,6 +172,9 @@ define(function(require) {
 
         // Attach handlers for scrolling the ScrollBar
         this._mousedownHandler = function(event) {
+            // Prevent the event from bubbling so that we don't end up with
+            // weird selections all over the page.
+            event.preventDefault();
             // _mouseupHandler will ensure that, in the event that the mousemove event is not caught,
             // the event handlers will be unbound before being bound again.
             self._mouseupHandler();
