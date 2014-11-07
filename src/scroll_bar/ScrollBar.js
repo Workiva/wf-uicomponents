@@ -418,13 +418,13 @@ define(function(require) {
             if (this._isVertical) {
                 this._viewportSize = viewportSize.height;
                 this._visibleSize = visiblePosition.bottom - visiblePosition.top;
-                this._virtualSize = layoutSize.height - this._visibleSize;
                 this._layoutSize = layoutSize.height;
+                this._virtualSize = this._layoutSize - this._visibleSize;
             } else {
                 this._viewportSize = viewportSize.width;
                 this._visibleSize = visiblePosition.right - visiblePosition.left;
-                this._virtualSize = layoutSize.width - this._visibleSize;
                 this._layoutSize = layoutSize.width;
+                this._virtualSize = this._layoutSize - this._visibleSize;
             }
         }
 
