@@ -97,14 +97,14 @@ define(function(require) {
         this._resize = false;
         this._disposed = false;
 
+        this._setupDOM();
+        this._placeScrollBar();
+
         // The current item map, used in peek and single modes.
         this._itemMap = self._scrollList.getCurrentItemMap();
         this._scrollList.onCurrentItemChanged(function() {
             self._itemMap = self._scrollList.getCurrentItemMap();
         });
-
-        this._setUpDOM();
-        this._placeScrollBar();
 
         // Match the scroll bar positioning to the users scrolling
         this._listMap.onTranslationChanged(function() {
@@ -115,13 +115,15 @@ define(function(require) {
 
         // Make necessary adjustments when the users zooms in or out
         this._listMap.onScaleChanged(function() {
-            self._adjustScale();
+            self._cacheDimensions();
+            self._setTrackSize();
+            self._setBarSize();
             self._placeScrollBar();
         });
 
         // Adjust sizes and bar when items are inserted
         this._scrollList.onItemsInserted(function() {
-            self._adjustScale();
+            self._cacheDimensions();
             self._placeScrollBar();
         });
 
@@ -132,7 +134,9 @@ define(function(require) {
             }
 
             if (args.event.type === EventTypes.RELEASE && self._resize === true) {
-                self._adjustScale();
+                self._cacheDimensions();
+                self._setTrackSize();
+                self._setBarSize();
                 self._resize = false;
             }
         });
@@ -292,24 +296,13 @@ define(function(require) {
             } else {
                 this._elements.scrollbarContainer.style.width = trackSize + 'px';
             }
-
-            // Reset the bar position and size now that the track size has
-            // changed.
-            this._setBarPosition();
-            this._setBarSize();
-        },
-
-        _render: function() {
-            this._setTrackSize();
-            this._setBarPosition();
-            this._setBarSize();
         },
 
         /**
          * Initialize the HTML elements used by this instance of ScrollBar
          * @private
          */
-        _setUpDOM: function() {
+        _setupDOM: function() {
             var scrollbarEl = document.createElement('div');
             if (this._options.scrollbarId) {
                 scrollbarEl.setAttribute('id', this._options.scrollbarId);
@@ -334,10 +327,10 @@ define(function(require) {
             this._elements = { scrollbar: scrollbarEl, scrollbarContainer: scrollbarContainerEl };
 
             // Compute scale and size attributes
-            this._adjustScale();
+            this._cacheDimensions();
 
-            // Update DOM elements
-            this._render();
+            this._setTrackSize();
+            this._setBarSize();
         },
 
         /**
@@ -414,7 +407,7 @@ define(function(require) {
         /**
          * Scale the virtual height and re-calculate the scroll bar height
          */
-        _adjustScale: function() {
+        _cacheDimensions: function() {
             var transformState = this._listMap.getCurrentTransformState();
             this._scale = transformState.scale;
 
@@ -433,9 +426,6 @@ define(function(require) {
                 this._virtualSize = layoutSize.width - this._visibleSize;
                 this._layoutSize = layoutSize.width;
             }
-
-            // Update DOM elements
-            this._render();
         }
 
     };
