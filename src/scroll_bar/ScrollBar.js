@@ -17,7 +17,6 @@
 define(function(require) {
     'use strict';
 
-    var requestAnimFrame = require('wf-js-common/requestAnimationFrame');
     var EventTypes = require('wf-js-uicomponents/awesome_map/EventTypes');
     var DestroyUtil = require('wf-js-common/DestroyUtil');
 
