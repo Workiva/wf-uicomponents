@@ -192,7 +192,6 @@ define(function(require) {
         };
 
         this._elements.scrollbar.addEventListener('mousedown', this._mousedownHandler);
-
     };
 
     ScrollBar.prototype = {
@@ -263,7 +262,7 @@ define(function(require) {
             var minSize = this._options.minSize || DEFAULT_MIN_SIZE;
             var barSize = Math.max(
                     minSize,
-                    (this._visibleSize / this._virtualSize) * this._viewportSize);
+                    (this._visibleSize / this._layoutSize) * this._viewportSize);
             if (barSize >= this._viewportSize) {
                 barSize = 0;
             }
@@ -273,10 +272,6 @@ define(function(require) {
             if (this._isVertical) {
                 this._elements.scrollbar.style.height = barSize + 'px';
             } else {
-                console.log('_visibleSize =', this._visibleSize);
-                console.log('_virtualSize =', this._virtualSize);
-                console.log('viewportSize =', this._viewportSize);
-                console.log('barSize =', barSize);
                 this._elements.scrollbar.style.width = barSize + 'px';
             }
         },
