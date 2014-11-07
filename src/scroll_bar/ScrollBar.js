@@ -86,47 +86,31 @@ define(function(require) {
         }
 
         this._options = options;
-
+        this._listMap = this._scrollList.getListMap();
+        this._layout = this._scrollList.getLayout();
         this._isVertical = this._options.orientation === 'horizontal' ? false : true;
-
+        this._barPosition = 0.0;
+        this._trackSize = 100.0;
+        this._barSize = DEFAULT_MIN_SIZE;
+        this._clickOffset = null;
+        this._scrollbarScrolling = false;
+        this._resize = false;
         this._disposed = false;
 
-        this._layout = scrollList.getLayout();
-
-        this._TOTAL_ITEMS = scrollList.getItemSizeCollection ? scrollList.getItemSizeCollection()._items.length :
-                            scrollList.getItemMetadata().length;
-
-        var visiblePosition = this._layout.getVisiblePosition();
-        var size = this._layout.getSize();
-        if (this._isVertical) {
-            this._visibleSize = visiblePosition.bottom - visiblePosition.top;
-            this._virtualSize = size.height - this._visibleSize;
-            this._scrollableVirtualSize = size.height;
-        } else {
-            this._visibleSize = visiblePosition.right - visiblePosition.left;
-            this._virtualSize = size.width - this._visibleSize;
-            this._scrollableVirtualSize = size.width;
-        }
-
-        this._listMap = this._scrollList.getListMap();
+        // The current item map, used in peek and single modes.
+        this._itemMap = self._scrollList.getCurrentItemMap();
+        this._scrollList.onCurrentItemChanged(function() {
+            self._itemMap = self._scrollList.getCurrentItemMap();
+        });
 
         this._setUpDOM();
-
-        // Set scrollbarScrolling to initially false
-        this._scrollbarScrolling = false;
-
-        this._clickOffset = null;
-
-        // Get the initial position, in case it's not at 0, and set the scrollbar position
-        self._placeScrollBar();
+        this._placeScrollBar();
 
         // Match the scroll bar positioning to the users scrolling
         this._listMap.onTranslationChanged(function() {
-            requestAnimFrame(function() {
-                if (!self._scrollbarScrolling && !self._disposed) {
-                    self._placeScrollBar();
-                }
-            });
+            if (!self._scrollbarScrolling && !self._disposed) {
+                self._placeScrollBar();
+            }
         });
 
         // Make necessary adjustments when the users zooms in or out
@@ -135,8 +119,8 @@ define(function(require) {
             self._placeScrollBar();
         });
 
+        // Adjust sizes and bar when items are inserted
         this._scrollList.onItemsInserted(function() {
-            self._TOTAL_ITEMS = scrollList.getItemSizeCollection()._items.length;
             self._adjustScale();
             self._placeScrollBar();
         });
@@ -152,7 +136,7 @@ define(function(require) {
                 self._resize = false;
             }
         });
-        
+
         // If part of the page is highlighted and the user clicks and drags on the page,
         // a 'drag' event may be triggered instead of the standard mousedown-mouseup event.
         // This results in mouseup never firing, and the mousemove handler never being unbound.
@@ -167,26 +151,36 @@ define(function(require) {
         };
 
         this._mousemoveHandler = function(e) {
-            self._updateScrollBar(e, self._clickOffset);
+            var coord;
+            if (self._isVertical) {
+                coord = e.clientY;
+            } else {
+                coord = e.clientX;
+            }
+            self._updateScrollBar(coord);
         };
 
         // Attach handlers for scrolling the ScrollBar
-        this._mousedownHandler = function(event) {
+        this._mousedownHandler = function(e) {
             // Prevent the event from bubbling so that we don't end up with
             // weird selections all over the page.
-            event.preventDefault();
+            e.preventDefault();
+
             // _mouseupHandler will ensure that, in the event that the mousemove event is not caught,
             // the event handlers will be unbound before being bound again.
             self._mouseupHandler();
 
-            var offset;
+            var coord;
+            var barOffset;
             if (self._isVertical) {
-                offset = self._elements.scrollbar.offsetTop + self._elements.scrollbarContainer.offsetTop;
-                self._clickOffset = event.clientY - offset + self._elements.scrollbarContainer.offsetTop;
+                coord = e.clientY;
+                barOffset = self._elements.scrollbar.offsetTop;
             } else {
-                offset = self._elements.scrollbar.offsetLeft + self._elements.scrollbarContainer.offsetLeft;
-                self._clickOffset = event.clientX - offset + self._elements.scrollbarContainer.offsetLeft;
+                coord = e.clientX;
+                barOffset = self._elements.scrollbar.offsetLeft;
             }
+
+            self._clickOffset = coord - barOffset;
             self._scrollbarScrolling = true;
 
             document.addEventListener('mousemove', self._mousemoveHandler);
@@ -228,6 +222,90 @@ define(function(require) {
         //---------------------------------------------------------
 
         /**
+         * Set the position of the scrollbar to the given value. The value
+         * should be in [0.0, 1.0], where 0.0 is the top/left and 1.0 is the
+         * bottom/right. The value will be clamped if it is out of range. If no
+         * value is provided, the currently set value will be used.
+         *
+         * @method ScrollBar#setBarPosition
+         * @param value {number}
+         */
+        _setBarPosition: function(value) {
+            if (value === undefined) {
+                value = this._barPosition;
+            }
+
+            if (value < 0.0) {
+                value = 0.0;
+            }
+            if (value > 1.0) {
+                value = 1.0;
+            }
+
+            this._barPosition = value;
+
+            var barOffset = Math.round(this._barPosition * (this._trackSize - this._barSize));
+            if (this._isVertical) {
+                this._elements.scrollbar.style.top = barOffset + 'px';
+            } else {
+                this._elements.scrollbar.style.left = barOffset + 'px';
+            }
+        },
+
+        /**
+         * Calculate the scroll bar height based on the viewport height and the scaled virtual height
+         */
+        _setBarSize: function() {
+            var minSize = this._options.minSize || DEFAULT_MIN_SIZE;
+            var barSize = Math.max(
+                    minSize,
+                    (this._visibleSize / this._virtualSize) * this._viewportSize);
+            if (barSize >= this._viewportSize) {
+                barSize = 0;
+            }
+
+            this._barSize = barSize;
+
+            if (this._isVertical) {
+                this._elements.scrollbar.style.height = barSize + 'px';
+            } else {
+                console.log('_visibleSize =', this._visibleSize);
+                console.log('_virtualSize =', this._virtualSize);
+                console.log('viewportSize =', this._viewportSize);
+                console.log('barSize =', barSize);
+                this._elements.scrollbar.style.width = barSize + 'px';
+            }
+        },
+
+        /**
+         * Compute and set the track size to the size of the viewport in the
+         * appropriate dimension.
+         *
+         * @method ScrollBar#setTrackSize
+         */
+        _setTrackSize: function() {
+            var trackSize = this._viewportSize;
+            this._trackSize = trackSize;
+
+            if (this._isVertical) {
+                this._elements.scrollbarContainer.style.height = trackSize + 'px';
+            } else {
+                this._elements.scrollbarContainer.style.width = trackSize + 'px';
+            }
+
+            // Reset the bar position and size now that the track size has
+            // changed.
+            this._setBarPosition();
+            this._setBarSize();
+        },
+
+        _render: function() {
+            this._setTrackSize();
+            this._setBarPosition();
+            this._setBarSize();
+        },
+
+        /**
          * Initialize the HTML elements used by this instance of ScrollBar
          * @private
          */
@@ -248,23 +326,18 @@ define(function(require) {
                 scrollbarContainerEl.className += ' ' + this._options.scrollbarContainerClass;
             }
 
-            // Append the scrollbar and it's parent container to the given parent element
+            // Append the scrollbar and its parent container to the given
+            // parent element.
             scrollbarContainerEl.appendChild(scrollbarEl);
             this._parent.appendChild(scrollbarContainerEl);
 
             this._elements = { scrollbar: scrollbarEl, scrollbarContainer: scrollbarContainerEl };
 
+            // Compute scale and size attributes
             this._adjustScale();
 
-            // Set the container size to the viewport size and the scroll bar size to the set size.
-            var viewportSize = this._layout.getViewportSize();
-            if (this._isVertical) {
-                scrollbarContainerEl.style.height = viewportSize.height + 'px';
-                scrollbarEl.style.height = this._scrollbarSize + 'px';
-            } else {
-                scrollbarContainerEl.style.width = viewportSize.width + 'px';
-                scrollbarEl.style.width = this._scrollbarSize + 'px';
-            }
+            // Update DOM elements
+            this._render();
         },
 
         /**
@@ -272,71 +345,59 @@ define(function(require) {
          */
         _placeScrollBar: function() {
             var visiblePosition = this._layout.getVisiblePosition();
-            var currentPosition;
+
+            var viewExtent;
             if (this._isVertical) {
-                currentPosition = visiblePosition.top;
+                viewExtent = visiblePosition.bottom;
             } else {
-                currentPosition = visiblePosition.left;
+                viewExtent = visiblePosition.right;
             }
 
-            var translatedPosition = Math.round(
-                    this._availableScrollbarSize / this._virtualSize * currentPosition);
-            translatedPosition = Math.max(0, translatedPosition);
-            translatedPosition = Math.min(translatedPosition, this._availableScrollbarSize);
-
-            if (this._isVertical) {
-                this._elements.scrollbar.style.top = translatedPosition + 'px';
-            } else {
-                this._elements.scrollbar.style.left = translatedPosition + 'px';
-            }
+            var barPosition = (viewExtent - this._visibleSize) / (this._layoutSize - this._visibleSize);
+            this._setBarPosition(barPosition);
         },
 
         /**
-         * Position the scrollbar based on the position of a click event
+         * Attempt to move the scrollbar to a particular location, move it to
+         * the closest valid position. The input is either an x or y coordinate
+         * depending on whether the scrollbar is horizontal (x) or vertical
+         * (y).
          */
-        _updateScrollBar: function(event, clickOffset) {
-            var scrollbarPos;
-            if (this._isVertical) {
-                scrollbarPos = Math.max(0, event.clientY - clickOffset);
-            } else {
-                scrollbarPos = Math.max(0, event.clientX - clickOffset);
-            }
-            // Don't go past the bounds of the scrollbar container
-            scrollbarPos = Math.min(scrollbarPos, this._availableScrollbarSize);
+        //_updateScrollBar: function(event, clickOffset) {
+        _updateScrollBar: function(coord) {
+            // Clamp to the beginning of the scrollbar
+            var barCoord = Math.max(0, coord - this._clickOffset);
+            // Clamp to the end of the scrollbar
+            barCoord = Math.min(barCoord, this._trackSize - this._barSize);
 
-            if (this._isVertical) {
-                this._elements.scrollbar.style.top = scrollbarPos + 'px';
-            } else {
-                this._elements.scrollbar.style.left = scrollbarPos + 'px';
-            }
+            var barPosition = barCoord / (this._trackSize - this._barSize);
+            this._setBarPosition(barPosition);
 
-            var scrollListPos = scrollbarPos;
-            // Use the ratio of scrollbar position inside the scrolling area to calculate
-            // the current item we should be interested in.
-            var positionOfInterest = (scrollListPos * this._scale / this._availableScrollbarSize) * this._virtualSize;
-            // Ensure that positionOfInterest isn't undefined.
-            if (!positionOfInterest) {
-                positionOfInterest = 0;
+
+            // Use the ratio of the scrollbar position to find the current
+            // item in the list map.
+            var itemPosition = barPosition * this._scale * this._virtualSize;
+
+            // TODO Do we really need this? It could be NaN, but can that really happen?
+            if (!itemPosition) {
+                itemPosition = 0;
             }
-            positionOfInterest = Math.min(positionOfInterest, this._virtualSize * this._scale);
 
             var transformState = this._listMap.getCurrentTransformState();
+            var x, y;
             if (this._isVertical) {
-                var x = transformState.translateX;
-                this._listMap.transform({
-                    x: x,
-                    y: -positionOfInterest,
-                    scale: this._scale
-                });
+                x = transformState.translateX;
+                y = -itemPosition;
             } else {
-                var y = transformState.translateY;
-                this._listMap.transform({
-                    x: -positionOfInterest,
-                    y: y,
-                    scale: this._scale
-                });
+                x = -itemPosition;
+                y = transformState.translateY;
             }
 
+            this._listMap.transform({
+                x: x,
+                y: y,
+                scale: this._scale
+            });
             this._scrollList.render();
         },
 
@@ -351,62 +412,30 @@ define(function(require) {
         },
 
         /**
-         * Calculate the scroll bar height based on the viewport height and the scaled virtual height
-         */
-        _calculateScrollBarSize: function() {
-            // Calculate the size of the scrollbar depending on the virtual height
-            // The scrollbar shouldn't be shorter than MIN_SIZE
-            var MIN_SIZE = this._options.minSize || DEFAULT_MIN_SIZE;
-
-            var viewportSize = this._layout.getViewportSize();
-            var scrollBarSize;
-            if (this._isVertical) {
-                scrollBarSize = Math.max(
-                        MIN_SIZE, (this._visibleSize / this._scrollableVirtualSize) * viewportSize.height);
-                if (scrollBarSize >= viewportSize.height) {
-                    scrollBarSize = 0;
-                }
-            } else {
-                scrollBarSize = Math.max(
-                        MIN_SIZE, (this._visibleSize / this._scrollableVirtualSize) * viewportSize.width);
-                if (scrollBarSize >= viewportSize.width) {
-                    scrollBarSize = 0;
-                }
-            }
-            return scrollBarSize;
-        },
-
-        /**
          * Scale the virtual height and re-calculate the scroll bar height
          */
         _adjustScale: function() {
             var transformState = this._listMap.getCurrentTransformState();
-            var visiblePosition = this._layout.getVisiblePosition();
-            var size = this._layout.getSize();
-            var viewportSize = this._layout.getViewportSize();
-
             this._scale = transformState.scale;
+
+            var visiblePosition = this._layout.getVisiblePosition();
+            var layoutSize = this._layout.getSize();
+            var viewportSize = this._layout.getViewportSize();
             
             if (this._isVertical) {
+                this._viewportSize = viewportSize.height;
                 this._visibleSize = visiblePosition.bottom - visiblePosition.top;
-                this._virtualSize = size.height - this._visibleSize;
-                this._scrollableVirtualSize = size.height;
+                this._virtualSize = layoutSize.height - this._visibleSize;
+                this._layoutSize = layoutSize.height;
             } else {
+                this._viewportSize = viewportSize.width;
                 this._visibleSize = visiblePosition.right - visiblePosition.left;
-                this._virtualSize = size.width - this._visibleSize;
-                this._scrollableVirtualSize = size.width;
+                this._virtualSize = layoutSize.width - this._visibleSize;
+                this._layoutSize = layoutSize.width;
             }
-            this._scrollbarSize = this._calculateScrollBarSize();
 
-            if (this._isVertical) {
-                this._elements.scrollbar.style.height = this._scrollbarSize + 'px';
-                this._elements.scrollbarContainer.style.height = viewportSize.height + 'px';
-                this._availableScrollbarSize = viewportSize.height - this._scrollbarSize;
-            } else {
-                this._elements.scrollbar.style.width = this._scrollbarSize + 'px';
-                this._elements.scrollbarContainer.style.width = viewportSize.width + 'px';
-                this._availableScrollbarSize = viewportSize.width - this._scrollbarSize;
-            }
+            // Update DOM elements
+            this._render();
         }
 
     };
