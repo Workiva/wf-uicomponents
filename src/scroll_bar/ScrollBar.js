@@ -84,14 +84,13 @@ define(function(require) {
             this._parent = parent;
         }
 
+        // This is the currently active map, it can be either a list map, or an
+        // item map, depending on the scroll mode.
+        this._activeMap = this._scrollList.getListMap();
+
         this._options = options;
-        this._listMap = this._scrollList.getListMap();
-        this._layout = this._scrollList.getLayout();
         this._isVertical = this._options.orientation === 'horizontal' ? false : true;
         this._barPosition = 0.0;
-        this._trackSize = 100.0;
-        this._barSize = DEFAULT_MIN_SIZE;
-        this._clickOffset = null;
         this._scrollbarScrolling = false;
         this._resize = false;
         this._disposed = false;
@@ -99,26 +98,53 @@ define(function(require) {
         this._setupDOM();
         this._placeScrollBar();
 
-        // The current item map, used in peek and single modes.
-        this._itemMap = self._scrollList.getCurrentItemMap();
-        this._scrollList.onCurrentItemChanged(function() {
-            self._itemMap = self._scrollList.getCurrentItemMap();
-        });
+        // TODO In peek or single mode, we want to use the position of the
+        // item, not the list for the scrollbars (both of them).
 
-        // Match the scroll bar positioning to the users scrolling
-        this._listMap.onTranslationChanged(function() {
-            if (!self._scrollbarScrolling && !self._disposed) {
-                self._placeScrollBar();
-            }
-        });
+        // Callbacks
 
-        // Make necessary adjustments when the users zooms in or out
-        this._listMap.onScaleChanged(function() {
+        // Make adjustments when the user zooms
+        var mapScaleChangedHandler = function() {
             self._cacheDimensions();
             self._setTrackSize();
             self._setBarSize();
             self._placeScrollBar();
+        }
+
+        // Match the scroll bar to the document position
+        var mapTranslationChangedHandler = function(sender, offset) {
+            if (self._isVertical) {
+                self._extent = -offset.y;
+            } else {
+                self._extent = -offset.x;
+            }
+                
+            if (!self._scrollbarScrolling && !self._disposed) {
+                self._placeScrollBar();
+            }
+        }
+
+        // Bind map callbacks
+        
+        this._scrollList.onCurrentItemChanged(function changeItemMap() {
+            // Map changed so unregister all the old callbacks
+            self._activeMap.onScaleChanged.remove(mapScaleChangedHandler);
+            self._activeMap.onTranslationChanged.remove(mapTranslationChangedHandler);
+
+            var itemMap = self._scrollList.getCurrentItemMap();
+            if (itemMap) {
+                // We are in single or peek mode
+                self._activeMap = itemMap;
+                self._cacheDimensions();
+                self._placeScrollBar();
+            }
+
+            // Re-register the handlers
+            self._activeMap.onScaleChanged(mapScaleChangedHandler);
+            self._activeMap.onTranslationChanged(mapTranslationChangedHandler);
         });
+
+        // Bind scroll list callbacks
 
         // Adjust sizes and bar when items are inserted
         this._scrollList.onItemsInserted(function() {
@@ -261,7 +287,7 @@ define(function(require) {
             var minSize = this._options.minSize || DEFAULT_MIN_SIZE;
             var barSize = Math.max(
                     minSize,
-                    (this._visibleSize / this._layoutSize) * this._viewportSize);
+                    (this._viewportSize / this._contentSize * this._viewportSize));
             if (barSize >= this._viewportSize) {
                 barSize = 0;
             }
@@ -331,16 +357,7 @@ define(function(require) {
          * Position the scrollbar based on the current position of the ScrollList
          */
         _placeScrollBar: function() {
-            var visiblePosition = this._layout.getVisiblePosition();
-
-            var viewExtent;
-            if (this._isVertical) {
-                viewExtent = visiblePosition.bottom;
-            } else {
-                viewExtent = visiblePosition.right;
-            }
-
-            var barPosition = (viewExtent - this._visibleSize) / (this._layoutSize - this._visibleSize);
+            var barPosition = this._extent / this._virtualSize;
             this._setBarPosition(barPosition);
         },
 
@@ -363,14 +380,14 @@ define(function(require) {
 
             // Use the ratio of the scrollbar position to find the current
             // item in the list map.
-            var itemPosition = barPosition * this._scale * this._virtualSize;
+            var itemPosition = barPosition * this._virtualSize;
 
             // TODO Do we really need this? It could be NaN, but can that really happen?
             if (!itemPosition) {
                 itemPosition = 0;
             }
 
-            var transformState = this._listMap.getCurrentTransformState();
+            var transformState = this._activeMap.getCurrentTransformState();
             var x, y;
             if (this._isVertical) {
                 x = transformState.translateX;
@@ -380,7 +397,7 @@ define(function(require) {
                 y = transformState.translateY;
             }
 
-            this._listMap.transform({
+            this._activeMap.transform({
                 x: x,
                 y: y,
                 scale: this._scale
@@ -402,23 +419,21 @@ define(function(require) {
          * Scale the virtual height and re-calculate the scroll bar height
          */
         _cacheDimensions: function() {
-            var transformState = this._listMap.getCurrentTransformState();
-            this._scale = transformState.scale;
-
-            var visiblePosition = this._layout.getVisiblePosition();
-            var layoutSize = this._layout.getSize();
-            var viewportSize = this._layout.getViewportSize();
+            var transformState = this._activeMap.getCurrentTransformState();
+            var contentSize = this._activeMap.getContentDimensions();
+            var viewportSize = this._activeMap.getViewportDimensions();
             
+            this._scale = transformState.scale;
             if (this._isVertical) {
+                this._extent = -transformState.translateY;
                 this._viewportSize = viewportSize.height;
-                this._visibleSize = visiblePosition.bottom - visiblePosition.top;
-                this._layoutSize = layoutSize.height;
-                this._virtualSize = this._layoutSize - this._visibleSize;
+                this._contentSize = contentSize.height * this._scale;
+                this._virtualSize = this._contentSize - this._viewportSize;
             } else {
+                this._extent = -transformState.translateX;
                 this._viewportSize = viewportSize.width;
-                this._visibleSize = visiblePosition.right - visiblePosition.left;
-                this._layoutSize = layoutSize.width;
-                this._virtualSize = this._layoutSize - this._visibleSize;
+                this._contentSize = contentSize.width * this._scale;
+                this._virtualSize = this._contentSize - this._viewportSize;
             }
         }
 
