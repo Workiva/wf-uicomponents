@@ -36,86 +36,13 @@ define(function(require) {
             ]
         });
 
-        function initialize(orientation) {
-            options = {};
-            options.scrollbarId = 'scroll-bar';
-            options.scrollbarContainerId = 'scroll-bar-container';
-            options.scrollbarClass = 'scroll-bar';
-            options.scrollBarContainerClass = 'scroll-bar-container';
-            options.orientation = orientation;
+        function initialize(orientation, mode, trackOffset) {
+            $('<div id="scrolllist-host"></div>')
+            .css({ position: 'absolute', top: -10000, width: 500, height: 500 })
+            .appendTo('body');
 
-            scrollBar = new ScrollBar(scrollList, parentEl, options);
-        }
-
-        function checkScrollBarAtBottom () {
-            var scrollBarEL = document.getElementById('scroll-bar');
-
-            scrollBar._placeScrollBar();
-
-            var position;
-            if (scrollBar.isVertical()) {
-                position = scrollBarEL.style.top;
-            } else {
-                position = scrollBarEL.style.left;
-            }
-            position = parseInt(position, 10);
-
-            expect(position).toEqual(Math.floor(scrollBar._availableScrollbarSize));
-        }
-
-        function checkForScrollPastEnd () {
-            var scrollBarEl = document.getElementById('scroll-bar');
-            var e1 = document.createEvent('Event');
-            e1.initEvent('mousedown', true, false);
-            var e2 = document.createEvent('Event');
-            e2.initEvent('mousemove', true, false);
-            var e3 = document.createEvent('Event');
-            e3.initEvent('mouseup', true, false);
-            var listMap = scrollList.getListMap();
-
-            var visibleArea;
-            var visiblePosition = scrollBar._layout.getVisiblePosition();
-            var size = scrollBar._layout.getSize();
-            if (scrollBar.isVertical()) {
-                visibleArea = visiblePosition.bottom - visiblePosition.top;
-                listMap.transform({
-                    x: (-size.width - visibleArea) * 10,
-                    y: 0,
-                    scale: listMap.getCurrentTransformState().scale
-                });
-            } else {
-                visibleArea = visiblePosition.right - visiblePosition.left;
-                listMap.transform({
-                    x: 0,
-                    y: (-size.height - visibleArea) * 10,
-                    scale: listMap.getCurrentTransformState().scale
-                });
-            }
-
-
-            scrollList.render();
-            scrollBar._placeScrollBar();
-
-            spyOn(listMap, 'transform');
-
-            scrollBarEl.dispatchEvent(e1);
-            scrollBarEl.dispatchEvent(e2);
-            scrollBarEl.dispatchEvent(e3);
-
-            var newVal;
-            if (scrollBar.isVertical()) {
-                newVal = -listMap.transform.mostRecentCall.args[0].y;
-                expect(newVal).toBeLessThan(scrollList._layout.getSize().height + 1);
-            } else {
-                newVal = -listMap.transform.mostRecentCall.args[0].x;
-                expect(newVal).toBeLessThan(scrollList._layout.getSize().width + 1);
-            }
-        }
-
-        beforeEach(function() {
-            $('<div id="scrolllist-host"></div>').css({ position: 'absolute', top: -10000, width: 500, height: 500 }).appendTo('body');
             scrollList = new ScrollList(document.getElementById('scrolllist-host'), itemSizeCollection, {
-                mode: 'flow',
+                mode: mode || 'flow',
                 fit: 'auto',
                 padding: 10,
                 gap: 10,
@@ -125,61 +52,67 @@ define(function(require) {
             $parent = $('<div id="scroll-bar-parent"></div>');
             $parent.empty().css({ position: 'absolute', top: -10000, width: 500, height: 500 }).appendTo('body');
             parentEl = $parent[0];
-        });
 
-        afterEach(function() {
+            options = {};
+            options.scrollbarId = 'scroll-bar';
+            options.scrollbarContainerId = 'scroll-bar-container';
+            options.scrollbarClass = 'scroll-bar';
+            options.scrollBarContainerClass = 'scroll-bar-container';
+            options.orientation = orientation;
+            options.trackOffset = trackOffset || 0;
+
+            scrollBar = new ScrollBar(scrollList, parentEl, options);
+            
+            // Need to trigger a render so that the scrollbar's callbacks get registered.
+            scrollList.render();
+        }
+
+        function cleanup() {
             if ($('#scroll-bar').length > 0) {
                 scrollBar.dispose();
             }
             $parent.remove();
             scrollList.dispose();
             $('#scrolllist-host').remove();
+        }
+
+        describe('instantiation', function() {
+            beforeEach(function() {
+                initialize();
+            });
+
+            afterEach(function() {
+                cleanup();
+            });
+
+            it('should throw an error if initialized without a parent element', function() {
+                expect(function() { scrollBar = new ScrollBar(scrollList, null, options); }).toThrow(
+                    new Error('ScrollBar#ScrollBar: parent is required.'));
+            });
+
+            it('should throw an error if initialized without a scrollList', function() {
+                expect(function() { scrollBar = new ScrollBar(null, parentEl, options); }).toThrow(
+                    new Error('ScrollBar#ScrollBar: scrollList is required'));
+            });
+
+            it('should set up the DOM with the scrollbar and container with the given ids', function() {
+                var scrollBarEl =  document.getElementById(options.scrollbarId);
+                var scrollBarContainerEl = document.getElementById(options.scrollbarContainerId);
+
+                expect(scrollBarEl).not.toBe(undefined);
+                expect(scrollBarContainerEl).not.toBe(undefined);
+            });
+
+            it('should set up the DOM with the scrollbar and container with the given classes', function() {
+                var scrollBarEl = document.getElementsByClassName(options.scrollbarClass);
+                var scrollBarContainerEl = document.getElementsByClassName(options.scrollBarContainerClass);
+
+                expect(scrollBarEl).not.toBe(undefined);
+                expect(scrollBarContainerEl).not.toBe(undefined);
+            });
         });
 
-        it('should initialize the ScrollBar with the given parameters', function() {
-            initialize();
-            expect(scrollBar._parent).toEqual(parentEl);
-            expect(scrollBar._scrollList).toEqual(scrollList);
-            expect(scrollBar._options).toEqual(options);
-        });
-
-        it('should initialize the ScrollBar to vertical or horizontal based on options', function() {
-            initialize('vertical');
-            expect(scrollBar.isVertical()).toBe(true);
-            initialize('horizontal');
-            expect(scrollBar.isVertical()).toBe(false);
-        });
-
-        it('should throw an error if initialized without a parent element', function() {
-            expect(function() { scrollBar = new ScrollBar(scrollList, null, options); }).toThrow(
-                new Error('ScrollBar#ScrollBar: parent is required.'));
-        });
-
-        it('should throw an error if initialized without a scrollList', function() {
-            expect(function() { scrollBar = new ScrollBar(null, parentEl, options); }).toThrow(
-                new Error('ScrollBar#ScrollBar: scrollList is required'));
-        });
-
-        it('should set up the DOM with the scrollbar and container with the given ids', function() {
-            initialize();
-            var scrollBarEl =  document.getElementById(options.scrollbarId);
-            var scrollBarContainerEl = document.getElementById(options.scrollbarContainerId);
-
-            expect(scrollBarEl).not.toBe(undefined);
-            expect(scrollBarContainerEl).not.toBe(undefined);
-        });
-
-        it('should set up the DOM with the scrollbar and container with the given classes', function() {
-            initialize();
-            var scrollBarEl = document.getElementsByClassName(options.scrollbarClass);
-            var scrollBarContainerEl = document.getElementsByClassName(options.scrollBarContainerClass);
-
-            expect(scrollBarEl).not.toBe(undefined);
-            expect(scrollBarContainerEl).not.toBe(undefined);
-        });
-
-        it('should scroll to position when the scrollBar is moved', function() {
-            initialize();
+        function testScrollToPosition() {
             var scrollBarEl = document.getElementById('scroll-bar');
             var e1 = document.createEvent('Event');
             e1.initEvent('mousedown', true, false);
@@ -188,165 +121,371 @@ define(function(require) {
             var e3 = document.createEvent('Event');
             e3.initEvent('mouseup', true, false);
 
-            var listMap = scrollList.getListMap();
-            spyOn(listMap, 'transform');
+            spyOn(scrollBar._activeMap, 'transform');
 
             scrollBarEl.dispatchEvent(e1);
             scrollBarEl.dispatchEvent(e2);
             scrollBarEl.dispatchEvent(e3);
 
-            expect(listMap.transform).toHaveBeenCalled();
-        });
+            expect(scrollBar._activeMap.transform).toHaveBeenCalled();
+        }
 
-        // TODO: Fix this test so it reliably passes in OS X Safari
-        xit('should adjust the position of the scrollbar when the scrollList translation changes', function() {
-            initialize();
-            spyOn(scrollBar, '_placeScrollBar');
+        function testScaleChanged() {
+            var OLD_SCALE = 2.0;
+            var NEW_SCALE = 3.0;
+
+            var startScale;
+            var endScale;
+
+            scrollBar._activeMap.zoomTo({ scale: OLD_SCALE });
+            startScale = scrollBar._scale;
+            scrollBar._activeMap.zoomTo({ scale: NEW_SCALE });
+
+            waits(10);
+
             runs(function() {
-                scrollList.scrollToPosition({y: 400});
+                endScale = scrollBar._scale;
+                expect(scrollBar._activeMap.getCurrentTransformState().scale).toEqual(NEW_SCALE);
+                expect(endScale).toEqual(NEW_SCALE);
+                expect(endScale).not.toEqual(startScale);
             });
-            waits(16 + 1);
+        }
+
+        function testResizedOnScaleChanged() {
+            var OLD_SCALE = 2.0;
+            var NEW_SCALE = 3.0;
+
+            var startBarSize;
+            var endBarSize;
+
+            scrollBar._activeMap.zoomTo({ scale: OLD_SCALE });
+            if (scrollBar.isVertical()) {
+                startBarSize = parseInt(scrollBar._elements.scrollbar.style.height);
+            } else {
+                startBarSize = parseInt(scrollBar._elements.scrollbar.style.width);
+            }
+            scrollBar._activeMap.zoomTo({ scale: NEW_SCALE });
+
+            waits(10);
+
             runs(function() {
-                expect(scrollBar._placeScrollBar).toHaveBeenCalled();
+                if (scrollBar.isVertical()) {
+                    endBarSize = parseInt(scrollBar._elements.scrollbar.style.height);
+                } else {
+                    endBarSize = parseInt(scrollBar._elements.scrollbar.style.width);
+                }
+                expect(startBarSize).not.toEqual(endBarSize);
             });
-        });
+        }
 
-        it('should adjust the scrollbar size and the scale variables when the scale changes', function() {
-            initialize();
-            spyOn(scrollBar, '_adjustScale');
-            scrollList.zoomTo({scale: 1.2});
-            expect(scrollBar._adjustScale).toHaveBeenCalled();
-        });
-
-        it('should adjust the scrollbar size and position when new items are inserted into the scrollList', function () {
-            initialize();
-            spyOn(scrollBar, '_adjustScale');
-            spyOn(scrollBar, '_placeScrollBar');
+        function testResizedOnItemAdded() {
+            spyOn(scrollBar, '_cacheDimensions');
             scrollList.insertItems(0, [{height: 400, width: 400}, {height: 600, width: 400}]);
-            expect(scrollBar._adjustScale).toHaveBeenCalled();
-            expect(scrollBar._placeScrollBar).toHaveBeenCalled();
+            expect(scrollBar._cacheDimensions).toHaveBeenCalled();
+        }
+
+        function testHideOnShortContent() {
+            var OLD_SCALE = 2.0;
+            var NEW_SCALE = 0.25;
+
+            var startBarSize;
+            var endBarSize;
+
+            scrollBar._activeMap.zoomTo({ scale: OLD_SCALE });
+            if (scrollBar.isVertical()) {
+                startBarSize = parseInt(scrollBar._elements.scrollbar.style.height);
+            } else {
+                startBarSize = parseInt(scrollBar._elements.scrollbar.style.width);
+            }
+            scrollBar._activeMap.zoomTo({ scale: NEW_SCALE });
+
+            waits(10);
+
+            runs(function() {
+                if (scrollBar.isVertical()) {
+                    endBarSize = parseInt(scrollBar._elements.scrollbar.style.height);
+                } else {
+                    endBarSize = parseInt(scrollBar._elements.scrollbar.style.width);
+                }
+                expect(startBarSize).not.toEqual(endBarSize);
+                expect(endBarSize).toEqual(0);
+            });
+        }
+
+        function testMoveOnScrollToUpperLeft() {
+            var NEW_Y = 0;
+            var NEW_X = 0;
+            var DELTA = 10;
+            var SCALE = 3.0;
+
+            var startBarOffset;
+            var endBarOffset;
+
+            scrollBar._activeMap.transform({ x: NEW_X - DELTA, y: NEW_Y - DELTA, scale: SCALE });
+            if (scrollBar.isVertical()) {
+                startBarOffset = parseInt(scrollBar._elements.scrollbar.style.top);
+            } else {
+                startBarOffset = parseInt(scrollBar._elements.scrollbar.style.left);
+            }
+            scrollBar._activeMap.transform({ x: NEW_X, y: NEW_Y, scale: SCALE });
+
+            waits(10);
+
+            runs(function() {
+                if (scrollBar.isVertical()) {
+                    endBarOffset = parseInt(scrollBar._elements.scrollbar.style.top);
+                } else {
+                    endBarOffset = parseInt(scrollBar._elements.scrollbar.style.left);
+                }
+                expect(endBarOffset).toEqual(0);
+                expect(startBarOffset).not.toEqual(endBarOffset);
+            });
+        }
+
+        function testMoveOnScrollToLowerRight() {
+            // Use really big numbers here to make sure we get to the lower right.
+            var NEW_Y = -10000;
+            var NEW_X = -10000;
+            var SCALE = 3.0;
+
+            var startBarOffset;
+            var endBarOffset;
+
+            scrollBar._activeMap.transform({ x: 0, y: 0, scale: SCALE });
+            if (scrollBar.isVertical()) {
+                startBarOffset = parseInt(scrollBar._elements.scrollbar.style.top);
+            } else {
+                startBarOffset = parseInt(scrollBar._elements.scrollbar.style.left);
+            }
+            scrollBar._activeMap.transform({ x: NEW_X, y: NEW_Y, scale: SCALE });
+
+            waits(10);
+
+            runs(function() {
+                var trackSize;
+                var scrollBarSize;
+                if (scrollBar.isVertical()) {
+                    endBarOffset = parseInt(scrollBar._elements.scrollbar.style.top);
+                    scrollBarSize = parseInt(scrollBar._elements.scrollbar.style.height);
+                    trackSize = parseInt(scrollBar._elements.scrollbarContainer.style.height);
+                } else {
+                    endBarOffset = parseInt(scrollBar._elements.scrollbar.style.left);
+                    scrollBarSize = parseInt(scrollBar._elements.scrollbar.style.width);
+                    trackSize = parseInt(scrollBar._elements.scrollbarContainer.style.width);
+                }
+                // Add one to make sure this quantity is bigger, not always exact due to rounding.
+                var allowedSpace = trackSize - scrollBarSize + 1;
+                expect(endBarOffset).toBeLessThan(allowedSpace);
+                expect(startBarOffset).not.toEqual(endBarOffset);
+            });
+        }
+
+        describe('when vertical', function() {
+            it('should set the scrollbar size when an item is added in flow mode', function() {
+                initialize('vertical', 'flow');
+                testResizedOnItemAdded();
+                cleanup();
+            });
+
+            describe('in flow mode', function() {
+                beforeEach(function() {
+                    initialize('vertical', 'flow');
+                });
+
+                afterEach(function() {
+                    cleanup();
+                });
+
+                it('should scroll when the scrollbar is moved', function() {
+                    testScrollToPosition();
+                });
+
+                it('should set the scrollbar scale when the scale changes', function() {
+                    testScaleChanged();
+                });
+
+                it('should set the scrollbar size when the scale changes', function() {
+                    testResizedOnScaleChanged();
+                });
+
+                it('should move the scrollbar to the top on transform', function() {
+                    testMoveOnScrollToUpperLeft();
+                });
+
+                it('should move the scrollbar to the bottom on transform', function() {
+                    testMoveOnScrollToLowerRight();
+                });
+            });
+
+            describe('in peek mode', function() {
+                beforeEach(function() {
+                    initialize('vertical', 'peek');
+                });
+
+                afterEach(function() {
+                    cleanup();
+                });
+
+                it('should scroll when the vertical scrollbar is moved', function() {
+                    testScrollToPosition();
+                });
+
+                it('should set the scrollbar scale when the scale changes', function() {
+                    testScaleChanged();
+                });
+
+                it('should set the scrollbar size when the scale changes', function() {
+                    testResizedOnScaleChanged();
+                });
+
+                it('should move the scrollbar to the top on transform', function() {
+                    testMoveOnScrollToUpperLeft();
+                });
+
+                it('should move the scrollbar to the bottom on transform', function() {
+                    testMoveOnScrollToLowerRight();
+                });
+
+                it('should hide the scrollbar when all content visible', function() {
+                    testHideOnShortContent();
+                });
+            });
+
+            describe('in single mode', function() {
+                beforeEach(function() {
+                    initialize('vertical', 'single');
+                });
+
+                afterEach(function() {
+                    cleanup();
+                });
+
+                it('should scroll when the scrollbar is moved', function() {
+                    testScrollToPosition();
+                });
+
+                it('should set the scrollbar scale when the scale changes', function() {
+                    testScaleChanged();
+                });
+
+                it('should set the scrollbar size when the scale changes', function() {
+                    testResizedOnScaleChanged();
+                });
+
+                it('should move the scrollbar to the top on transform', function() {
+                    testMoveOnScrollToUpperLeft();
+                });
+
+                it('should move the scrollbar to the bottom on transform', function() {
+                    testMoveOnScrollToLowerRight();
+                });
+
+                it('should hide the scrollbar when all content visible', function() {
+                    testHideOnShortContent();
+                });
+            });
         });
 
-        describe('when the ScrollList is shorter than the viewport', function () {
-            it('should not show the scrollbar', function() {
-                initialize();
-                var listMap = scrollList.getListMap();
-                listMap.transform({
-                    x: 0,
-                    y: 0,
-                    scale: listMap.getCurrentTransformState().scale * 0.1
-                });
-
-                expect(scrollBar._scrollbarSize).toBe(0);
-            });
-        });
-
-        describe('a vertical scrollbar', function() {
-            it('should scroll to position when the scrollBar is moved vertically', function() {
-                initialize('vertical');
-                var scrollBarEl = document.getElementById('scroll-bar');
-                var e1 = document.createEvent('Event');
-                e1.initEvent('mousedown', true, false);
-                var e2 = document.createEvent('Event');
-                e2.initEvent('mousemove', true, false);
-                var e3 = document.createEvent('Event');
-                e3.initEvent('mouseup', true, false);
-
-                var listMap = scrollList.getListMap();
-                spyOn(listMap, 'transform');
-
-                scrollBarEl.dispatchEvent(e1);
-                scrollBarEl.dispatchEvent(e2);
-                scrollBarEl.dispatchEvent(e3);
-
-                expect(listMap.transform).toHaveBeenCalled();
-            });
-
-            describe('when zoomed in', function () {
+        describe('when horizontal', function() {
+            describe('in flow mode', function() {
                 beforeEach(function() {
-                    initialize('vertical');
-                    var listMap = scrollList.getListMap();
-                    listMap.transform({
-                        x: 0,
-                        y: -scrollList._layout.getSize().height * 10,
-                        scale: listMap.getCurrentTransformState().scale + 0.5
-                    });
+                    initialize('horizontal', 'flow');
                 });
 
-                it('should not try to scroll past the bottom of the ScrollList', function() {
-                    checkForScrollPastEnd();
+                afterEach(function() {
+                    cleanup();
                 });
 
-                it('should put the ScrollBar at the bottom when the ScrollList is scrolled to the end', function() {
-                    scrollBar._placeScrollBar();
+                it('should scroll when the scrollbar is moved', function() {
+                    testScrollToPosition();
+                });
 
-                    checkScrollBarAtBottom();
+                it('should set the scrollbar scale when the scale changes', function() {
+                    testScaleChanged();
+                });
+
+                it('should set the scrollbar size when the scale changes', function() {
+                    testResizedOnScaleChanged();
+                });
+
+                it('should move the scrollbar to the left on transform', function() {
+                    testMoveOnScrollToUpperLeft();
+                });
+
+                it('should move the scrollbar to the bottom on transform', function() {
+                    testMoveOnScrollToLowerRight();
+                });
+
+                it('should hide the scrollbar when all content visible', function() {
+                    testHideOnShortContent();
                 });
             });
 
-            describe('when zoomed out', function () {
+            describe('in peek mode', function() {
                 beforeEach(function() {
-                    initialize();
-                    var listMap = scrollList.getListMap();
-                    listMap.transform({
-                        x: 0,
-                        y: -scrollList._layout.getSize().height * 10,
-                        scale: listMap.getCurrentTransformState().scale - 0.5
-                    });
+                    initialize('horizontal', 'peek');
                 });
 
-                it('should not try to scroll past the bottom of the ScrollList', function() {
-                    checkForScrollPastEnd();
+                afterEach(function() {
+                    cleanup();
                 });
 
-                it('should put the ScrollBar at the bottom when the ScrollList is scrolled to the end', function() {
-                    scrollBar._placeScrollBar();
+                it('should scroll when the scrollbar is moved', function() {
+                    testScrollToPosition();
+                });
 
-                    checkScrollBarAtBottom();
+                it('should set the scrollbar scale when the scale changes', function() {
+                    testScaleChanged();
+                });
+
+                it('should set the scrollbar size when the scale changes', function() {
+                    testResizedOnScaleChanged();
+                });
+
+                it('should move the scrollbar to the left on transform', function() {
+                    testMoveOnScrollToUpperLeft();
+                });
+
+                it('should move the scrollbar to the bottom on transform', function() {
+                    testMoveOnScrollToLowerRight();
+                });
+
+                it('should hide the scrollbar when all content visible', function() {
+                    testHideOnShortContent();
                 });
             });
-        });
 
-        describe('a horizontal scrollbar', function() {
-            it('should scroll to position when the scrollBar is moved horizontally', function() {
-                initialize('horizontal');
-                var scrollBarEl = document.getElementById('scroll-bar');
-                var e1 = document.createEvent('Event');
-                e1.initEvent('mousedown', true, false);
-                var e2 = document.createEvent('Event');
-                e2.initEvent('mousemove', true, false);
-                var e3 = document.createEvent('Event');
-                e3.initEvent('mouseup', true, false);
-
-                var listMap = scrollList.getListMap();
-                spyOn(listMap, 'transform');
-
-                scrollBarEl.dispatchEvent(e1);
-                scrollBarEl.dispatchEvent(e2);
-                scrollBarEl.dispatchEvent(e3);
-
-                expect(listMap.transform).toHaveBeenCalled();
-            });
-
-            describe('when zoomed in', function () {
+            describe('in single mode', function() {
                 beforeEach(function() {
-                    initialize('horizontal');
-                    var listMap = scrollList.getListMap();
-                    listMap.transform({
-                        x: -scrollList._layout.getSize().width * 10,
-                        y: 0,
-                        scale: listMap.getCurrentTransformState().scale + 0.5
-                    });
+                    initialize('horizontal', 'single');
                 });
 
-                it('should not try to scroll past the bottom of the ScrollList', function() {
-                    checkForScrollPastEnd();
+                afterEach(function() {
+                    cleanup();
                 });
 
-                it('should put the ScrollBar at the bottom when the ScrollList is scrolled to the end', function() {
-                    scrollBar._placeScrollBar();
+                it('should scroll when the scrollbar is moved', function() {
+                    testScrollToPosition();
+                });
 
-                    checkScrollBarAtBottom();
+                it('should set the scrollbar scale when the scale changes', function() {
+                    testScaleChanged();
+                });
+
+                it('should set the scrollbar size when the scale changes', function() {
+                    testResizedOnScaleChanged();
+                });
+
+                it('should move the scrollbar to the left on transform', function() {
+                    testMoveOnScrollToUpperLeft();
+                });
+
+                it('should move the scrollbar to the bottom on transform', function() {
+                    testMoveOnScrollToLowerRight();
+                });
+
+                it('should hide the scrollbar when all content visible', function() {
+                    testHideOnShortContent();
                 });
             });
         });
