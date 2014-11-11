@@ -135,7 +135,7 @@ define(function(require) {
             scrollbarId: 'scrollbar-vert',
             scrollbarContainerId: 'scrollbar-vert-container',
             orientation: 'vertical',
-            trackOffset: 20,
+            trackMargin: 20,
         };
         window.vertScrollBar = new ScrollBar(scrollList, parent, vertScrollBarOptions);
 
@@ -143,7 +143,7 @@ define(function(require) {
             scrollbarId: 'scrollbar-horiz',
             scrollbarContainerId: 'scrollbar-horiz-container',
             orientation: 'horizontal',
-            trackOffset: 20,
+            trackMargin: 20,
         };
         window.horizScrollBar = new ScrollBar(scrollList, parent, horizScrollBarOptions);
     }

@@ -51,7 +51,7 @@ define(function(require) {
      *        The orientation of the scrollbar, can be either 'horizontal'
      *        or 'vertical'. Defaults to 'vertical'.
      *
-     * @param {number} options.trackOffset
+     * @param {number} options.trackMargin
      *        An amount (in px) to subtract from the end of the scroll track.
      *        Can be used to keep horizontal and vertical scroll bars from
      *        crossing.
@@ -310,7 +310,7 @@ define(function(require) {
          * @method ScrollBar#setTrackSize
          */
         _setTrackSize: function() {
-            var trackSize = this._viewportSize - this._options.trackOffset;
+            var trackSize = this._viewportSize - this._options.trackMargin;
             this._trackSize = trackSize;
 
             if (this._isVertical) {
