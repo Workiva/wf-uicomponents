@@ -36,7 +36,7 @@ define(function(require) {
             ]
         });
 
-        function initialize(orientation, mode, trackOffset) {
+        function initialize(orientation, mode, trackMargin) {
             $('<div id="scrolllist-host"></div>')
             .css({ position: 'absolute', top: -10000, width: 500, height: 500 })
             .appendTo('body');
@@ -59,7 +59,7 @@ define(function(require) {
             options.scrollbarClass = 'scroll-bar';
             options.scrollBarContainerClass = 'scroll-bar-container';
             options.orientation = orientation;
-            options.trackOffset = trackOffset || 0;
+            options.trackMargin = trackMargin || 0;
 
             scrollBar = new ScrollBar(scrollList, parentEl, options);
             
