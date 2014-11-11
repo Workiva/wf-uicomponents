@@ -54,10 +54,10 @@ define(function(require) {
             parentEl = $parent[0];
 
             options = {};
-            options.scrollbarId = 'scroll-bar';
-            options.scrollbarContainerId = 'scroll-bar-container';
-            options.scrollbarClass = 'scroll-bar';
-            options.scrollBarContainerClass = 'scroll-bar-container';
+            options.scrollerId = 'scroll-bar';
+            options.scrollTrackId = 'scroll-bar-container';
+            options.scrollerClass = 'scroll-bar';
+            options.scrollTrackClass = 'scroll-bar-container';
             options.orientation = orientation;
             options.trackMargin = trackMargin || 0;
 
@@ -95,17 +95,17 @@ define(function(require) {
                     new Error('ScrollBar#ScrollBar: scrollList is required'));
             });
 
-            it('should set up the DOM with the scrollbar and container with the given ids', function() {
-                var scrollBarEl =  document.getElementById(options.scrollbarId);
-                var scrollBarContainerEl = document.getElementById(options.scrollbarContainerId);
+            it('should set up the DOM with the scroller and scroll track with the given ids', function() {
+                var scrollBarEl =  document.getElementById(options.scrollerId);
+                var scrollBarContainerEl = document.getElementById(options.scrollTrackId);
 
                 expect(scrollBarEl).not.toBe(undefined);
                 expect(scrollBarContainerEl).not.toBe(undefined);
             });
 
-            it('should set up the DOM with the scrollbar and container with the given classes', function() {
-                var scrollBarEl = document.getElementsByClassName(options.scrollbarClass);
-                var scrollBarContainerEl = document.getElementsByClassName(options.scrollBarContainerClass);
+            it('should set up the DOM with the scroller and scroll track with the given classes', function() {
+                var scrollBarEl = document.getElementsByClassName(options.scrollerClass);
+                var scrollBarContainerEl = document.getElementsByClassName(options.scrollTrackClass);
 
                 expect(scrollBarEl).not.toBe(undefined);
                 expect(scrollBarContainerEl).not.toBe(undefined);
@@ -160,9 +160,9 @@ define(function(require) {
 
             scrollBar._activeMap.zoomTo({ scale: OLD_SCALE });
             if (scrollBar.isVertical()) {
-                startBarSize = parseInt(scrollBar._elements.scrollbar.style.height);
+                startBarSize = parseInt(scrollBar._elements.scroller.style.height);
             } else {
-                startBarSize = parseInt(scrollBar._elements.scrollbar.style.width);
+                startBarSize = parseInt(scrollBar._elements.scroller.style.width);
             }
             scrollBar._activeMap.zoomTo({ scale: NEW_SCALE });
 
@@ -170,9 +170,9 @@ define(function(require) {
 
             runs(function() {
                 if (scrollBar.isVertical()) {
-                    endBarSize = parseInt(scrollBar._elements.scrollbar.style.height);
+                    endBarSize = parseInt(scrollBar._elements.scroller.style.height);
                 } else {
-                    endBarSize = parseInt(scrollBar._elements.scrollbar.style.width);
+                    endBarSize = parseInt(scrollBar._elements.scroller.style.width);
                 }
                 expect(startBarSize).not.toEqual(endBarSize);
             });
@@ -193,9 +193,9 @@ define(function(require) {
 
             scrollBar._activeMap.zoomTo({ scale: OLD_SCALE });
             if (scrollBar.isVertical()) {
-                startBarSize = parseInt(scrollBar._elements.scrollbar.style.height);
+                startBarSize = parseInt(scrollBar._elements.scroller.style.height);
             } else {
-                startBarSize = parseInt(scrollBar._elements.scrollbar.style.width);
+                startBarSize = parseInt(scrollBar._elements.scroller.style.width);
             }
             scrollBar._activeMap.zoomTo({ scale: NEW_SCALE });
 
@@ -203,9 +203,9 @@ define(function(require) {
 
             runs(function() {
                 if (scrollBar.isVertical()) {
-                    endBarSize = parseInt(scrollBar._elements.scrollbar.style.height);
+                    endBarSize = parseInt(scrollBar._elements.scroller.style.height);
                 } else {
-                    endBarSize = parseInt(scrollBar._elements.scrollbar.style.width);
+                    endBarSize = parseInt(scrollBar._elements.scroller.style.width);
                 }
                 expect(startBarSize).not.toEqual(endBarSize);
                 expect(endBarSize).toEqual(0);
@@ -223,9 +223,9 @@ define(function(require) {
 
             scrollBar._activeMap.transform({ x: NEW_X - DELTA, y: NEW_Y - DELTA, scale: SCALE });
             if (scrollBar.isVertical()) {
-                startBarOffset = parseInt(scrollBar._elements.scrollbar.style.top);
+                startBarOffset = parseInt(scrollBar._elements.scroller.style.top);
             } else {
-                startBarOffset = parseInt(scrollBar._elements.scrollbar.style.left);
+                startBarOffset = parseInt(scrollBar._elements.scroller.style.left);
             }
             scrollBar._activeMap.transform({ x: NEW_X, y: NEW_Y, scale: SCALE });
 
@@ -233,9 +233,9 @@ define(function(require) {
 
             runs(function() {
                 if (scrollBar.isVertical()) {
-                    endBarOffset = parseInt(scrollBar._elements.scrollbar.style.top);
+                    endBarOffset = parseInt(scrollBar._elements.scroller.style.top);
                 } else {
-                    endBarOffset = parseInt(scrollBar._elements.scrollbar.style.left);
+                    endBarOffset = parseInt(scrollBar._elements.scroller.style.left);
                 }
                 expect(endBarOffset).toEqual(0);
                 expect(startBarOffset).not.toEqual(endBarOffset);
@@ -253,9 +253,9 @@ define(function(require) {
 
             scrollBar._activeMap.transform({ x: 0, y: 0, scale: SCALE });
             if (scrollBar.isVertical()) {
-                startBarOffset = parseInt(scrollBar._elements.scrollbar.style.top);
+                startBarOffset = parseInt(scrollBar._elements.scroller.style.top);
             } else {
-                startBarOffset = parseInt(scrollBar._elements.scrollbar.style.left);
+                startBarOffset = parseInt(scrollBar._elements.scroller.style.left);
             }
             scrollBar._activeMap.transform({ x: NEW_X, y: NEW_Y, scale: SCALE });
 
@@ -265,13 +265,13 @@ define(function(require) {
                 var trackSize;
                 var scrollBarSize;
                 if (scrollBar.isVertical()) {
-                    endBarOffset = parseInt(scrollBar._elements.scrollbar.style.top);
-                    scrollBarSize = parseInt(scrollBar._elements.scrollbar.style.height);
-                    trackSize = parseInt(scrollBar._elements.scrollbarContainer.style.height);
+                    endBarOffset = parseInt(scrollBar._elements.scroller.style.top);
+                    scrollBarSize = parseInt(scrollBar._elements.scroller.style.height);
+                    trackSize = parseInt(scrollBar._elements.scrollTrack.style.height);
                 } else {
-                    endBarOffset = parseInt(scrollBar._elements.scrollbar.style.left);
-                    scrollBarSize = parseInt(scrollBar._elements.scrollbar.style.width);
-                    trackSize = parseInt(scrollBar._elements.scrollbarContainer.style.width);
+                    endBarOffset = parseInt(scrollBar._elements.scroller.style.left);
+                    scrollBarSize = parseInt(scrollBar._elements.scroller.style.width);
+                    trackSize = parseInt(scrollBar._elements.scrollTrack.style.width);
                 }
                 // Add one to make sure this quantity is bigger, not always exact due to rounding.
                 var allowedSpace = trackSize - scrollBarSize + 1;
@@ -281,7 +281,7 @@ define(function(require) {
         }
 
         describe('when vertical', function() {
-            it('should set the scrollbar size when an item is added in flow mode', function() {
+            it('should set the scroller size when an item is added in flow mode', function() {
                 initialize('vertical', 'flow');
                 testResizedOnItemAdded();
                 cleanup();
@@ -296,7 +296,7 @@ define(function(require) {
                     cleanup();
                 });
 
-                it('should scroll when the scrollbar is moved', function() {
+                it('should scroll when the scroller is moved', function() {
                     testScrollToPosition();
                 });
 
@@ -304,15 +304,15 @@ define(function(require) {
                     testScaleChanged();
                 });
 
-                it('should set the scrollbar size when the scale changes', function() {
+                it('should set the scroller size when the scale changes', function() {
                     testResizedOnScaleChanged();
                 });
 
-                it('should move the scrollbar to the top on transform', function() {
+                it('should move the scroller to the top on transform', function() {
                     testMoveOnScrollToUpperLeft();
                 });
 
-                it('should move the scrollbar to the bottom on transform', function() {
+                it('should move the scroller to the bottom on transform', function() {
                     testMoveOnScrollToLowerRight();
                 });
             });
@@ -326,7 +326,7 @@ define(function(require) {
                     cleanup();
                 });
 
-                it('should scroll when the vertical scrollbar is moved', function() {
+                it('should scroll when the scroller is moved', function() {
                     testScrollToPosition();
                 });
 
@@ -334,15 +334,15 @@ define(function(require) {
                     testScaleChanged();
                 });
 
-                it('should set the scrollbar size when the scale changes', function() {
+                it('should set the scroller size when the scale changes', function() {
                     testResizedOnScaleChanged();
                 });
 
-                it('should move the scrollbar to the top on transform', function() {
+                it('should move the scroller to the top on transform', function() {
                     testMoveOnScrollToUpperLeft();
                 });
 
-                it('should move the scrollbar to the bottom on transform', function() {
+                it('should move the scroller to the bottom on transform', function() {
                     testMoveOnScrollToLowerRight();
                 });
 
@@ -360,7 +360,7 @@ define(function(require) {
                     cleanup();
                 });
 
-                it('should scroll when the scrollbar is moved', function() {
+                it('should scroll when the scroller is moved', function() {
                     testScrollToPosition();
                 });
 
@@ -368,15 +368,15 @@ define(function(require) {
                     testScaleChanged();
                 });
 
-                it('should set the scrollbar size when the scale changes', function() {
+                it('should set the scroller size when the scale changes', function() {
                     testResizedOnScaleChanged();
                 });
 
-                it('should move the scrollbar to the top on transform', function() {
+                it('should move the scroller to the top on transform', function() {
                     testMoveOnScrollToUpperLeft();
                 });
 
-                it('should move the scrollbar to the bottom on transform', function() {
+                it('should move the scroller to the bottom on transform', function() {
                     testMoveOnScrollToLowerRight();
                 });
 
@@ -396,7 +396,7 @@ define(function(require) {
                     cleanup();
                 });
 
-                it('should scroll when the scrollbar is moved', function() {
+                it('should scroll when the scroller is moved', function() {
                     testScrollToPosition();
                 });
 
@@ -404,15 +404,15 @@ define(function(require) {
                     testScaleChanged();
                 });
 
-                it('should set the scrollbar size when the scale changes', function() {
+                it('should set the scroller size when the scale changes', function() {
                     testResizedOnScaleChanged();
                 });
 
-                it('should move the scrollbar to the left on transform', function() {
+                it('should move the scroller to the left on transform', function() {
                     testMoveOnScrollToUpperLeft();
                 });
 
-                it('should move the scrollbar to the bottom on transform', function() {
+                it('should move the scroller to the right on transform', function() {
                     testMoveOnScrollToLowerRight();
                 });
 
@@ -430,7 +430,7 @@ define(function(require) {
                     cleanup();
                 });
 
-                it('should scroll when the scrollbar is moved', function() {
+                it('should scroll when the scroller is moved', function() {
                     testScrollToPosition();
                 });
 
@@ -438,15 +438,15 @@ define(function(require) {
                     testScaleChanged();
                 });
 
-                it('should set the scrollbar size when the scale changes', function() {
+                it('should set the scroller size when the scale changes', function() {
                     testResizedOnScaleChanged();
                 });
 
-                it('should move the scrollbar to the left on transform', function() {
+                it('should move the scroller to the left on transform', function() {
                     testMoveOnScrollToUpperLeft();
                 });
 
-                it('should move the scrollbar to the bottom on transform', function() {
+                it('should move the scroller to the right on transform', function() {
                     testMoveOnScrollToLowerRight();
                 });
 
@@ -464,7 +464,7 @@ define(function(require) {
                     cleanup();
                 });
 
-                it('should scroll when the scrollbar is moved', function() {
+                it('should scroll when the scroller is moved', function() {
                     testScrollToPosition();
                 });
 
@@ -472,15 +472,15 @@ define(function(require) {
                     testScaleChanged();
                 });
 
-                it('should set the scrollbar size when the scale changes', function() {
+                it('should set the scroller size when the scale changes', function() {
                     testResizedOnScaleChanged();
                 });
 
-                it('should move the scrollbar to the left on transform', function() {
+                it('should move the scroller to the left on transform', function() {
                     testMoveOnScrollToUpperLeft();
                 });
 
-                it('should move the scrollbar to the bottom on transform', function() {
+                it('should move the scroller to the right on transform', function() {
                     testMoveOnScrollToLowerRight();
                 });
 

@@ -41,7 +41,7 @@ define(function(require) {
      *
      * @param {Object} options
      *        An object with optional classes and ids to be placed on the
-     *        scrollbarEL and scrollbarContainerEL.
+     *        scrollerEl and scrollTrackEl.
      *
      * @param {number} options.minSize
      *        The minimum height or width, in pixels, of the ScrollBar
@@ -62,14 +62,14 @@ define(function(require) {
      * var parent = getElementById('parent');
      * var options = {};
      *
-     * options.scrollbarId = "scrollbar";
-     * options.scrollbarClass = "scrollbar";
-     * options.scrollbarContainerId = "scrollbar-container";
-     * options.scrollbarContainerClass = "scrollbar-container";
+     * options.scrollerId = "scrollbar";
+     * options.scrollerClass = "scrollbar";
+     * options.scrollTrackId = "scrollbar-container";
+     * options.scrollTrackClass = "scrollbar-container";
      * options.minSize = 8;
      * options.orientation = 'vertical';
      *
-     * scrollBar = new ScrollBar(scrollList, parent, options);
+     * var scrollBar = new ScrollBar(scrollList, parent, options);
      */
 
     var ScrollBar = function(scrollList, parent, options) {
@@ -95,13 +95,13 @@ define(function(require) {
 
         this._options = options;
         this._isVertical = this._options.orientation === 'horizontal' ? false : true;
-        this._barPosition = 0.0;
-        this._scrollbarScrolling = false;
+        this._scrollerPosition = 0.0;
+        this._scrollerScrolling = false;
         this._resize = false;
         this._disposed = false;
 
         this._setupDOM();
-        this._placeScrollBar();
+        this._placeScroller();
 
         // Callbacks
 
@@ -109,8 +109,8 @@ define(function(require) {
         var mapScaleChangedHandler = function() {
             self._cacheDimensions();
             self._setTrackSize();
-            self._setBarSize();
-            self._placeScrollBar();
+            self._setScrollerSize();
+            self._placeScroller();
         };
 
         // Match the scroll bar to the document position
@@ -121,8 +121,8 @@ define(function(require) {
                 self._extent = -offset.x;
             }
                 
-            if (!self._scrollbarScrolling && !self._disposed) {
-                self._placeScrollBar();
+            if (!self._scrollerScrolling && !self._disposed) {
+                self._placeScroller();
             }
         };
 
@@ -138,7 +138,7 @@ define(function(require) {
                 // We are in single or peek mode
                 self._activeMap = itemMap;
                 self._cacheDimensions();
-                self._placeScrollBar();
+                self._placeScroller();
             }
 
             // Re-register the handlers
@@ -151,7 +151,7 @@ define(function(require) {
         // Adjust sizes and bar when items are inserted
         this._scrollList.onItemsInserted(function() {
             self._cacheDimensions();
-            self._placeScrollBar();
+            self._placeScroller();
         });
 
         // Make adjustments when the scrollList is resized
@@ -163,7 +163,7 @@ define(function(require) {
             if (args.event.type === EventTypes.RELEASE && self._resize === true) {
                 self._cacheDimensions();
                 self._setTrackSize();
-                self._setBarSize();
+                self._setScrollerSize();
                 self._resize = false;
             }
         });
@@ -171,8 +171,8 @@ define(function(require) {
         // If part of the page is highlighted and the user clicks and drags on the page,
         // a 'drag' event may be triggered instead of the standard mousedown-mouseup event.
         // This results in mouseup never firing, and the mousemove handler never being unbound.
-        // Preventing default on dragstarts on the scrollbar prevents this from occuring.
-        this._elements.scrollbar.addEventListener('dragstart', function(event) {
+        // Preventing default on dragstarts on the scroller prevents this from occuring.
+        this._elements.scroller.addEventListener('dragstart', function(event) {
             event.preventDefault();
         });
 
@@ -188,7 +188,7 @@ define(function(require) {
             } else {
                 coord = e.clientX;
             }
-            self._updateScrollBar(coord);
+            self._updateScroller(coord);
         };
 
         // Attach handlers for scrolling the ScrollBar
@@ -205,20 +205,20 @@ define(function(require) {
             var barOffset;
             if (self._isVertical) {
                 coord = e.clientY;
-                barOffset = self._elements.scrollbar.offsetTop;
+                barOffset = self._elements.scroller.offsetTop;
             } else {
                 coord = e.clientX;
-                barOffset = self._elements.scrollbar.offsetLeft;
+                barOffset = self._elements.scroller.offsetLeft;
             }
 
             self._clickOffset = coord - barOffset;
-            self._scrollbarScrolling = true;
+            self._scrollerScrolling = true;
 
             document.addEventListener('mousemove', self._mousemoveHandler);
             document.addEventListener('mouseup', self._mouseupHandler);
         };
 
-        this._elements.scrollbar.addEventListener('mousedown', this._mousedownHandler);
+        this._elements.scroller.addEventListener('mousedown', this._mousedownHandler);
     };
 
     ScrollBar.prototype = {
@@ -240,9 +240,9 @@ define(function(require) {
          * @method ScrollBar#dispose
          */
         dispose: function() {
-            this._elements.scrollbar.removeEventListener('mousedown', this._mousedownHandler);
-            this._elements.scrollbarContainer.removeChild(this._elements.scrollbar);
-            this._parent.removeChild(this._elements.scrollbarContainer);
+            this._elements.scroller.removeEventListener('mousedown', this._mousedownHandler);
+            this._elements.scrollTrack.removeChild(this._elements.scroller);
+            this._parent.removeChild(this._elements.scrollTrack);
             DestroyUtil.destroy(this);
             this._disposed = true;
         },
@@ -252,17 +252,17 @@ define(function(require) {
         //---------------------------------------------------------
 
         /**
-         * Set the position of the scrollbar to the given value. The value
+         * Set the position of the scroller to the given value. The value
          * should be in [0.0, 1.0], where 0.0 is the top/left and 1.0 is the
          * bottom/right. The value will be clamped if it is out of range. If no
          * value is provided, the currently set value will be used.
          *
-         * @method ScrollBar#setBarPosition
+         * @method ScrollBar#setScrollerPosition
          * @param value {number}
          */
-        _setBarPosition: function(value) {
+        _setScrollerPosition: function(value) {
             if (value === undefined) {
-                value = this._barPosition;
+                value = this._scrollerPosition;
             }
 
             if (value < 0.0) {
@@ -272,34 +272,34 @@ define(function(require) {
                 value = 1.0;
             }
 
-            this._barPosition = value;
+            this._scrollerPosition = value;
 
-            var barOffset = Math.round(this._barPosition * (this._trackSize - this._barSize));
+            var barOffset = Math.round(this._scrollerPosition * (this._trackSize - this._scrollerSize));
             if (this._isVertical) {
-                this._elements.scrollbar.style.top = barOffset + 'px';
+                this._elements.scroller.style.top = barOffset + 'px';
             } else {
-                this._elements.scrollbar.style.left = barOffset + 'px';
+                this._elements.scroller.style.left = barOffset + 'px';
             }
         },
 
         /**
          * Calculate the scroll bar height based on the viewport height and the scaled virtual height
          */
-        _setBarSize: function() {
+        _setScrollerSize: function() {
             var minSize = this._options.minSize || DEFAULT_MIN_SIZE;
-            var barSize = Math.max(
+            var scrollerSize = Math.max(
                     minSize,
                     (this._viewportSize / this._contentSize * this._viewportSize));
-            if (barSize >= this._viewportSize) {
-                barSize = 0;
+            if (scrollerSize >= this._viewportSize) {
+                scrollerSize = 0;
             }
 
-            this._barSize = barSize;
+            this._scrollerSize = scrollerSize;
 
             if (this._isVertical) {
-                this._elements.scrollbar.style.height = barSize + 'px';
+                this._elements.scroller.style.height = scrollerSize + 'px';
             } else {
-                this._elements.scrollbar.style.width = barSize + 'px';
+                this._elements.scroller.style.width = scrollerSize + 'px';
             }
         },
 
@@ -314,9 +314,9 @@ define(function(require) {
             this._trackSize = trackSize;
 
             if (this._isVertical) {
-                this._elements.scrollbarContainer.style.height = trackSize + 'px';
+                this._elements.scrollTrack.style.height = trackSize + 'px';
             } else {
-                this._elements.scrollbarContainer.style.width = trackSize + 'px';
+                this._elements.scrollTrack.style.width = trackSize + 'px';
             }
         },
 
@@ -325,64 +325,63 @@ define(function(require) {
          * @private
          */
         _setupDOM: function() {
-            var scrollbarEl = document.createElement('div');
-            if (this._options.scrollbarId) {
-                scrollbarEl.setAttribute('id', this._options.scrollbarId);
+            var scrollerEl = document.createElement('div');
+            if (this._options.scrollerId) {
+                scrollerEl.setAttribute('id', this._options.scrollerId);
             }
-            if (this._options.scrollbarClass) {
-                scrollbarEl.className += ' ' + this._options.scrollbarClass;
-            }
-
-            var scrollbarContainerEl = document.createElement('div');
-            if (this._options.scrollbarContainerId) {
-                scrollbarContainerEl.setAttribute('id', this._options.scrollbarContainerId);
-            }
-            if (this._options.scrollbarContainerClass) {
-                scrollbarContainerEl.className += ' ' + this._options.scrollbarContainerClass;
+            if (this._options.scrollerClass) {
+                scrollerEl.className += ' ' + this._options.scrollerClass;
             }
 
-            // Append the scrollbar and its parent container to the given
+            var scrollTrackEl = document.createElement('div');
+            if (this._options.scrollTrackId) {
+                scrollTrackEl.setAttribute('id', this._options.scrollTrackId);
+            }
+            if (this._options.scrollTrackClass) {
+                scrollTrackEl.className += ' ' + this._options.scrollTrackClass;
+            }
+
+            // Append the scroller and its parent container to the given
             // parent element.
-            scrollbarContainerEl.appendChild(scrollbarEl);
-            this._parent.appendChild(scrollbarContainerEl);
+            scrollTrackEl.appendChild(scrollerEl);
+            this._parent.appendChild(scrollTrackEl);
 
-            this._elements = { scrollbar: scrollbarEl, scrollbarContainer: scrollbarContainerEl };
+            this._elements = { scroller: scrollerEl, scrollTrack: scrollTrackEl };
 
             // Compute scale and size attributes
             this._cacheDimensions();
 
             this._setTrackSize();
-            this._setBarSize();
+            this._setScrollerSize();
         },
 
         /**
-         * Position the scrollbar based on the current position of the ScrollList
+         * Position the scroller based on the current position of the ScrollList
          */
-        _placeScrollBar: function() {
-            var barPosition = this._extent / this._virtualSize;
-            this._setBarPosition(barPosition);
+        _placeScroller: function() {
+            var scrollerPosition = this._extent / this._virtualSize;
+            this._setScrollerPosition(scrollerPosition);
         },
 
         /**
-         * Attempt to move the scrollbar to a particular location, move it to
+         * Attempt to move the scroller to a particular location, move it to
          * the closest valid position. The input is either an x or y coordinate
          * depending on whether the scrollbar is horizontal (x) or vertical
          * (y).
          */
-        //_updateScrollBar: function(event, clickOffset) {
-        _updateScrollBar: function(coord) {
-            // Clamp to the beginning of the scrollbar
-            var barCoord = Math.max(0, coord - this._clickOffset);
-            // Clamp to the end of the scrollbar
-            barCoord = Math.min(barCoord, this._trackSize - this._barSize);
+        _updateScroller: function(coord) {
+            // Clamp to the beginning of the scroll track
+            var scrollerCoord = Math.max(0, coord - this._clickOffset);
+            // Clamp to the end of the scroll track
+            scrollerCoord = Math.min(scrollerCoord, this._trackSize - this._scrollerSize);
 
-            var barPosition = barCoord / (this._trackSize - this._barSize);
-            this._setBarPosition(barPosition);
+            var scrollerPosition = scrollerCoord / (this._trackSize - this._scrollerSize);
+            this._setScrollerPosition(scrollerPosition);
 
 
-            // Use the ratio of the scrollbar position to find the current
+            // Use the ratio of the scroller position to find the current
             // item in the list map.
-            var itemPosition = barPosition * this._virtualSize;
+            var itemPosition = scrollerPosition * this._virtualSize;
 
             var transformState = this._activeMap.getCurrentTransformState();
             var x, y;
@@ -407,7 +406,7 @@ define(function(require) {
          */
         _stopUpdatingScrollbar: function() {
             this._clickOffset = undefined;
-            this._scrollbarScrolling = false;
+            this._scrollerScrolling = false;
             document.removeEventListener('mousemove', this._mousemoveHandler);
             document.removeEventListener('mouseup', this._mouseupHandler);
         },

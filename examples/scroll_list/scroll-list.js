@@ -132,16 +132,16 @@ define(function(require) {
         var parent = document.getElementById('scrollbar-parent');
 
         var vertScrollBarOptions = {
-            scrollbarId: 'scrollbar-vert',
-            scrollbarContainerId: 'scrollbar-vert-container',
+            scrollerId: 'scrollbar-vert',
+            scrollTrackId: 'scrollbar-vert-container',
             orientation: 'vertical',
             trackMargin: 20,
         };
         window.vertScrollBar = new ScrollBar(scrollList, parent, vertScrollBarOptions);
 
         var horizScrollBarOptions = {
-            scrollbarId: 'scrollbar-horiz',
-            scrollbarContainerId: 'scrollbar-horiz-container',
+            scrollerId: 'scrollbar-horiz',
+            scrollTrackId: 'scrollbar-horiz-container',
             orientation: 'horizontal',
             trackMargin: 20,
         };
