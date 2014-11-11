@@ -51,6 +51,11 @@ define(function(require) {
      *        The orientation of the scrollbar, can be either 'horizontal'
      *        or 'vertical'. Defaults to 'vertical'.
      *
+     * @param {number} options.trackOffset
+     *        An amount (in px) to subtract from the end of the scroll track.
+     *        Can be used to keep horizontal and vertical scroll bars from
+     *        crossing.
+     *
      *
      * @example
      *
@@ -98,9 +103,6 @@ define(function(require) {
         this._setupDOM();
         this._placeScrollBar();
 
-        // TODO In peek or single mode, we want to use the position of the
-        // item, not the list for the scrollbars (both of them).
-
         // Callbacks
 
         // Make adjustments when the user zooms
@@ -109,7 +111,7 @@ define(function(require) {
             self._setTrackSize();
             self._setBarSize();
             self._placeScrollBar();
-        }
+        };
 
         // Match the scroll bar to the document position
         var mapTranslationChangedHandler = function(sender, offset) {
@@ -122,10 +124,10 @@ define(function(require) {
             if (!self._scrollbarScrolling && !self._disposed) {
                 self._placeScrollBar();
             }
-        }
+        };
 
         // Bind map callbacks
-        
+
         this._scrollList.onCurrentItemChanged(function changeItemMap() {
             // Map changed so unregister all the old callbacks
             self._activeMap.onScaleChanged.remove(mapScaleChangedHandler);
@@ -308,7 +310,7 @@ define(function(require) {
          * @method ScrollBar#setTrackSize
          */
         _setTrackSize: function() {
-            var trackSize = this._viewportSize;
+            var trackSize = this._viewportSize - this._options.trackOffset;
             this._trackSize = trackSize;
 
             if (this._isVertical) {
@@ -381,11 +383,6 @@ define(function(require) {
             // Use the ratio of the scrollbar position to find the current
             // item in the list map.
             var itemPosition = barPosition * this._virtualSize;
-
-            // TODO Do we really need this? It could be NaN, but can that really happen?
-            if (!itemPosition) {
-                itemPosition = 0;
-            }
 
             var transformState = this._activeMap.getCurrentTransformState();
             var x, y;
