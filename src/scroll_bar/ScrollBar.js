@@ -341,7 +341,7 @@ define(function(require) {
                 scrollTrackEl.className += ' ' + this._options.scrollTrackClass;
             }
 
-            // Append the scroller and its parent container to the given
+            // Append the scroller and its scroll track to the given
             // parent element.
             scrollTrackEl.appendChild(scrollerEl);
             this._parent.appendChild(scrollTrackEl);
