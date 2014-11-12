@@ -130,10 +130,22 @@ define(function(require) {
     // If on desktop, instantiate a scrollBar
     if (DeviceInfo.desktop) {
         var parent = document.getElementById('scrollbar-parent');
-        var scrollbarOptions = {};
-        scrollbarOptions.scrollbarId = 'scrollbar';
-        scrollbarOptions.scrollbarContainerId = 'scrollbar-container';
-        window.scrollBar = new ScrollBar(scrollList, parent, scrollbarOptions);
+
+        var vertScrollBarOptions = {
+            scrollerId: 'scrollbar-vert',
+            scrollTrackId: 'scrollbar-vert-container',
+            orientation: 'vertical',
+            trackMargin: 20,
+        };
+        window.vertScrollBar = new ScrollBar(scrollList, parent, vertScrollBarOptions);
+
+        var horizScrollBarOptions = {
+            scrollerId: 'scrollbar-horiz',
+            scrollTrackId: 'scrollbar-horiz-container',
+            orientation: 'horizontal',
+            trackMargin: 20,
+        };
+        window.horizScrollBar = new ScrollBar(scrollList, parent, horizScrollBarOptions);
     }
 
     scrollList.onContentRequested(function(sender, args) {
