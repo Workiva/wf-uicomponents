@@ -59,6 +59,9 @@ define(function(require) {
             options.scrollerClass = 'scroll-bar';
             options.scrollTrackClass = 'scroll-bar-container';
             options.orientation = orientation;
+            options.scrollerZIndex = 5;
+            options.scrollerThickness = 5;
+            options.scrollTrackThickness = 5;
             options.trackMargin = trackMargin || 0;
 
             scrollBar = new ScrollBar(scrollList, parentEl, options);
@@ -78,7 +81,7 @@ define(function(require) {
 
         describe('instantiation', function() {
             beforeEach(function() {
-                initialize();
+                initialize('vertical');
             });
 
             afterEach(function() {
@@ -109,6 +112,28 @@ define(function(require) {
 
                 expect(scrollBarEl).not.toBe(undefined);
                 expect(scrollBarContainerEl).not.toBe(undefined);
+            });
+
+            it('should set position: absolute on the scroller and scroll track', function() {
+                var scrollBarEl =  document.getElementById(options.scrollerId);
+                var scrollBarContainerEl = document.getElementById(options.scrollTrackId);
+
+                expect(scrollBarEl.style.position).toBe('absolute');
+                expect(scrollBarContainerEl.style.position).toBe('absolute');
+            });
+
+            it('should set the z-index on the scroller', function() {
+                var scrollBarEl =  document.getElementById(options.scrollerId);
+
+                expect(scrollBarEl.style.zIndex).toBe('5');
+            });
+
+            it('should set the scroller and scroll track thickness on the scroller', function() {
+                var scrollBarEl =  document.getElementById(options.scrollerId);
+                var scrollBarContainerEl = document.getElementById(options.scrollTrackId);
+
+                expect(scrollBarEl.style.width).toBe('5px');
+                expect(scrollBarContainerEl.style.width).toBe('5px');
             });
         });
 
