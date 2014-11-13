@@ -125,7 +125,7 @@ define(function(require) {
             it('should set the z-index on the scroller', function() {
                 var scrollBarEl =  document.getElementById(options.scrollerId);
 
-                expect(scrollBarEl.style.zIndex).toBe('5');
+                expect(scrollBarEl.style.zIndex + '').toBe('5');
             });
 
             it('should set the scroller and scroll track thickness on the scroller', function() {
