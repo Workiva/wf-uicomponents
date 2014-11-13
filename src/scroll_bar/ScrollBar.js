@@ -21,6 +21,7 @@ define(function(require) {
     var DestroyUtil = require('wf-js-common/DestroyUtil');
 
     var DEFAULT_MIN_SIZE = 16;
+    var DEFAULT_SCROLLER_Z_INDEX = 3;
 
     /**
      * Creates a new ScrollBar with the given ScrollList and options.
@@ -55,6 +56,23 @@ define(function(require) {
      *        An amount (in px) to subtract from the end of the scroll track.
      *        Can be used to keep horizontal and vertical scroll bars from
      *        crossing.
+     *
+     * @param {number} options.scrollerThickness
+     *        The thickness of the actual scroller. This will be width for a
+     *        vertical scrollbar and height for a horizontal one.
+     *
+     * @param {number} options.scrollTrackThickness
+     *        The thickness of the scroll track. Usually the same as scroller
+     *        thickness. Width for a vertical scrollbar and height for a
+     *        horizontal one.
+     *
+     * @param {number} options.scrollBarOffset
+     *        The offset from the "natural" position of the scrollbar. The
+     *        natural position is the far right for a vertical scrollbar and
+     *        the bottom for a horizontal one.
+     *
+     * @param {number} options.scrollerZIndex
+     *        The z-index to apply to the scroller.
      *
      *
      * @example
@@ -94,6 +112,7 @@ define(function(require) {
         this._activeMap = this._scrollList.getListMap();
 
         this._options = options;
+        this._trackMargin = this._options.trackMargin || 0;
         this._isVertical = this._options.orientation === 'horizontal' ? false : true;
         this._scrollerPosition = 0.0;
         this._scrollerScrolling = false;
@@ -128,11 +147,7 @@ define(function(require) {
 
         // Bind map callbacks
 
-        this._scrollList.onCurrentItemChanged(function changeItemMap() {
-            // Map changed so unregister all the old callbacks
-            self._activeMap.onScaleChanged.remove(mapScaleChangedHandler);
-            self._activeMap.onTranslationChanged.remove(mapTranslationChangedHandler);
-
+        function updateMap() {
             var itemMap = self._scrollList.getCurrentItemMap();
             if (itemMap) {
                 // We are in single or peek mode
@@ -140,10 +155,25 @@ define(function(require) {
                 self._cacheDimensions();
                 self._placeScroller();
             }
+        }
 
-            // Re-register the handlers
+        function bindHandlers() {
             self._activeMap.onScaleChanged(mapScaleChangedHandler);
             self._activeMap.onTranslationChanged(mapTranslationChangedHandler);
+        }
+
+        function unbindHandlers() {
+            self._activeMap.onScaleChanged.remove(mapScaleChangedHandler);
+            self._activeMap.onTranslationChanged.remove(mapTranslationChangedHandler);
+        }
+
+        updateMap();
+        bindHandlers();
+
+        this._scrollList.onCurrentItemChanged(function changeItemMap() {
+            unbindHandlers();
+            updateMap();
+            bindHandlers();
         });
 
         // Bind scroll list callbacks
@@ -310,7 +340,7 @@ define(function(require) {
          * @method ScrollBar#setTrackSize
          */
         _setTrackSize: function() {
-            var trackSize = this._viewportSize - this._options.trackMargin;
+            var trackSize = this._viewportSize - this._trackMargin;
             this._trackSize = trackSize;
 
             if (this._isVertical) {
@@ -333,6 +363,7 @@ define(function(require) {
                 scrollerEl.className += ' ' + this._options.scrollerClass;
             }
 
+
             var scrollTrackEl = document.createElement('div');
             if (this._options.scrollTrackId) {
                 scrollTrackEl.setAttribute('id', this._options.scrollTrackId);
@@ -340,6 +371,25 @@ define(function(require) {
             if (this._options.scrollTrackClass) {
                 scrollTrackEl.className += ' ' + this._options.scrollTrackClass;
             }
+
+            var scrollerThickness = this._options.scrollerThickness || '';
+            var scrollTrackThickness = this._options.scrollTrackThickness || '';
+            var scrollBarOffset = this._options.scrollBarOffset || 0;
+
+            if (this._isVertical) {
+                scrollerEl.style.width = scrollerThickness + 'px';
+                scrollTrackEl.style.width = scrollTrackThickness + 'px';
+                scrollTrackEl.style.right = scrollBarOffset + 'px';
+            } else {
+                scrollerEl.style.height = scrollerThickness + 'px';
+                scrollTrackEl.style.height = scrollTrackThickness + 'px';
+                scrollTrackEl.style.bottom = scrollBarOffset + 'px';
+            }
+
+            scrollerEl.style.position = 'absolute';
+            scrollerEl.style.zIndex = this._options.scrollerZIndex || DEFAULT_SCROLLER_Z_INDEX;
+
+            scrollTrackEl.style.position = 'absolute';
 
             // Append the scroller and its scroll track to the given
             // parent element.
