@@ -22,6 +22,12 @@ define(function(require) {
 
     var DEFAULT_MIN_SIZE = 16;
     var DEFAULT_SCROLLER_Z_INDEX = 3;
+    var DEFAULT_SCROLLER_CLASS = 'scroller';
+    var DEFAULT_VERT_SCROLLER_CLASS = 'vertical-scroller';
+    var DEFAULT_HORIZ_SCROLLER_CLASS = 'horizontal-scroller';
+    var DEFAULT_TRACK_CLASS = 'scroll-track';
+    var DEFAULT_VERT_TRACK_CLASS = 'vertical-scroll-track';
+    var DEFAULT_HORIZ_TRACK_CLASS = 'horizontal-scroll-track';
 
     /**
      * Creates a new ScrollBar with the given ScrollList and options.
@@ -360,7 +366,10 @@ define(function(require) {
                 scrollerEl.setAttribute('id', this._options.scrollerId);
             }
             if (this._options.scrollerClass) {
-                scrollerEl.className += ' ' + this._options.scrollerClass;
+                scrollerEl.className = this._options.scrollerClass;
+            } else {
+                scrollerEl.className = DEFAULT_SCROLLER_CLASS + ' ' +
+                    (this._isVertical ? DEFAULT_VERT_SCROLLER_CLASS : DEFAULT_HORIZ_SCROLLER_CLASS);
             }
 
 
@@ -369,7 +378,10 @@ define(function(require) {
                 scrollTrackEl.setAttribute('id', this._options.scrollTrackId);
             }
             if (this._options.scrollTrackClass) {
-                scrollTrackEl.className += ' ' + this._options.scrollTrackClass;
+                scrollTrackEl.className = this._options.scrollTrackClass;
+            } else {
+                scrollTrackEl.className = DEFAULT_TRACK_CLASS + ' ' +
+                    (this._isVertical ? DEFAULT_VERT_TRACK_CLASS : DEFAULT_HORIZ_TRACK_CLASS);
             }
 
             var scrollerThickness = this._options.scrollerThickness || '';
