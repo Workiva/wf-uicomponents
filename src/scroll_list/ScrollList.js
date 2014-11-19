@@ -878,15 +878,6 @@ define(function(require) {
                 toIndex: targetIndex
             }]);
 
-            // Render placeholders at the jump target if target is not rendered.
-            var itemRange = layout.getRenderedItemRange();
-            if (!itemRange ||
-                targetIndex < itemRange.startIndex ||
-                targetIndex > itemRange.endIndex) {
-                layout.setScrollPosition({ top: panToOptions.y, left: panToOptions.x });
-                layout.render();
-            }
-
             // Perform the scroll.
             this._listMap.panTo(panToOptions);
         },
