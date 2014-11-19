@@ -712,8 +712,9 @@ define(function(require) {
                     it('should fit the maximum size of items to the viewport', function() {
                         var viewportSize;
                         var padding;
+                        var mockScale = 0.5;
 
-                        spyOn(ScaleStrategies, 'auto').andReturn(0.5);
+                        spyOn(ScaleStrategies, 'auto').andReturn(mockScale);
 
                         layout = createVerticalLayout({ flow: true, fit: 'auto' });
                         viewportSize = layout.getViewportSize();
@@ -730,10 +731,23 @@ define(function(require) {
                         expect(scaleArgs[2]).toBe(padding);
 
                         layout.getItemLayouts().forEach(function(item, index) {
-                            expect(item.scaleToFit).toBe(0.5);
+                            expect(item.scaleToFit).toBe(mockScale);
                             expect(item.width).toBe(itemMetadata[index].width / 2);
                             expect(item.height).toBe(itemMetadata[index].height / 2);
                         });
+                    });
+
+                    it('should correctly account for left and right padding', function() {
+                        var padding = 20;
+                        var mockScale = 0.5;
+
+                        spyOn(ScaleStrategies, 'auto').andReturn(mockScale);
+
+                        layout = createVerticalLayout({ flow: true, fit: 'auto', padding: padding });
+                        var layoutSize = layout.getSize();
+
+                        // 90 = max page width * scale + 2 * padding
+                        expect(layoutSize.width).toEqual(90);
                     });
 
                     it('should set top to the cumulative outer height', function() {

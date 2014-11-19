@@ -897,12 +897,14 @@ define(function(require) {
                 totalHeight = layout.bottom;
             }
 
-            // Ensure when in flow mode, where items are scaled together,
-            // that the layout size accommodates the maximum possible item width.
+            // Ensure when in flow mode, where items are scaled together, that
+            // the layout size accommodates the maximum possible item width.
             // If this is not done, then positioning will change and shift if
-            // newer, wider items are added dynamically.
+            // newer, wider items are added dynamically. At the same time, do
+            // not scale the padding as it is expected to be independent of the
+            // scale applied to the document.
             if (flow) {
-                maxWidth = (itemSizeCollection.maxWidth + 2 * padding) * cachedScaleToFit;
+                maxWidth = itemSizeCollection.maxWidth * cachedScaleToFit + (2 * padding);
             }
 
             // Cache the item layouts and total layout size.
