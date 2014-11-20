@@ -887,10 +887,11 @@ define(function(require) {
                 // points are distance from the top of the document.  Flip the signs.
                 layout.setScrollPosition({
                     top: -panToOptions.y,
-                   left: -panToOptions.x
+                    left: -panToOptions.x
                 });
                 layout.render();
             }
+
             // Perform the scroll.
             this._listMap.panTo(panToOptions);
         },
