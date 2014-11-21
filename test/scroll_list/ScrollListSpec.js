@@ -612,8 +612,8 @@ define(function(require) {
                     scrollList.scrollToItem({ index: 10 });
 
                     expect(layout.setScrollPosition).toHaveBeenCalledWith({
-                        top: -itemLayout.top * currentState.scale,
-                        left: currentState.translateX
+                        top: -(-itemLayout.top * currentState.scale),
+                        left: -currentState.translateX
                     });
                     expect(layout.render).toHaveBeenCalled();
                 });

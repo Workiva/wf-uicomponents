@@ -883,7 +883,12 @@ define(function(require) {
             if (!itemRange ||
                 targetIndex < itemRange.startIndex ||
                 targetIndex > itemRange.endIndex) {
-                layout.setScrollPosition({ top: panToOptions.y, left: panToOptions.x });
+                // panToOptions are translations; the distance to move the document
+                // points are distance from the top of the document.  Flip the signs.
+                layout.setScrollPosition({
+                    top: -panToOptions.y,
+                    left: -panToOptions.x
+                });
                 layout.render();
             }
 
