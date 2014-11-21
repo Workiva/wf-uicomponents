@@ -827,7 +827,8 @@ define(function(require) {
 
             function getScaleToFit(item) {
                 function fit(sample) {
-                    var scale = ScaleStrategies[options.fit](viewportSize, sample, padding);
+                    var fitMode = sample.fit || options.fit;
+                    var scale = ScaleStrategies[fitMode](viewportSize, sample, padding);
                     return Math.min(scale, options.fitUpscaleLimit);
                 }
                 // If flowing, scale all the items at once.
