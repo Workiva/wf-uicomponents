@@ -19,11 +19,10 @@ define(function(require) {
     function generateItemSizes(length) {
         // NOTE: Interested in retina canvas performance?
         // See: http://www.scirra.com/forum/retina-ios-performance-problem-fix-please-test_topic58742.html
-        var tallItem = { height: 1022, width: 766 };
-        var wideItem = { height: 766, width: 1022 };
         var result = [];
         for (var i = 0; i < length; i++) {
-            var item = (i % 2 === 0) ? tallItem : wideItem;
+            var fitMode = (i % 2 === 0) ? 'height' : 'width';
+            var item = { height: 1022, width: 766, fit: fitMode };
             result.push(item);
         }
 
@@ -108,7 +107,7 @@ define(function(require) {
     var zoomMode = urlParams.scroll && urlParams.scroll !== 'flow';
 
     var itemSizeCollection = new ItemSizeCollection({
-        maxWidth: 1022,
+        maxWidth: 766,
         maxHeight: 1022,
         items: generateItemSizes(totalPages)
     });
@@ -117,6 +116,7 @@ define(function(require) {
         gap: 2,
         mode: scrollMode,
         fit: fitMode,
+        fitUpscaleLimit: 1000,
         minNumberOfVirtualItems: minNumberOfVirtualItems,
         padding: 1,
         scaleLimits: { minimum: 0.25, maximum: 3 },
