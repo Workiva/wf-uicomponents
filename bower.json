@@ -1,6 +1,6 @@
 {
   "name": "wf-uicomponents",
-  "version": "0.10.0",
+  "version": "0.10.1",
   "private": true,
   "ignore": [
     "bower_components",
