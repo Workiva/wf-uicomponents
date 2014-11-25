@@ -17,7 +17,10 @@
 define(function() {
 
     /**
-     * Describes the items in a layout.
+     * Describes the items in a layout. The `item.fit` attribute is optional.
+     * If the `item.fit` attribute is set, it should be one of 'auto',
+     * 'height', or 'width'. This will cause the global fit mode to be
+     * overridden for that item in single and peek modes.
      *
      * @name ItemSizeCollection
      * @constructor
@@ -25,7 +28,7 @@ define(function() {
      * @param {Object} configuration
      * @param {number} configuration.maxWidth
      * @param {number} configuration.maxHeight
-     * @param {Array.<{ width: number, height: number }>} [configuration.items]
+     * @param {Array.<{ width: number, height: number, fit: string }>} [configuration.items]
      */
     var ItemSizeCollection = function(configuration) {
         configuration = configuration || {};

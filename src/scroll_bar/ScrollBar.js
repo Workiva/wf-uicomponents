@@ -133,8 +133,6 @@ define(function(require) {
         // Make adjustments when the user zooms
         var mapScaleChangedHandler = function() {
             self._cacheDimensions();
-            self._setTrackSize();
-            self._setScrollerSize();
             self._placeScroller();
         };
 
@@ -198,8 +196,6 @@ define(function(require) {
 
             if (args.event.type === EventTypes.RELEASE && self._resize === true) {
                 self._cacheDimensions();
-                self._setTrackSize();
-                self._setScrollerSize();
                 self._resize = false;
             }
         });
@@ -412,9 +408,6 @@ define(function(require) {
 
             // Compute scale and size attributes
             this._cacheDimensions();
-
-            this._setTrackSize();
-            this._setScrollerSize();
         },
 
         /**
@@ -493,6 +486,9 @@ define(function(require) {
                 this._contentSize = contentSize.width * this._scale;
                 this._virtualSize = this._contentSize - this._viewportSize;
             }
+
+            this._setTrackSize();
+            this._setScrollerSize();
         }
 
     };

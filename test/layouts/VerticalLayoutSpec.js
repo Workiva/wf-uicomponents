@@ -29,6 +29,7 @@ define(function(require) {
         var viewportSize = { width: 200, height: 500 };
         var $viewport = $('<div>').css({ position: 'absolute', top: -10000 });
         var itemMetadata = [];
+        var mixedFitItemMetadata = [];
 
         var renderer = Renderer.prototype;
         var layout;
@@ -46,8 +47,14 @@ define(function(require) {
                 items: items
             });
         }
+
         function createVerticalLayout(options) {
             var itemSizeCollection = createItemSizeCollection(itemMetadata);
+            return new VerticalLayout($viewport[0], itemSizeCollection, renderer, options);
+        }
+
+        function createMixedFitVerticalLayout(options) {
+            var itemSizeCollection = createItemSizeCollection(mixedFitItemMetadata);
             return new VerticalLayout($viewport[0], itemSizeCollection, renderer, options);
         }
 
@@ -58,6 +65,14 @@ define(function(require) {
                 { width: 100, height: 200 },
                 { width: 100, height: 200 },
                 { width: 100, height: 200 },
+                { width: 100, height: 200 },
+                { width: 100, height: 200 }
+            ];
+
+            mixedFitItemMetadata = [
+                { width: 100, height: 200, fit: 'auto' },
+                { width: 100, height: 200, fit: 'height' },
+                { width: 100, height: 200, fit: 'width' },
                 { width: 100, height: 200 },
                 { width: 100, height: 200 }
             ];
@@ -693,6 +708,17 @@ define(function(require) {
                     expect(ScaleStrategies.height).toHaveBeenCalled();
 
                     createVerticalLayout({ fit: 'width' });
+                    expect(ScaleStrategies.width).toHaveBeenCalled();
+                });
+
+                it('should use the item-specific scale strategy if given', function() {
+                    spyOn(ScaleStrategies, 'auto').andReturn(1);
+                    spyOn(ScaleStrategies, 'height').andReturn(1);
+                    spyOn(ScaleStrategies, 'width').andReturn(1);
+
+                    createMixedFitVerticalLayout({ flow: false, fit: 'auto' });
+                    expect(ScaleStrategies.auto.calls.length).toBe(3);
+                    expect(ScaleStrategies.height).toHaveBeenCalled();
                     expect(ScaleStrategies.width).toHaveBeenCalled();
                 });
 

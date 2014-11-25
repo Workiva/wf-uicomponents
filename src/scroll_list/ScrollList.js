@@ -55,7 +55,7 @@ define(function(require) {
      *        The DOM element that hosts the scroll list.
      *
      * @param {ItemSizeCollection} itemSizeCollection
-     *        Metadata about the item sizes.
+     *        Metadata about the item sizes and (optionally) fit modes.
      *
      * @param {Object} [options]
      *
