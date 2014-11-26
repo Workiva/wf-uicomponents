@@ -354,6 +354,14 @@ define(function(require) {
          */
         this._scaleTranslator = null;
 
+        /**
+         * Indicates which of the content fit types is currently in use, if
+         * any. Possible values are null (no fit), 'width', 'height', and
+         * 'window'.
+         * @type {string}
+         */
+        this._contentFit = null;
+
         //---------------------------------------------------------
         // Initialization
         //---------------------------------------------------------
@@ -484,6 +492,16 @@ define(function(require) {
          */
         getScaleTranslator: function() {
             return this._scaleTranslator;
+        },
+
+        /**
+         * Gets the current content fit type.
+         *
+         * @method ScrollList#getContentFit
+         * @return {string}
+         */
+        getContentFit: function() {
+            return this._contentFit;
         },
 
         /**
@@ -959,6 +977,7 @@ define(function(require) {
             if (options.scale === undefined) {
                 throw new Error('ScrollList#zoomToScale: scale is required.');
             }
+            this._contentFit = null;
             (this.getCurrentItemMap() || this._listMap).zoomTo({
                 scale: this._scaleTranslator.toMapScale(options.scale),
                 duration: options.duration,
@@ -976,6 +995,7 @@ define(function(require) {
          */
         zoomToWidth: function(options) {
             var scale = this._fitWidthScale();
+            this._contentFit = 'width';
             this.zoomTo(_.defaults({ scale: scale }, options));
             return scale;
         },
@@ -990,6 +1010,7 @@ define(function(require) {
          */
         zoomToHeight: function(options) {
             var scale = this._fitHeightScale();
+            this._contentFit = 'height';
             this.zoomTo(_.defaults({ scale: scale }, options));
             return scale;
         },
@@ -1005,6 +1026,7 @@ define(function(require) {
             var widthScale = this._fitWidthScale();
             var heightScale = this._fitHeightScale();
             var scale = Math.min(widthScale, heightScale);
+            this._contentFit = 'window';
             this.zoomTo(_.defaults({ scale: scale }, options));
             return scale;
         },
