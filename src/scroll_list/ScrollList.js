@@ -966,6 +966,49 @@ define(function(require) {
             });
         },
 
+        /**
+         * Zoom in/out such that the page width will match the width of the
+         * viewport.
+         * @param {Object} options
+         * @param {number} [options.duration] - The animation duration, in ms.
+         * @param {Function} [options.done] - Callback invoked when the zoom is complete.
+         * @return {number} - the scale that was applied
+         */
+        zoomToWidth: function(options) {
+            var scale = this._fitWidthScale();
+            this.zoomTo(_.defaults({ scale: scale }, options));
+            return scale;
+        },
+
+        /**
+         * Zoom in/out such that the page height will match the height of the
+         * viewport.
+         * @param {Object} options
+         * @param {number} [options.duration] - The animation duration, in ms.
+         * @param {Function} [options.done] - Callback invoked when the zoom is complete.
+         * @return {number} - the scale that was applied
+         */
+        zoomToHeight: function(options) {
+            var scale = this._fitHeightScale();
+            this.zoomTo(_.defaults({ scale: scale }, options));
+            return scale;
+        },
+
+        /**
+         * Zoom in/out such that the entire page will fit within the viewport.
+         * @param {Object} options
+         * @param {number} [options.duration] - The animation duration, in ms.
+         * @param {Function} [options.done] - Callback invoked when the zoom is complete.
+         * @return {number} - the scale that was applied
+         */
+        zoomToWindow: function(options) {
+            var widthScale = this._fitWidthScale();
+            var heightScale = this._fitHeightScale();
+            var scale = Math.min(widthScale, heightScale);
+            this.zoomTo(_.defaults({ scale: scale }, options));
+            return scale;
+        },
+
         //---------------------------------------------------------
         // Private methods
         //---------------------------------------------------------
@@ -1117,6 +1160,58 @@ define(function(require) {
             if (!this._itemSizesCollection) {
                 throw new Error('ScrollList configuration: itemSizeCollection is required.');
             }
+        },
+
+        _fitWidthScale: function() {
+            var disableScaleTranslation = this._options.disableScaleTranslation;
+            var fitMode = this._options.fit;
+            var scale;
+
+            var itemSizeCollection = this._layout.getItemSizeCollection();
+            var viewportSize = this._layout.getViewportSize();
+            var maxPageWidth = itemSizeCollection.maxWidth;
+            var viewportWidth = viewportSize.width;
+
+            if (disableScaleTranslation) {
+                if (fitMode === FitModes.WIDTH) {
+                    scale = 1;
+                } else {
+                    var maxPageHeight = itemSizeCollection.maxHeight;
+                    var viewportHeight = viewportSize.height;
+                    
+                    scale = (viewportWidth / maxPageWidth) * (maxPageHeight / viewportHeight);
+                }
+            } else {
+                scale = viewportWidth / maxPageWidth;
+            }
+
+            return scale;
+        },
+
+        _fitHeightScale: function() {
+            var disableScaleTranslation = this._options.disableScaleTranslation;
+            var fitMode = this._options.fit;
+            var scale;
+
+            var itemSizeCollection = this._layout.getItemSizeCollection();
+            var viewportSize = this._layout.getViewportSize();
+            var maxPageHeight = itemSizeCollection.maxHeight;
+            var viewportHeight = viewportSize.height;
+
+            if (disableScaleTranslation) {
+                if (fitMode === FitModes.HEIGHT) {
+                    scale = 1;
+                } else {
+                    var maxPageWidth = itemSizeCollection.maxWidth;
+                    var viewportWidth = viewportSize.width;
+
+                    scale = (viewportHeight / maxPageHeight) * (maxPageWidth / viewportWidth);
+                }
+            } else {
+                scale = viewportHeight / maxPageHeight;
+            }
+
+            return scale;
         }
     };
 
