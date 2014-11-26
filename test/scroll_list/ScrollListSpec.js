@@ -1108,6 +1108,45 @@ define(function(require) {
                     expect(scrollList.zoomToWindow()).toBe(2);
                 });
             });
+
+            it('should re-zoom to width on refresh', function() {
+                testScrollList({}, function(scrollList) {
+                    scrollList.zoomToWidth();
+                    spyOn(scrollList, 'zoomToWidth');
+                    scrollList.refresh();
+                    expect(scrollList.zoomToWidth).toHaveBeenCalled();
+                });
+            });
+
+            it('should re-zoom to height on refresh', function() {
+                testScrollList({}, function(scrollList) {
+                    scrollList.zoomToHeight();
+                    spyOn(scrollList, 'zoomToHeight');
+                    scrollList.refresh();
+                    expect(scrollList.zoomToHeight).toHaveBeenCalled();
+                });
+            });
+
+            it('should re-zoom to window on refresh', function() {
+                testScrollList({}, function(scrollList) {
+                    scrollList.zoomToWindow();
+                    spyOn(scrollList, 'zoomToWindow');
+                    scrollList.refresh();
+                    expect(scrollList.zoomToWindow).toHaveBeenCalled();
+                });
+            });
+
+            it('should not fit to content if no fit was selected', function() {
+                testScrollList({}, function(scrollList) {
+                    spyOn(scrollList, 'zoomToWidth');
+                    spyOn(scrollList, 'zoomToHeight');
+                    spyOn(scrollList, 'zoomToWindow');
+                    scrollList.refresh();
+                    expect(scrollList.zoomToWidth).not.toHaveBeenCalled();
+                    expect(scrollList.zoomToHeight).not.toHaveBeenCalled();
+                    expect(scrollList.zoomToWindow).not.toHaveBeenCalled();
+                });
+            });
         });
 
         describe('when snapping a position to a particular list item', function() {
