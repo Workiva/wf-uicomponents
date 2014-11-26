@@ -1072,6 +1072,44 @@ define(function(require) {
             });
         });
 
+        describe('when fitting to content', function() {
+            it('should fit with no scale translation', function() {
+                testScrollList({ disableScaleTranslation: true, fit: 'width' }, function(scrollList) {
+                    expect(scrollList.zoomToWidth()).toBe(1);
+                    expect(scrollList.zoomToHeight()).toBe(1);
+                    expect(scrollList.zoomToWindow()).toBe(1);
+                });
+                testScrollList({ disableScaleTranslation: true, fit: 'height' }, function(scrollList) {
+                    expect(scrollList.zoomToWidth()).toBe(1);
+                    expect(scrollList.zoomToHeight()).toBe(1);
+                    expect(scrollList.zoomToWindow()).toBe(1);
+                });
+                testScrollList({ disableScaleTranslation: true, fit: 'auto' }, function(scrollList) {
+                    expect(scrollList.zoomToWidth()).toBe(1);
+                    expect(scrollList.zoomToHeight()).toBe(1);
+                    expect(scrollList.zoomToWindow()).toBe(1);
+                });
+            });
+
+            it('should fit with scale translation', function() {
+                testScrollList({ disableScaleTranslation: false, fit: 'width' }, function(scrollList) {
+                    expect(scrollList.zoomToWidth()).toBe(2);
+                    expect(scrollList.zoomToHeight()).toBe(2);
+                    expect(scrollList.zoomToWindow()).toBe(2);
+                });
+                testScrollList({ disableScaleTranslation: false, fit: 'height' }, function(scrollList) {
+                    expect(scrollList.zoomToWidth()).toBe(2);
+                    expect(scrollList.zoomToHeight()).toBe(2);
+                    expect(scrollList.zoomToWindow()).toBe(2);
+                });
+                testScrollList({ disableScaleTranslation: false, fit: 'auto' }, function(scrollList) {
+                    expect(scrollList.zoomToWidth()).toBe(2);
+                    expect(scrollList.zoomToHeight()).toBe(2);
+                    expect(scrollList.zoomToWindow()).toBe(2);
+                });
+            });
+        });
+
         describe('when snapping a position to a particular list item', function() {
             var expectedBuffer = 1; // bump 1 pixel inside the container edge
             var mockListItemElementRect;
