@@ -758,6 +758,18 @@ define(function(require) {
             newContentHeight = listMap.getContentDimensions().height;
             newViewportTop = Math.round(newContentHeight * listScale * viewportTopPercent);
 
+            switch(this._contentFit) {
+                case 'width':
+                    this.zoomToWidth();
+                    break;
+                case 'height':
+                    this.zoomToHeight();
+                    break;
+                case 'window':
+                    this.zoomToWindow();
+                    break;
+            }
+
             // Pan to the new position.
             listMap.panTo({
                 x: listState.translateX,
@@ -978,11 +990,7 @@ define(function(require) {
                 throw new Error('ScrollList#zoomToScale: scale is required.');
             }
             this._contentFit = null;
-            (this.getCurrentItemMap() || this._listMap).zoomTo({
-                scale: this._scaleTranslator.toMapScale(options.scale),
-                duration: options.duration,
-                done: options.done
-            });
+            this._zoomTo(options);
         },
 
         /**
@@ -996,7 +1004,7 @@ define(function(require) {
         zoomToWidth: function(options) {
             var scale = this._fitWidthScale();
             this._contentFit = 'width';
-            this.zoomTo(_.defaults({ scale: scale }, options));
+            this._zoomTo(_.defaults({ scale: scale }, options));
             return scale;
         },
 
@@ -1011,7 +1019,7 @@ define(function(require) {
         zoomToHeight: function(options) {
             var scale = this._fitHeightScale();
             this._contentFit = 'height';
-            this.zoomTo(_.defaults({ scale: scale }, options));
+            this._zoomTo(_.defaults({ scale: scale }, options));
             return scale;
         },
 
@@ -1027,7 +1035,7 @@ define(function(require) {
             var heightScale = this._fitHeightScale();
             var scale = Math.min(widthScale, heightScale);
             this._contentFit = 'window';
-            this.zoomTo(_.defaults({ scale: scale }, options));
+            this._zoomTo(_.defaults({ scale: scale }, options));
             return scale;
         },
 
@@ -1182,6 +1190,14 @@ define(function(require) {
             if (!this._itemSizesCollection) {
                 throw new Error('ScrollList configuration: itemSizeCollection is required.');
             }
+        },
+
+        _zoomTo: function(options) {
+            (this.getCurrentItemMap() || this._listMap).zoomTo({
+                scale: this._scaleTranslator.toMapScale(options.scale),
+                duration: options.duration,
+                done: options.done
+            });
         },
 
         _fitWidthScale: function() {
