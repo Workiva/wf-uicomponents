@@ -209,6 +209,16 @@ define(function(require) {
         //---------------------------------------------------------
 
         /**
+         * Gets the layout of the current item in view
+         *
+         * @return {ItemLayout}
+         */
+        getCurrentItemLayout: function() {
+            var itemIndex = this.getCurrentItemIndex();
+            return this.getItemLayout(itemIndex);
+        },
+
+        /**
          * Gets the layout information for the item with the given index.
          *
          * @method VerticalLayout#getItemLayout
@@ -820,20 +830,27 @@ define(function(require) {
             var layouts = new Array(numberOfItems);
             var layout;
             var size;
-            var cachedScaleToFit = null;
+            var cachedScales = null;
+            var scales = null;
             var scaleToFit;
             var maxWidth = 0;
             var totalHeight = 0;
 
-            function getScaleToFit(item) {
+            function getScales(item) {
                 function fit(sample) {
                     var fitMode = sample.fit || options.fit;
                     var scale = ScaleStrategies[fitMode](viewportSize, sample, padding);
-                    return Math.min(scale, options.fitUpscaleLimit);
+                    var result = {
+                        default: Math.min(scale, options.fitUpscaleLimit),
+                        width: ScaleStrategies.width(viewportSize, sample, padding),
+                        height: ScaleStrategies.height(viewportSize, sample, padding),
+                        auto: ScaleStrategies.auto(viewportSize, sample, padding)
+                    };
+                    return result;
                 }
                 // If flowing, scale all the items at once.
                 if (flow) {
-                    return cachedScaleToFit || (cachedScaleToFit = fit({
+                    return cachedScales || (cachedScales = fit({
                         width: itemSizeCollection.maxWidth,
                         height: itemSizeCollection.maxHeight
                     }));
@@ -848,11 +865,13 @@ define(function(require) {
 
             for (i = 0; i < numberOfItems; i++) {
                 size = itemSizeCollection.getItem(i);
-                scaleToFit = getScaleToFit(size);
+                scales = getScales(size);
+                scaleToFit = scales.default;
 
                 layout = new ItemLayout({
                     itemIndex: i,
                     top: totalHeight,
+                    scales: scales,
                     scaleToFit: scaleToFit,
                     width: Math.floor(size.width * scaleToFit),
                     height: Math.floor(size.height * scaleToFit),
@@ -905,7 +924,7 @@ define(function(require) {
             // not scale the padding as it is expected to be independent of the
             // scale applied to the document.
             if (flow) {
-                maxWidth = itemSizeCollection.maxWidth * cachedScaleToFit + (2 * padding);
+                maxWidth = itemSizeCollection.maxWidth * cachedScales.default + (2 * padding);
             }
 
             // Cache the item layouts and total layout size.

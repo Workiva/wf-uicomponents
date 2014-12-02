@@ -29,7 +29,6 @@ define(function(require) {
         var viewportSize = { width: 200, height: 500 };
         var $viewport = $('<div>').css({ position: 'absolute', top: -10000 });
         var itemMetadata = [];
-        var mixedFitItemMetadata = [];
 
         var renderer = Renderer.prototype;
         var layout;
@@ -53,10 +52,6 @@ define(function(require) {
             return new VerticalLayout($viewport[0], itemSizeCollection, renderer, options);
         }
 
-        function createMixedFitVerticalLayout(options) {
-            var itemSizeCollection = createItemSizeCollection(mixedFitItemMetadata);
-            return new VerticalLayout($viewport[0], itemSizeCollection, renderer, options);
-        }
 
         beforeEach(function() {
             $viewport.empty().appendTo('body').css(viewportSize);
@@ -65,14 +60,6 @@ define(function(require) {
                 { width: 100, height: 200 },
                 { width: 100, height: 200 },
                 { width: 100, height: 200 },
-                { width: 100, height: 200 },
-                { width: 100, height: 200 }
-            ];
-
-            mixedFitItemMetadata = [
-                { width: 100, height: 200, fit: 'auto' },
-                { width: 100, height: 200, fit: 'height' },
-                { width: 100, height: 200, fit: 'width' },
                 { width: 100, height: 200 },
                 { width: 100, height: 200 }
             ];
@@ -712,14 +699,27 @@ define(function(require) {
                 });
 
                 it('should use the item-specific scale strategy if given', function() {
-                    spyOn(ScaleStrategies, 'auto').andReturn(1);
-                    spyOn(ScaleStrategies, 'height').andReturn(1);
-                    spyOn(ScaleStrategies, 'width').andReturn(1);
+                    var autoScale = 0.1;
+                    var heightScale = 0.2;
+                    var widthScale = 0.3;
+                    spyOn(ScaleStrategies, 'auto').andReturn(autoScale);
+                    spyOn(ScaleStrategies, 'height').andReturn(heightScale);
+                    spyOn(ScaleStrategies, 'width').andReturn(widthScale);
 
-                    createMixedFitVerticalLayout({ flow: false, fit: 'auto' });
-                    expect(ScaleStrategies.auto.calls.length).toBe(3);
-                    expect(ScaleStrategies.height).toHaveBeenCalled();
-                    expect(ScaleStrategies.width).toHaveBeenCalled();
+                    var mixedFitItemMetadata = [
+                        { width: 100, height: 200, fit: 'auto' },
+                        { width: 100, height: 200, fit: 'height' },
+                        { width: 100, height: 200, fit: 'width' },
+                        { width: 100, height: 200 },
+                    ];
+                    var itemSizeCollection = createItemSizeCollection(mixedFitItemMetadata);
+                    var options = { flow: false, fit: 'auto' };
+                    layout = new VerticalLayout($viewport[0], itemSizeCollection, renderer, options);
+
+                    expect(layout.getItemLayout(0).scaleToFit).toEqual(autoScale);
+                    expect(layout.getItemLayout(1).scaleToFit).toEqual(heightScale);
+                    expect(layout.getItemLayout(2).scaleToFit).toEqual(widthScale);
+                    expect(layout.getItemLayout(3).scaleToFit).toEqual(autoScale);
                 });
 
                 it('should apply padding to the left and right of all items', function() {
@@ -746,7 +746,6 @@ define(function(require) {
                         viewportSize = layout.getViewportSize();
                         padding = layout.getOptions().padding;
 
-                        expect(ScaleStrategies.auto.calls.length).toBe(1);
                         var scaleArgs = ScaleStrategies.auto.calls[0].args;
                         var itemSizeCollection = layout.getItemSizeCollection();
                         expect(scaleArgs[0]).toBe(viewportSize);
@@ -887,8 +886,6 @@ define(function(require) {
                         layout = createVerticalLayout({ flow: false, fit: 'auto' });
                         viewportSize = layout.getViewportSize();
                         padding = layout.getOptions().padding;
-
-                        expect(ScaleStrategies.auto.calls.length).toBe(5);
 
                         itemMetadata.forEach(function(item) {
                             expect(ScaleStrategies.auto).toHaveBeenCalledWith(viewportSize, item, padding);

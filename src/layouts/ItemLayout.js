@@ -144,6 +144,19 @@ define(function(require) {
         this.right = template.right || 0;
 
         /**
+         * The scales to fit the item to the viewport by width, height,
+         * auto, or the default fit.
+         *
+         * @type {Object}
+         */
+        this.scales = template.scales || {
+            default: 1,
+            width: 1,
+            height: 1,
+            auto: 1
+        };
+
+        /**
          * The scale applied to fit this item to the viewport.
          *
          * @member ItemLayout#scaleToFit

@@ -96,7 +96,7 @@ define(function(require) {
      *
      * @param {boolean} [options.persistZoom=false]
      *        When persistZoom is enabled, when in peek mode the zoom level
-     *        will persist when changing pages. Defaults to false.
+     *        will persist when changing items. Defaults to false.
      *
      * @example
      *
@@ -180,7 +180,7 @@ define(function(require) {
         /**
          * Observable for subscribing to scroll to events.
          * This event occurs when the peek interceptor decides
-         * to snap to the top of a page.
+         * to snap to the top of a item.
          *
          * @method ScrollList#onScrollToItemFinished
          * @param {Function} callback
@@ -354,14 +354,6 @@ define(function(require) {
          */
         this._scaleTranslator = null;
 
-        /**
-         * Indicates which of the content fit types is currently in use, if
-         * any. Possible values are null (no fit), 'width', 'height', and
-         * 'window'.
-         * @type {string}
-         */
-        this._contentFit = null;
-
         //---------------------------------------------------------
         // Initialization
         //---------------------------------------------------------
@@ -495,16 +487,6 @@ define(function(require) {
         },
 
         /**
-         * Gets the current content fit type.
-         *
-         * @method ScrollList#getContentFit
-         * @return {string}
-         */
-        getContentFit: function() {
-            return this._contentFit;
-        },
-
-        /**
          * Gets whether interactions are disabled.
          *
          * @method ScrollList#isDisabled
@@ -580,8 +562,8 @@ define(function(require) {
             var BUFFER = 1; // bump the event position 1 pixel inside the item container
             var placeholderRenderer = this.getRenderer();
             var placeholder = placeholderRenderer.get(itemIndex);
-            var pageElement = placeholder.contentContainer;
-            var rect = pageElement.getBoundingClientRect();
+            var itemElement = placeholder.contentContainer;
+            var rect = itemElement.getBoundingClientRect();
             var adjustedposition = {
                 x: position.x,
                 y: position.y
@@ -758,18 +740,6 @@ define(function(require) {
             newContentHeight = listMap.getContentDimensions().height;
             newViewportTop = Math.round(newContentHeight * listScale * viewportTopPercent);
 
-            switch(this._contentFit) {
-                case 'width':
-                    this.zoomToWidth();
-                    break;
-                case 'height':
-                    this.zoomToHeight();
-                    break;
-                case 'window':
-                    this.zoomToWindow();
-                    break;
-            }
-
             // Pan to the new position.
             listMap.panTo({
                 x: listState.translateX,
@@ -803,26 +773,26 @@ define(function(require) {
          *   Negative numbers do the reverse.
          * @param {Function} [options.done] - Callback invoked when the jump is complete.
          * @example
-         * // Scrolls the third page to the top of the viewport.
+         * // Scrolls the third item to the top of the viewport.
          * scrollList.scrollToItem({ 3, 'top'});
          *
-         * // Scrolls to the third item/page, and places the point 200px down
-         * // the page at the top of the viewport.  x is ignored.
+         * // Scrolls to the third item, and places the point 200px down
+         * // the item at the top of the viewport.  x is ignored.
          * scrollList.scrollToItem({ 3, 'top', { x: 100, y: 200 } });
          *
-         * // Scrolls the top of the third page to the center of the viewport.
+         * // Scrolls the top of the third item to the center of the viewport.
          * scrollList.scrollToItem({ 3, 'center'});
          *
-         * // Scrolls to the third item/page, and places the point 100 in from
+         * // Scrolls to the third item, and places the point 100 in from
          * // the left and 200px down at the cetner of the viewport.
          * scrollList.scrollToItem({ 3, 'center', { x: 100, y: 200 } });
          *
-         * // Scrolls the top of the third page to the bottom of the viewport.
-         * // (Basically shows page 2.)
+         * // Scrolls the top of the third item to the bottom of the viewport.
+         * // (Basically shows item 2.)
          * scrollList.scrollToItem({ 3, 'bottom'});
          *
-         * // Scrolls to the third item/page, and places the point 200px down
-         * // the page to the bottom of the viewport. x is ignored.
+         * // Scrolls to the third item, and places the point 200px down
+         * // the item to the bottom of the viewport. x is ignored.
          * scrollList.scrollToItem({ 3, 'bottom', { x: 100, y: 200 } });
          *
          */
@@ -989,53 +959,51 @@ define(function(require) {
             if (options.scale === undefined) {
                 throw new Error('ScrollList#zoomToScale: scale is required.');
             }
-            this._contentFit = null;
-            this._zoomTo(options);
+            this._zoomTo(options.scale, options);
         },
 
         /**
-         * Zoom in/out such that the page width will match the width of the
-         * viewport.
+         * Zoom in/out such that the item is fit to the viewport width.
+         *
          * @param {Object} options
          * @param {number} [options.duration] - The animation duration, in ms.
          * @param {Function} [options.done] - Callback invoked when the zoom is complete.
          * @return {number} - the scale that was applied
          */
         zoomToWidth: function(options) {
-            var scale = this._fitWidthScale();
-            this._contentFit = 'width';
-            this._zoomTo(_.defaults({ scale: scale }, options));
+            var itemLayout = this._layout.getCurrentItemLayout();
+            var scale = itemLayout.scales.width / itemLayout.scales.default;
+            this._zoomTo(scale, options);
             return scale;
         },
 
         /**
-         * Zoom in/out such that the page height will match the height of the
-         * viewport.
+         * Zoom in/out such that the item is fit to the viewport height.
+         *
          * @param {Object} options
          * @param {number} [options.duration] - The animation duration, in ms.
          * @param {Function} [options.done] - Callback invoked when the zoom is complete.
          * @return {number} - the scale that was applied
          */
         zoomToHeight: function(options) {
-            var scale = this._fitHeightScale();
-            this._contentFit = 'height';
-            this._zoomTo(_.defaults({ scale: scale }, options));
+            var itemLayout = this._layout.getCurrentItemLayout();
+            var scale = itemLayout.scales.height / itemLayout.scales.default;
+            this._zoomTo(scale, options);
             return scale;
         },
 
         /**
-         * Zoom in/out such that the entire page will fit within the viewport.
+         * Zoom in/out such that the item will fit within the viewport.
+         *
          * @param {Object} options
          * @param {number} [options.duration] - The animation duration, in ms.
          * @param {Function} [options.done] - Callback invoked when the zoom is complete.
          * @return {number} - the scale that was applied
          */
         zoomToWindow: function(options) {
-            var widthScale = this._fitWidthScale();
-            var heightScale = this._fitHeightScale();
-            var scale = Math.min(widthScale, heightScale);
-            this._contentFit = 'window';
-            this._zoomTo(_.defaults({ scale: scale }, options));
+            var itemLayout = this._layout.getCurrentItemLayout();
+            var scale = itemLayout.scales.auto / itemLayout.scales.default;
+            this._zoomTo(scale, options);
             return scale;
         },
 
@@ -1192,64 +1160,13 @@ define(function(require) {
             }
         },
 
-        _zoomTo: function(options) {
+        _zoomTo: function(scale, options) {
+            options = options || {};
             (this.getCurrentItemMap() || this._listMap).zoomTo({
-                scale: this._scaleTranslator.toMapScale(options.scale),
+                scale: this._scaleTranslator.toMapScale(scale),
                 duration: options.duration,
                 done: options.done
             });
-        },
-
-        _fitWidthScale: function() {
-            var disableScaleTranslation = this._options.disableScaleTranslation;
-            var fitMode = this._options.fit;
-            var scale;
-
-            var itemSizeCollection = this._layout.getItemSizeCollection();
-            var viewportSize = this._layout.getViewportSize();
-            var maxPageWidth = itemSizeCollection.maxWidth;
-            var viewportWidth = viewportSize.width;
-
-            if (disableScaleTranslation) {
-                if (fitMode === FitModes.WIDTH) {
-                    scale = 1;
-                } else {
-                    var maxPageHeight = itemSizeCollection.maxHeight;
-                    var viewportHeight = viewportSize.height;
-                    
-                    scale = (viewportWidth / maxPageWidth) * (maxPageHeight / viewportHeight);
-                }
-            } else {
-                scale = viewportWidth / maxPageWidth;
-            }
-
-            return scale;
-        },
-
-        _fitHeightScale: function() {
-            var disableScaleTranslation = this._options.disableScaleTranslation;
-            var fitMode = this._options.fit;
-            var scale;
-
-            var itemSizeCollection = this._layout.getItemSizeCollection();
-            var viewportSize = this._layout.getViewportSize();
-            var maxPageHeight = itemSizeCollection.maxHeight;
-            var viewportHeight = viewportSize.height;
-
-            if (disableScaleTranslation) {
-                if (fitMode === FitModes.HEIGHT) {
-                    scale = 1;
-                } else {
-                    var maxPageWidth = itemSizeCollection.maxWidth;
-                    var viewportWidth = viewportSize.width;
-
-                    scale = (viewportHeight / maxPageHeight) * (maxPageWidth / viewportWidth);
-                }
-            } else {
-                scale = viewportHeight / maxPageHeight;
-            }
-
-            return scale;
         }
     };
 
