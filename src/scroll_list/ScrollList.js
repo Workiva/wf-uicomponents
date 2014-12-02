@@ -96,7 +96,7 @@ define(function(require) {
      *
      * @param {boolean} [options.persistZoom=false]
      *        When persistZoom is enabled, when in peek mode the zoom level
-     *        will persist when changing pages. Defaults to false.
+     *        will persist when changing items. Defaults to false.
      *
      * @example
      *
@@ -180,7 +180,7 @@ define(function(require) {
         /**
          * Observable for subscribing to scroll to events.
          * This event occurs when the peek interceptor decides
-         * to snap to the top of a page.
+         * to snap to the top of a item.
          *
          * @method ScrollList#onScrollToItemFinished
          * @param {Function} callback
@@ -562,8 +562,8 @@ define(function(require) {
             var BUFFER = 1; // bump the event position 1 pixel inside the item container
             var placeholderRenderer = this.getRenderer();
             var placeholder = placeholderRenderer.get(itemIndex);
-            var pageElement = placeholder.contentContainer;
-            var rect = pageElement.getBoundingClientRect();
+            var itemElement = placeholder.contentContainer;
+            var rect = itemElement.getBoundingClientRect();
             var adjustedposition = {
                 x: position.x,
                 y: position.y
@@ -773,26 +773,26 @@ define(function(require) {
          *   Negative numbers do the reverse.
          * @param {Function} [options.done] - Callback invoked when the jump is complete.
          * @example
-         * // Scrolls the third page to the top of the viewport.
+         * // Scrolls the third item to the top of the viewport.
          * scrollList.scrollToItem({ 3, 'top'});
          *
-         * // Scrolls to the third item/page, and places the point 200px down
-         * // the page at the top of the viewport.  x is ignored.
+         * // Scrolls to the third item, and places the point 200px down
+         * // the item at the top of the viewport.  x is ignored.
          * scrollList.scrollToItem({ 3, 'top', { x: 100, y: 200 } });
          *
-         * // Scrolls the top of the third page to the center of the viewport.
+         * // Scrolls the top of the third item to the center of the viewport.
          * scrollList.scrollToItem({ 3, 'center'});
          *
-         * // Scrolls to the third item/page, and places the point 100 in from
+         * // Scrolls to the third item, and places the point 100 in from
          * // the left and 200px down at the cetner of the viewport.
          * scrollList.scrollToItem({ 3, 'center', { x: 100, y: 200 } });
          *
-         * // Scrolls the top of the third page to the bottom of the viewport.
-         * // (Basically shows page 2.)
+         * // Scrolls the top of the third item to the bottom of the viewport.
+         * // (Basically shows item 2.)
          * scrollList.scrollToItem({ 3, 'bottom'});
          *
-         * // Scrolls to the third item/page, and places the point 200px down
-         * // the page to the bottom of the viewport. x is ignored.
+         * // Scrolls to the third item, and places the point 200px down
+         * // the item to the bottom of the viewport. x is ignored.
          * scrollList.scrollToItem({ 3, 'bottom', { x: 100, y: 200 } });
          *
          */
@@ -959,11 +959,53 @@ define(function(require) {
             if (options.scale === undefined) {
                 throw new Error('ScrollList#zoomToScale: scale is required.');
             }
-            (this.getCurrentItemMap() || this._listMap).zoomTo({
-                scale: this._scaleTranslator.toMapScale(options.scale),
-                duration: options.duration,
-                done: options.done
-            });
+            var scale = this._scaleTranslator.toMapScale(options.scale);
+            this._zoomTo(scale, options);
+        },
+
+        /**
+         * Zoom in/out such that the item is fit to the viewport width.
+         *
+         * @param {Object} options
+         * @param {number} [options.duration] - The animation duration, in ms.
+         * @param {Function} [options.done] - Callback invoked when the zoom is complete.
+         * @return {number} - the scale that was applied
+         */
+        zoomToWidth: function(options) {
+            var itemLayout = this._layout.getCurrentItemLayout();
+            var scale = this._scaleTranslator.toMapScale(itemLayout.scales.width, true /*force*/);
+            this._zoomTo(scale, options);
+            return scale;
+        },
+
+        /**
+         * Zoom in/out such that the item is fit to the viewport height.
+         *
+         * @param {Object} options
+         * @param {number} [options.duration] - The animation duration, in ms.
+         * @param {Function} [options.done] - Callback invoked when the zoom is complete.
+         * @return {number} - the scale that was applied
+         */
+        zoomToHeight: function(options) {
+            var itemLayout = this._layout.getCurrentItemLayout();
+            var scale = this._scaleTranslator.toMapScale(itemLayout.scales.height, true /*force*/);
+            this._zoomTo(scale, options);
+            return scale;
+        },
+
+        /**
+         * Zoom in/out such that the item will fit within the viewport.
+         *
+         * @param {Object} options
+         * @param {number} [options.duration] - The animation duration, in ms.
+         * @param {Function} [options.done] - Callback invoked when the zoom is complete.
+         * @return {number} - the scale that was applied
+         */
+        zoomToWindow: function(options) {
+            var itemLayout = this._layout.getCurrentItemLayout();
+            var scale = this._scaleTranslator.toMapScale(itemLayout.scales.auto, true /*force*/);
+            this._zoomTo(scale, options);
+            return scale;
         },
 
         //---------------------------------------------------------
@@ -1117,6 +1159,15 @@ define(function(require) {
             if (!this._itemSizesCollection) {
                 throw new Error('ScrollList configuration: itemSizeCollection is required.');
             }
+        },
+
+        _zoomTo: function(scale, options) {
+            options = options || {};
+            (this.getCurrentItemMap() || this._listMap).zoomTo({
+                scale: scale,
+                duration: options.duration,
+                done: options.done
+            });
         }
     };
 

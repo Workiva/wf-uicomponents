@@ -107,13 +107,16 @@ define(function(require) {
 
         /**
          * Translates the given scale to a transformation scale to use in the map.
+         * Pass the optional `force` to translate even if scale translation is
+         * disabled for the associated ScrollList.
          *
          * @method ScaleTranslator#toMapScale
          * @param {number} scale
+         * @param {boolean} [force=false]
          * @return {number}
          */
-        toMapScale: function(scale) {
-            if (this._isDisabled()) {
+        toMapScale: function(scale, force) {
+            if (this._isDisabled() && !force) {
                 return scale;
             }
             return scale / this._baseScale;
