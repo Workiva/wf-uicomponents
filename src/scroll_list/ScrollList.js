@@ -959,7 +959,8 @@ define(function(require) {
             if (options.scale === undefined) {
                 throw new Error('ScrollList#zoomToScale: scale is required.');
             }
-            this._zoomTo(options.scale, options);
+            var scale = this._scaleTranslator.toMapScale(options.scale);
+            this._zoomTo(scale, options);
         },
 
         /**
@@ -972,7 +973,7 @@ define(function(require) {
          */
         zoomToWidth: function(options) {
             var itemLayout = this._layout.getCurrentItemLayout();
-            var scale = itemLayout.scales.width / itemLayout.scales.default;
+            var scale = this._scaleTranslator.toMapScale(itemLayout.scales.width, true /*force*/);
             this._zoomTo(scale, options);
             return scale;
         },
@@ -987,7 +988,7 @@ define(function(require) {
          */
         zoomToHeight: function(options) {
             var itemLayout = this._layout.getCurrentItemLayout();
-            var scale = itemLayout.scales.height / itemLayout.scales.default;
+            var scale = this._scaleTranslator.toMapScale(itemLayout.scales.height, true /*force*/);
             this._zoomTo(scale, options);
             return scale;
         },
@@ -1002,7 +1003,7 @@ define(function(require) {
          */
         zoomToWindow: function(options) {
             var itemLayout = this._layout.getCurrentItemLayout();
-            var scale = itemLayout.scales.auto / itemLayout.scales.default;
+            var scale = this._scaleTranslator.toMapScale(itemLayout.scales.auto, true /*force*/);
             this._zoomTo(scale, options);
             return scale;
         },
@@ -1163,7 +1164,7 @@ define(function(require) {
         _zoomTo: function(scale, options) {
             options = options || {};
             (this.getCurrentItemMap() || this._listMap).zoomTo({
-                scale: this._scaleTranslator.toMapScale(scale),
+                scale: scale,
                 duration: options.duration,
                 done: options.done
             });
