@@ -65,7 +65,7 @@ define(function(require) {
             options.trackMargin = trackMargin || 0;
 
             scrollBar = new ScrollBar(scrollList, parentEl, options);
-            
+
             // Need to trigger a render so that the scrollbar's callbacks get registered.
             scrollList.render();
         }
@@ -512,6 +512,25 @@ define(function(require) {
                 it('should hide the scrollbar when all content visible', function() {
                     testHideOnShortContent();
                 });
+            });
+        });
+
+        describe('refreshing', function() {
+            beforeEach(function() {
+                initialize('vertical' /* doesn't matter for this suite */);
+            });
+            afterEach(function() {
+                cleanup();
+            });
+            it('cache the current dimensions calculations', function() {
+                spyOn(scrollBar, '_cacheDimensions');
+                scrollBar.refresh();
+                expect(scrollBar._cacheDimensions).toHaveBeenCalled();
+            });
+            it('should place the scroller', function() {
+                spyOn(scrollBar, '_placeScroller');
+                scrollBar.refresh();
+                expect(scrollBar._placeScroller).toHaveBeenCalled();
             });
         });
     });
