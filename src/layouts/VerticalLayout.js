@@ -924,7 +924,9 @@ define(function(require) {
             // not scale the padding as it is expected to be independent of the
             // scale applied to the document.
             if (flow) {
-                maxWidth = itemSizeCollection.maxWidth * cachedScales.default + (2 * padding);
+                maxWidth = Math.floor(
+                    itemSizeCollection.maxWidth * cachedScales.default + (2 * padding)
+                );
             }
 
             // Cache the item layouts and total layout size.

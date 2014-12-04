@@ -143,7 +143,7 @@ define(function(require) {
             } else {
                 self._extent = -offset.x;
             }
-                
+
             if (!self._scrollerScrolling && !self._disposed) {
                 self._placeScroller();
             }
@@ -279,6 +279,11 @@ define(function(require) {
             this._disposed = true;
         },
 
+        refresh: function() {
+            this._cacheDimensions();
+            this._placeScroller();
+        },
+
         //---------------------------------------------------------
         // Private methods
         //---------------------------------------------------------
@@ -315,7 +320,8 @@ define(function(require) {
         },
 
         /**
-         * Calculate the scroll bar height based on the viewport height and the scaled virtual height
+         * Calculate the scroller size based on the viewport size and
+         * the scaled content size.
          */
         _setScrollerSize: function() {
             var minSize = this._options.minSize || DEFAULT_MIN_SIZE;
@@ -354,7 +360,6 @@ define(function(require) {
 
         /**
          * Initialize the HTML elements used by this instance of ScrollBar
-         * @private
          */
         _setupDOM: function() {
             var scrollerEl = document.createElement('div');
@@ -473,7 +478,7 @@ define(function(require) {
             var transformState = this._activeMap.getCurrentTransformState();
             var contentSize = this._activeMap.getContentDimensions();
             var viewportSize = this._activeMap.getViewportDimensions();
-            
+
             this._scale = transformState.scale;
             if (this._isVertical) {
                 this._extent = -transformState.translateY;
