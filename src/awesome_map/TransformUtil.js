@@ -232,6 +232,7 @@ define(function(require) {
             }
 
             var translate;
+            var willChange = '';
 
             if (BrowserInfo.hasCssTransforms3d && !use2d) {
                 translate = 'translate3d(' +
@@ -239,6 +240,7 @@ define(function(require) {
                     targetState.translateY + 'px, ' +
                     '0px' +
                 ')';
+                willChange = 'transform';
             }
             else {
                 translate = 'translate(' +
@@ -246,7 +248,7 @@ define(function(require) {
                     targetState.translateY + 'px' +
                 ')';
             }
-
+            target.style.willChange = willChange;
             target.style[BrowserInfo.cssTransformProperty] =
                 translate +
                 'scale(' + targetState.scale + ')';
@@ -334,6 +336,7 @@ define(function(require) {
         removeTransform: function(target) {
             target.style[BrowserInfo.cssTransformOriginProperty] = '';
             target.style[BrowserInfo.cssTransformProperty] = '';
+            target.style.willChange = '';
         },
 
         /**

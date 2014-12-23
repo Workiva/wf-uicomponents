@@ -294,6 +294,22 @@ define(function(require) {
                     .toBe('translate(100px, 100px) scale(2)');
             });
 
+            it('should set willChange to transform if using 3d transforms', function() {
+                if (BrowserInfo.hasCssTransforms3d) {
+                    TransformUtil.applyTransform(target, targetState);
+                    expect(target.style.willChange).toBe('transform');
+                }
+            });
+
+            it('should set willChange to empty after doing a 2d transform', function() {
+                if (BrowserInfo.hasCssTransforms3d) {
+                    TransformUtil.applyTransform(target, targetState);
+                    expect(target.style.willChange).toBe('transform');
+                    TransformUtil.applyTransform(target, targetState, true /* use2d */);
+                    expect(target.style.willChange).toBe('');
+                }
+            });
+
             it('should throw if scale is NaN', function() {
                 targetState.scale = NaN;
                 expect(function() {
@@ -405,6 +421,10 @@ define(function(require) {
 
             it('should remove the transform', function() {
                 expect(target.style[transformProp]).toBe('');
+            });
+
+            it('should remove the willChange', function() {
+                expect(target.style.willChange).toBe('');
             });
         });
 

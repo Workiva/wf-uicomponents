@@ -845,7 +845,6 @@ define(function(require) {
             this._transformationPlane = document.createElement('div');
             this._transformationPlane.className = 'awesomeMap-transformationPlane';
             this._transformationPlane.style.position = 'absolute';
-            this._transformationPlane.style.willChange = 'transform';
             TransformUtil.clearTransformationOrigin(this._transformationPlane);
 
             // Add the elements to the DOM

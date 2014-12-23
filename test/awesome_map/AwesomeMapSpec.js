@@ -118,7 +118,6 @@ define(function(require) {
 
                 expect(transformationPlane).not.toBeNull();
                 expect(transformationPlane.style.position).toBe('absolute');
-                expect(transformationPlane.style.willChange).toBe('transform');
                 expect(transformationPlane.style.top).toBe('');
                 expect(transformationPlane.style.bottom).toBe('');
                 expect(transformationPlane.style.left).toBe('');
