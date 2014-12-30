@@ -93,6 +93,13 @@ define(function(require) {
 
                 TransformUtil.removeTransition(target);
 
+                // HACK: This forces a recomposite to sharpen the SVG content
+                // contained inside the awesome map transformation plane.
+                target.style.willChange = 'transform, contents';
+                setTimeout(function() {
+                    target.style.willChange = 'transform';
+                }, 0);
+
                 if (cancelledState) {
                     TransformUtil.applyTransform(target, cancelledState);
                     requestAnimFrame(function() {
@@ -232,7 +239,6 @@ define(function(require) {
             }
 
             var translate;
-            var willChange = '';
 
             if (BrowserInfo.hasCssTransforms3d && !use2d) {
                 translate = 'translate3d(' +
@@ -240,7 +246,6 @@ define(function(require) {
                     targetState.translateY + 'px, ' +
                     '0px' +
                 ')';
-                willChange = 'transform';
             }
             else {
                 translate = 'translate(' +
@@ -248,7 +253,6 @@ define(function(require) {
                     targetState.translateY + 'px' +
                 ')';
             }
-            target.style.willChange = willChange;
             target.style[BrowserInfo.cssTransformProperty] =
                 translate +
                 'scale(' + targetState.scale + ')';
@@ -336,7 +340,6 @@ define(function(require) {
         removeTransform: function(target) {
             target.style[BrowserInfo.cssTransformOriginProperty] = '';
             target.style[BrowserInfo.cssTransformProperty] = '';
-            target.style.willChange = '';
         },
 
         /**

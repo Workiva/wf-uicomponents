@@ -1165,7 +1165,7 @@ define(function(require) {
             options = options || {};
             (this.getCurrentItemMap() || this._listMap).zoomTo({
                 scale: scale,
-                duration: options.duration,
+                duration: Math.max(10, options.duration || 0),
                 done: options.done
             });
         }
