@@ -1165,7 +1165,10 @@ define(function(require) {
             options = options || {};
             (this.getCurrentItemMap() || this._listMap).zoomTo({
                 scale: scale,
-                duration: options.duration,
+                // HACK: always give at least 10 ms duration so that
+                // TransformUtil.animate gets used instead of the
+                // simulated zoom
+                duration: Math.max(10, options.duration || 0),
                 done: options.done
             });
         }
