@@ -1,6 +1,7 @@
 requirejs.config({
     baseUrl: './',
     paths: {
+        bowser: '../../bower_components/bowser/bowser',
         hammerjs: '../../bower_components/hammerjs/dist/hammer',
         jquery: '../../bower_components/jquery/jquery',
         lodash: '../../bower_components/lodash/dist/lodash',
