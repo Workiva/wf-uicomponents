@@ -13,5 +13,10 @@
     "grunt": "^0.4.5",
     "grunt-contrib-requirejs": "~0.4.1",
     "wf-grunt": "git://github.com/WebFilings/wf-grunt.git#0.4.0"
+  },
+  "jspm": {
+    "directories": {
+      "lib": "src"
+    }
   }
 }
