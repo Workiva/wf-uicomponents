@@ -20,7 +20,8 @@ define(function() {
     var FitModes = {
         AUTO: 'auto',
         WIDTH: 'width',
-        HEIGHT: 'height'
+        HEIGHT: 'height',
+        NONE: 'none'
     };
 
     return FitModes;

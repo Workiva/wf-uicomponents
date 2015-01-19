@@ -86,6 +86,15 @@ define(function() {
         },
 
         /**
+         * Returns 1.0 to prevents scaling of the content displayed in the viewport
+         *
+         * @return {number}
+         */
+        none: function() {
+            return 1.0;
+        },
+
+        /**
          * Gets the scale required to fit the width of the viewport.
          *
          * @method

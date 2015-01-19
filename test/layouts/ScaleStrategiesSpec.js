@@ -70,5 +70,13 @@ define(function(require) {
                 expect(scale).toBeCloseTo(0.33, 2);
             });
         });
+
+        describe('when not fitting', function() {
+            it('should not scale the content', function() {
+                var scale = ScaleStrategies.none(viewportDimensions, content, contentMargin);
+
+                expect(scale).toEqual(1.0);
+            });
+        });
     });
 });
