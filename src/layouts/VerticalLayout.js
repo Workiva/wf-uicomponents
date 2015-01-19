@@ -846,7 +846,8 @@ define(function(require) {
                         default: Math.min(scale, options.fitUpscaleLimit),
                         width: ScaleStrategies.width(viewportSize, sample, padding),
                         height: ScaleStrategies.height(viewportSize, sample, padding),
-                        auto: ScaleStrategies.auto(viewportSize, sample, padding)
+                        auto: ScaleStrategies.auto(viewportSize, sample, padding),
+                        none: ScaleStrategies.none()
                     };
                     return result;
                 }

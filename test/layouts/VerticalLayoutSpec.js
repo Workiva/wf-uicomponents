@@ -687,6 +687,7 @@ define(function(require) {
                     spyOn(ScaleStrategies, 'auto').andReturn(1);
                     spyOn(ScaleStrategies, 'height').andReturn(1);
                     spyOn(ScaleStrategies, 'width').andReturn(1);
+                    spyOn(ScaleStrategies, 'none').andReturn(1);
 
                     createVerticalLayout({ fit: 'auto' });
                     expect(ScaleStrategies.auto).toHaveBeenCalled();
@@ -696,20 +697,27 @@ define(function(require) {
 
                     createVerticalLayout({ fit: 'width' });
                     expect(ScaleStrategies.width).toHaveBeenCalled();
+
+                    createVerticalLayout({ fit: 'none' });
+                    expect(ScaleStrategies.none).toHaveBeenCalled();
                 });
 
                 it('should use the item-specific scale strategy if given', function() {
                     var autoScale = 0.1;
                     var heightScale = 0.2;
                     var widthScale = 0.3;
+                    var noneScale = 0.4;
+
                     spyOn(ScaleStrategies, 'auto').andReturn(autoScale);
                     spyOn(ScaleStrategies, 'height').andReturn(heightScale);
                     spyOn(ScaleStrategies, 'width').andReturn(widthScale);
+                    spyOn(ScaleStrategies, 'none').andReturn(noneScale);
 
                     var mixedFitItemMetadata = [
                         { width: 100, height: 200, fit: 'auto' },
                         { width: 100, height: 200, fit: 'height' },
                         { width: 100, height: 200, fit: 'width' },
+                        { width: 100, height: 200, fit: 'none' },
                         { width: 100, height: 200 },
                     ];
                     var itemSizeCollection = createItemSizeCollection(mixedFitItemMetadata);
@@ -719,7 +727,8 @@ define(function(require) {
                     expect(layout.getItemLayout(0).scaleToFit).toEqual(autoScale);
                     expect(layout.getItemLayout(1).scaleToFit).toEqual(heightScale);
                     expect(layout.getItemLayout(2).scaleToFit).toEqual(widthScale);
-                    expect(layout.getItemLayout(3).scaleToFit).toEqual(autoScale);
+                    expect(layout.getItemLayout(3).scaleToFit).toEqual(noneScale);
+                    expect(layout.getItemLayout(4).scaleToFit).toEqual(autoScale);
                 });
 
                 it('should apply padding to the left and right of all items', function() {
