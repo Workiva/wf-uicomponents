@@ -812,6 +812,19 @@ define(function(require) {
                         });
                     });
 
+                    it('should align the item to the left edge of the viewport', function() {
+                        var viewportWidth;
+
+                        layout = createVerticalLayout({ flow: true, horizontalAlign: 'left' });
+                        viewportWidth = layout.getViewportSize().width;
+
+                        layout.getItemLayouts().forEach(function(item) {
+                            if (item.outerWidth < viewportWidth) {
+                                expect(item.left).toBe(0);
+                            }
+                        });
+                    });
+
                     it('should apply padding to the top of the first item only', function() {
                         var padding = 20;
 

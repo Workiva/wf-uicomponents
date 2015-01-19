@@ -83,7 +83,8 @@ define(function(require) {
      *        The gap between items, in pixels.
      *
      * @param {string} [options.horizontalAlign='center']
-     *        The alignment of the items along the x-axis.
+     *        The alignment of the items along the x-axis. Valid options are
+     *        'center' and 'left'.
      *
      * @param {number} [options.minNumberOfVirtualItems=3]
      *        The minimum number of virtual items that the layout will render.
@@ -817,6 +818,7 @@ define(function(require) {
             // Using some layout options below.
             var options = this.getOptions();
             var flow = options.flow;
+            var horizontalAlign = options.horizontalAlign;
             var gapTop = Math.floor(options.gap / 2);
             var gapBottom = Math.ceil(options.gap / 2);
             var padding = options.padding;
@@ -859,8 +861,12 @@ define(function(require) {
             }
 
             function getHorizontalPosition(outerWidth) {
-                // Currently centering content.
-                return Math.round((viewportWidth - outerWidth) / 2);
+                if (flow && horizontalAlign === 'left') {
+                    return 0;
+                } else {
+                    // center by default
+                    return Math.round((viewportWidth - outerWidth) / 2);
+                }
             }
 
             for (i = 0; i < numberOfItems; i++) {

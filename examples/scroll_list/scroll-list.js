@@ -102,6 +102,7 @@ define(function(require) {
     var urlParams = url.getParams();
     var scrollMode = urlParams.scroll || (DeviceInfo.desktop ? 'flow' : 'peek');
     var fitMode = urlParams.fit || 'auto';
+    var horizontalAlign = urlParams.halign || 'center';
     var totalPages = +urlParams.totalPages || 100;
     var minNumberOfVirtualItems = scrollMode === 'flow' ? (DeviceInfo.desktop ? 15 : 9) : (DeviceInfo.desktop ? 5 : 3);
     var touchScrollingEnabled = Utils.valueOr(urlParams.touchScrollingEnabled, 'true') === 'true';
@@ -117,6 +118,7 @@ define(function(require) {
         gap: 2,
         mode: scrollMode,
         fit: fitMode,
+        horizontalAlign: horizontalAlign,
         minNumberOfVirtualItems: minNumberOfVirtualItems,
         padding: 1,
         scaleLimits: { minimum: 0.25, maximum: 3 },
@@ -218,6 +220,10 @@ define(function(require) {
 
         $('#fitMode').val(fitMode).change(function() {
             window.location = url.addParam('fit', this.value).toString();
+        });
+
+        $('#horizAlign').val(horizontalAlign).change(function() {
+            window.location = url.addParam('halign', this.value).toString();
         });
 
         $('#zoomToScale').submit(function() {

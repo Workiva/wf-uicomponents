@@ -98,6 +98,10 @@ define(function(require) {
      *        When persistZoom is enabled, when in peek mode the zoom level
      *        will persist when changing items. Defaults to false.
      *
+     * @param {string} [options.horizontalAlign='center']
+     *        The alignment of the items along the x-axis. Valid options are
+     *        'center' and 'left'.
+     *
      * @example
      *
      * var host = document.getElementById('host');
@@ -334,6 +338,7 @@ define(function(require) {
             fit: FitModes.WIDTH,
             fitUpscaleLimit: 1,
             gap: 0,
+            horizontalAlign: 'center',
             minNumberOfVirtualItems: 3,
             mode: ScrollModes.FLOW,
             padding: 0,
@@ -1071,6 +1076,7 @@ define(function(require) {
                 fitUpscaleLimit: options.fitUpscaleLimit,
                 flow: isFlow,
                 gap: options.gap,
+                horizontalAlign: options.horizontalAlign,
                 padding: options.padding,
             });
 
