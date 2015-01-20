@@ -19,16 +19,18 @@ define(function(require) {
 
     var AwesomeMap = require('wf-js-uicomponents/awesome_map/AwesomeMap');
     var BoundaryInterceptor = require('wf-js-uicomponents/awesome_map/BoundaryInterceptor');
-    var PeekInterceptor = require('wf-js-uicomponents/scroll_list/PeekInterceptor');
     var DoubleTapZoomInterceptor = require('wf-js-uicomponents/awesome_map/DoubleTapZoomInterceptor');
     var HitTester = require('wf-js-uicomponents/scroll_list/HitTester');
+    var HorizontalAlignments = require('wf-js-uicomponents/layouts/HorizontalAlignments');
     var MouseWheelNavigationInterceptor = require('wf-js-uicomponents/scroll_list/MouseWheelNavigationInterceptor');
+    var PeekInterceptor = require('wf-js-uicomponents/scroll_list/PeekInterceptor');
     var RenderingHooksInterceptor = require('wf-js-uicomponents/scroll_list/RenderingHooksInterceptor');
     var ScaleInterceptor = require('wf-js-uicomponents/awesome_map/ScaleInterceptor');
     var ScrollModes = require('wf-js-uicomponents/scroll_list/ScrollModes');
     var StopPropagationInterceptor = require('wf-js-uicomponents/scroll_list/StopPropagationInterceptor');
     var SwipeInterceptor = require('wf-js-uicomponents/awesome_map/SwipeInterceptor');
     var SwipeNavigationInterceptor = require('wf-js-uicomponents/scroll_list/SwipeNavigationInterceptor');
+    var VerticalAlignments = require('wf-js-uicomponents/layouts/VerticalAlignments');
     var ViewportResizeInterceptor = require('wf-js-uicomponents/scroll_list/ViewportResizeInterceptor');
 
     /**
@@ -55,6 +57,10 @@ define(function(require) {
          */
         createItemMap: function(scrollList, host) {
             var options = scrollList.getOptions();
+            var hAlignLeft = options.horizontalAlign === HorizontalAlignments.LEFT;
+            var hAlignAuto = options.horizontalAlign === HorizontalAlignments.AUTO;
+            var vAlignTop = options.verticalAlign === VerticalAlignments.TOP;
+            var vAlignAuto = options.verticalAlign === VerticalAlignments.AUTO;
             var map = new AwesomeMap(host, {
                 cancelMouseWheelEvents: false,
                 touchScrollingEnabled: options.touchScrollingEnabled
@@ -76,8 +82,11 @@ define(function(require) {
                 constrainToAxes: true
             }));
             map.addInterceptor(new BoundaryInterceptor({
-                centerContent: true,
-                mode: 'stop'
+                centerContentX: hAlignAuto,
+                centerContentY: vAlignAuto,
+                mode: 'stop',
+                pinToLeft: hAlignLeft,
+                pinToTop: vAlignTop
             }));
 
             // Wire up observables.
@@ -132,6 +141,10 @@ define(function(require) {
         createListMap: function(scrollList) {
             var layout = scrollList.getLayout();
             var options = scrollList.getOptions();
+            var hAlignLeft = options.horizontalAlign === HorizontalAlignments.LEFT;
+            var hAlignAuto = options.horizontalAlign === HorizontalAlignments.AUTO;
+            var vAlignTop = options.verticalAlign === VerticalAlignments.TOP;
+            var vAlignAuto = options.verticalAlign === VerticalAlignments.AUTO;
             var map = new AwesomeMap(scrollList.getHost(), {
                 cancelMouseWheelEvents: true,
                 touchScrollingEnabled: options.touchScrollingEnabled
@@ -152,8 +165,11 @@ define(function(require) {
                     map.addInterceptor(new ScaleInterceptor(options.scaleLimits));
                 }
                 map.addInterceptor(new BoundaryInterceptor({
-                    centerContent: true,
-                    mode: { x: 'stop', y: 'slow' }
+                    centerContentX: hAlignAuto,
+                    centerContentY: vAlignAuto,
+                    mode: { x: 'stop', y: 'slow' },
+                    pinToLeft: hAlignLeft,
+                    pinToTop: vAlignTop
                 }));
             }
             else {
@@ -205,10 +221,17 @@ define(function(require) {
             // Set initial transform in order to center the content.
             var viewportSize = layout.getViewportSize();
             var layoutSize = layout.getSize();
+            var transformX = 0;
+            if (hAlignAuto && viewportSize.width > layoutSize.width) {
+                transformX = (viewportSize.width - layoutSize.width) / 2;
+            }
+            var transformY = 0;
+            if (vAlignAuto && viewportSize.height > layoutSize.height) {
+                transformY = (viewportSize.height - layoutSize.height) / 2;
+            }
             map.transform({
-                x: (viewportSize.width - layoutSize.width) / 2,
-                y: (viewportSize.height < layoutSize.height ? 0 :
-                    (viewportSize.height - layoutSize.height) / 2),
+                x: transformX,
+                y: transformY,
                 scale: 1
             });
 

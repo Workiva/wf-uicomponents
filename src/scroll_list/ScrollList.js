@@ -20,13 +20,15 @@ define(function(require) {
     var _ = require('lodash');
     var AwesomeMapFactory = require('wf-js-uicomponents/scroll_list/AwesomeMapFactory');
     var DestroyUtil = require('wf-js-common/DestroyUtil');
-    var FitModes = require('wf-js-uicomponents/scroll_list/FitModes');
+    var FitModes = require('wf-js-uicomponents/layouts/FitModes');
     var HitTester = require('wf-js-uicomponents/scroll_list/HitTester');
+    var HorizontalAlignments = require('wf-js-uicomponents/layouts/HorizontalAlignments');
     var Observable = require('wf-js-common/Observable');
     var PlaceholderRenderer = require('wf-js-uicomponents/scroll_list/PlaceholderRenderer');
     var ScaleTranslator = require('wf-js-uicomponents/scroll_list/ScaleTranslator');
     var ScrollModes = require('wf-js-uicomponents/scroll_list/ScrollModes');
     var Utils = require('wf-js-common/Utils');
+    var VerticalAlignments = require('wf-js-uicomponents/layouts/VerticalAlignments');
     var VerticalLayout = require('wf-js-uicomponents/layouts/VerticalLayout');
     var ZoomPersistenceRegistrar = require('wf-js-uicomponents/scroll_list/ZoomPersistenceRegistrar');
 
@@ -74,6 +76,10 @@ define(function(require) {
      * @param {number} [options.gap=0]
      *        The gap between items, in pixels.
      *
+     * @param {string} [options.horizontalAlign='auto']
+     *        The alignment of the items along the x-axis. Can be 'auto' or
+     *        'left'.
+     *
      * @param {number} [options.minNumberOfVirtualItems=3]
      *        The minimum number of virtual items to render at one time.
      *
@@ -98,9 +104,9 @@ define(function(require) {
      *        When persistZoom is enabled, when in peek mode the zoom level
      *        will persist when changing items. Defaults to false.
      *
-     * @param {string} [options.horizontalAlign='center']
-     *        The alignment of the items along the x-axis. Valid options are
-     *        'center' and 'left'.
+     * @param {string} [options.verticalAlign='auto']
+     *        The alignments of the items along the y-axis. Can be 'auto' or
+     *        'top'.
      *
      * @example
      *
@@ -338,13 +344,14 @@ define(function(require) {
             fit: FitModes.WIDTH,
             fitUpscaleLimit: 1,
             gap: 0,
-            horizontalAlign: 'center',
+            horizontalAlign: HorizontalAlignments.AUTO,
             minNumberOfVirtualItems: 3,
             mode: ScrollModes.FLOW,
             padding: 0,
+            persistZoom: false,
             scaleLimits: { minimum: 1, maximum: 3 },
             touchScrollingEnabled: true,
-            persistZoom: false
+            verticalAlign: VerticalAlignments.AUTO
         }, options);
 
         /**

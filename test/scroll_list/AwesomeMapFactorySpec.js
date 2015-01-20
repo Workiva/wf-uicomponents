@@ -21,10 +21,12 @@ define(function(require) {
     var _ = require('lodash');
     var AwesomeMapFactory = require('wf-js-uicomponents/scroll_list/AwesomeMapFactory');
     var Gesture = require('wf-js-uicomponents/awesome_map/Gesture');
+    var HorizontalAlignments = require('wf-js-uicomponents/layouts/HorizontalAlignments');
     var HitTester = require('wf-js-uicomponents/scroll_list/HitTester');
     var InteractionEvent = require('wf-js-uicomponents/awesome_map/InteractionEvent');
     var ItemSizeCollection = require('wf-js-uicomponents/layouts/ItemSizeCollection');
     var ScrollList = require('wf-js-uicomponents/scroll_list/ScrollList');
+    var VerticalAlignments = require('wf-js-uicomponents/layouts/VerticalAlignments');
 
     var $host = $('<div>').css({ position: 'absolute', top: -10000, width: 400, height: 400 });
 
@@ -202,8 +204,14 @@ define(function(require) {
                     options = options || {};
                     var listWidth = options.listWidth || hostWidth;
                     var listHeight = options.listHeight || hostHeight;
+                    var horizontalAlign = options.horizontalAlign || HorizontalAlignments.AUTO;
+                    var verticalAlign = options.verticalAlign || VerticalAlignments.AUTO;
                     var scrollList = createScrollList({
-                        items: [{ width: listWidth, height: listHeight }]
+                        items: [{ width: listWidth, height: listHeight }],
+                        options: {
+                            horizontalAlign: horizontalAlign,
+                            verticalAlign: verticalAlign
+                        }
                     });
                     var map = AwesomeMapFactory.createListMap(scrollList);
                     return map;
@@ -215,12 +223,30 @@ define(function(require) {
                     var mapTopWhenCentered = (hostHeight - listHeight) / 2;
                     expect(map.getTranslation().y).toEqual(mapTopWhenCentered);
                 });
+                it('should position the scrollList at the top of the viewport when scrollList' +
+                    'height is less than viewport height and verticalAlign="top"', function() {
+                    var listHeight = hostHeight / 2;
+                    var map = createMap({
+                        listHeight: listHeight,
+                        verticalAlign: VerticalAlignments.TOP
+                    });
+                    expect(map.getTranslation().y).toEqual(0);
+                });
                 it('should center scrollList horizontally in viewport when scrollList ' +
-                    'width is less than viewport width', function() {
+                    'width is less than viewport width and horizontalAlign="auto"', function() {
                     var listWidth = hostWidth / 2;
                     var map = createMap({ listWidth: listWidth });
                     var mapLeftWhenCentered = (hostWidth - listWidth) / 2;
                     expect(map.getTranslation().x).toEqual(mapLeftWhenCentered);
+                });
+                it('should position the scrollList at the left edge of the viewport when scrollList' +
+                    'width is less than viewport width and horizontalAlign="left"', function() {
+                    var listWidth = hostWidth / 2;
+                    var map = createMap({
+                        listWidth: listWidth,
+                        horizontalAlign: HorizontalAlignments.LEFT
+                    });
+                    expect(map.getTranslation().x).toEqual(0);
                 });
                 it('should position the scrollList at the top of the viewport when ' +
                     'scrollList height is greater than viewport height', function() {

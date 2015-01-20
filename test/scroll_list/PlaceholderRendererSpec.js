@@ -22,10 +22,12 @@ define(function(require) {
     var AwesomeMapFactory = require('wf-js-uicomponents/scroll_list/AwesomeMapFactory');
     var BrowserInfo = require('wf-js-common/BrowserInfo');
     var DestroyUtil = require('wf-js-common/DestroyUtil');
+    var HorizontalAlignments = require('wf-js-uicomponents/layouts/HorizontalAlignments');
     var ItemLayout = require('wf-js-uicomponents/layouts/ItemLayout');
     var PlaceholderRenderer = require('wf-js-uicomponents/scroll_list/PlaceholderRenderer');
     var ScrollList = require('wf-js-uicomponents/scroll_list/ScrollList');
     var ScrollModes = require('wf-js-uicomponents/scroll_list/ScrollModes');
+    var VerticalAlignments = require('wf-js-uicomponents/layouts/VerticalAlignments');
     var VerticalLayout = require('wf-js-uicomponents/layouts/VerticalLayout');
 
     describe('PlaceholderRenderer', function() {
@@ -43,7 +45,10 @@ define(function(require) {
         beforeEach(function() {
             viewportSize = { width: 500, height: 500 };
             layoutSize = { width: 500, height: 500 };
-            scrollListOptions = {};
+            scrollListOptions = {
+                horizontalAlign: HorizontalAlignments.AUTO,
+                verticalAlign: VerticalAlignments.AUTO
+            };
 
             spyOn(listMap, 'appendContent');
             spyOn(listMap, 'removeContent');
@@ -66,22 +71,50 @@ define(function(require) {
                     scrollListOptions.mode = ScrollModes.FLOW;
                 });
 
-                it('should adjust the left position of the placeholder if layout is narrower than viewport', function() {
+                it('should adjust the left position of the placeholder if layout ' +
+                    'is narrower than viewport and horizontalAlign="auto"', function() {
                     viewportSize.width = 500;
                     layoutSize.width = 400;
-                    itemLayout = { left: 50 };
-                    placeholder = { element: { style: { left: '50px' } } };
+                    itemLayout = { left: 75 };
+                    placeholder = { element: { style: { left: '75px' } } };
+
+                    renderer.appendPlaceholderToScrollList(itemLayout, placeholder);
+
+                    expect(placeholder.element.style.left).toBe('25px');
+                });
+
+                it('should not adjust the left position of the placeholder if layout ' +
+                    'is wider than viewport and horizontalAlign="auto"', function() {
+                    viewportSize.width = 400;
+                    layoutSize.width = 500;
+                    itemLayout = { left: -50 };
+                    placeholder = { element: { style: { left: '-50px' } } };
+
+                    renderer.appendPlaceholderToScrollList(itemLayout, placeholder);
+
+                    expect(placeholder.element.style.left).toBe('-50px');
+                });
+
+                it('should adjust the left position of the placeholder if layout '+
+                    'is wider than viewport and horizontalAlign="left"', function() {
+                    scrollListOptions.horizontalAlign = HorizontalAlignments.LEFT;
+                    viewportSize.width = 400;
+                    layoutSize.width = 500;
+                    itemLayout = { left: -50 };
+                    placeholder = { element: { style: { left: '-50px' } } };
 
                     renderer.appendPlaceholderToScrollList(itemLayout, placeholder);
 
                     expect(placeholder.element.style.left).toBe('0px');
                 });
 
-                it('should adjust the left position of the placeholder if layout is wider than viewport', function() {
-                    viewportSize.width = 400;
-                    layoutSize.width = 500;
-                    itemLayout = { left: -50 };
-                    placeholder = { element: { style: { left: '-50px' } } };
+                it('should adjust the left position of the placeholder if layout '+
+                    'is narrower than viewport and horizontalAlign="left"', function() {
+                    scrollListOptions.horizontalAlign = HorizontalAlignments.LEFT;
+                    viewportSize.width = 500;
+                    layoutSize.width = 400;
+                    itemLayout = { left: 75 };
+                    placeholder = { element: { style: { left: '75px' } } };
 
                     renderer.appendPlaceholderToScrollList(itemLayout, placeholder);
 
@@ -134,7 +167,51 @@ define(function(require) {
                     });
                 });
 
-                it('should center the content horizontally if narrower than the viewport', function() {
+                it('should center the content horizontally if narrower than the viewport ' +
+                    'and horizontalAlign="auto"', function() {
+                    viewportSize.height = 500;
+                    itemLayout.outerHeight = 400;
+                    viewportSize.width = 500;
+                    itemLayout.outerWidth = 400;
+
+                    renderer.appendPlaceholderToScrollList(itemLayout, placeholder);
+
+                    expect(itemMap.transform)
+                        .toHaveBeenCalledWith({ x: 50, y: 50, scale: 1 });
+                });
+
+                it('should position the content to the viewport left if narrower than ' +
+                    'the viewport and horizontalAlign="left"', function() {
+                    scrollListOptions.horizontalAlign = HorizontalAlignments.LEFT;
+                    viewportSize.height = 500;
+                    itemLayout.outerHeight = 400;
+                    viewportSize.width = 500;
+                    itemLayout.outerWidth = 400;
+
+                    renderer.appendPlaceholderToScrollList(itemLayout, placeholder);
+
+                    expect(itemMap.transform)
+                        .toHaveBeenCalledWith({ x: 0, y: 50, scale: 1 });
+                });
+
+                it('should center the content vertically if shorter than the viewport ' +
+                    'and verticalAlign="auto"', function() {
+                    viewportSize.height = 500;
+                    itemLayout.outerHeight = 400;
+                    viewportSize.width = 500;
+                    itemLayout.outerWidth = 400;
+
+                    renderer.appendPlaceholderToScrollList(itemLayout, placeholder);
+
+                    expect(itemMap.transform)
+                        .toHaveBeenCalledWith({ x: 50, y: 50, scale: 1 });
+                });
+
+                it('should align the content to the top of the viewport if shorter ' +
+                    'than the viewport and verticalAlign="top"', function() {
+                    scrollListOptions.verticalAlign = VerticalAlignments.TOP;
+                    viewportSize.height = 500;
+                    itemLayout.outerHeight = 400;
                     viewportSize.width = 500;
                     itemLayout.outerWidth = 400;
 
@@ -142,16 +219,6 @@ define(function(require) {
 
                     expect(itemMap.transform)
                         .toHaveBeenCalledWith({ x: 50, y: 0, scale: 1 });
-                });
-
-                it('should center the content vertically if shorter than the viewport', function() {
-                    viewportSize.height = 500;
-                    itemLayout.outerHeight = 400;
-
-                    renderer.appendPlaceholderToScrollList(itemLayout, placeholder);
-
-                    expect(itemMap.transform)
-                        .toHaveBeenCalledWith({ x: 0, y: 50, scale: 1 });
                 });
 
                 it('should pan the content to its bottom if placeholder precedes the current item', function() {

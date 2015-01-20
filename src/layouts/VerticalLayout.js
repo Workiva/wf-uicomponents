@@ -20,6 +20,7 @@ define(function(require) {
     var _ = require('lodash');
     var DestroyUtil = require('wf-js-common/DestroyUtil');
     var DOMUtil = require('wf-js-common/DOMUtil');
+    var HorizontalAlignments = require('wf-js-uicomponents/layouts/HorizontalAlignments');
     var ItemLayout = require('wf-js-uicomponents/layouts/ItemLayout');
     var Observable = require('wf-js-common/Observable');
     var ScaleStrategies = require('wf-js-uicomponents/layouts/ScaleStrategies');
@@ -82,18 +83,14 @@ define(function(require) {
      * @param {number} [options.gap=0]
      *        The gap between items, in pixels.
      *
-     * @param {string} [options.horizontalAlign='center']
-     *        The alignment of the items along the x-axis. Valid options are
-     *        'center' and 'left'.
+     * @param {string} [options.horizontalAlign='auto']
+     *        The alignment of the items along the x-axis. Can be 'auto' or 'left'.
      *
      * @param {number} [options.minNumberOfVirtualItems=3]
      *        The minimum number of virtual items that the layout will render.
      *
      * @param {number} [options.padding=0]
      *        The padding between the rendered layout and the viewport, in pixels.
-     *
-     * @param {string} [options.verticalAlign='middle']
-     *        The vertical alignment of the items when flow=false.
      */
     var VerticalLayout = function(viewport, itemSizeCollection, renderer, options) {
 
@@ -154,10 +151,9 @@ define(function(require) {
             fitUpscaleLimit: 1,
             flow: true,
             gap: 0,
-            horizontalAlign: 'center',
+            horizontalAlign: HorizontalAlignments.AUTO,
             minNumberOfVirtualItems: 3,
-            padding: 0,
-            verticalAlign: 'middle'
+            padding: 0
         }, options);
 
         /**
@@ -862,7 +858,10 @@ define(function(require) {
             }
 
             function getHorizontalPosition(outerWidth) {
-                if (flow && horizontalAlign === 'left') {
+                if (horizontalAlign === HorizontalAlignments.LEFT ||
+                    (horizontalAlign === HorizontalAlignments.AUTO &&
+                        outerWidth > viewportWidth)
+                ) {
                     return 0;
                 } else {
                     // center by default

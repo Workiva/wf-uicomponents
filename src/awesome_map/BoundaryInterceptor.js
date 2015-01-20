@@ -84,8 +84,11 @@ define(function(require) {
      * @param {number} [options.animationDuration=250]
      *        The animation duration for snapping to boundaries, in ms.
      *
-     * @param {boolean} [options.centerContent=false]
-     *        Center the content in the viewport when applying boundaries if possible.
+     * @param {boolean} [options.centerContentX=false]
+     *        Center the content horizontally in the viewport when applying boundaries if possible.
+     *
+     * @param {boolean} [options.centerContentY=false]
+     *        Center the content vertically in the viewport when applying boundaries if possible.
      *
      * @param {Function} [options.easing=EasingFunctions.easeOutQuart]
      *        The easing function that controls the animation effect.
@@ -97,11 +100,18 @@ define(function(require) {
      *        'slow' limits drag and swipe effects beyond boundaries.
      *        A different effect may be applied to each boundary.
      *
+     * @param {boolean} [options.pinToLeft=false]
+     *        Pins content that does not overflow the viewport to the left.
+     *        When options.centerContentX is true it overrides this.
+     *
+     * @param {boolean} [options.pinToTop=false]
+     *        Pins content that does not overflow the viewport to the top.
+     *        When options.centerContentY is true it overrides this.
+     *
      * @example
      *
      * new BoundaryInterceptor({
      *     animationDuration: 1000,
-     *     centerContent: true,
      *     easing: EasingFunctions.easeOutCubic,
      *     mode: {
      *         x: 'stop',
@@ -120,11 +130,18 @@ define(function(require) {
         this._animationDuration = Utils.valueOr(options.animationDuration, 250);
 
         /**
-         * Whether to center the content in the viewport when applying boundaries.
+         * Whether to center the content horizontally in the viewport when applying boundaries.
          * @type {boolean}
          * @private
          */
-        this._centerContent = !!options.centerContent;
+        this._centerContentX = !!options.centerContentX;
+
+        /**
+         * Whether to center the content vertically in the viewport when applying boundaries.
+         * @type {boolean}
+         * @private
+         */
+        this._centerContentY = !!options.centerContentY;
 
         /**
          * The easing function that controls the animation effect.
@@ -146,6 +163,22 @@ define(function(require) {
         else if (typeof options.mode === 'string') {
             this._mode = { x: options.mode, y: options.mode };
         }
+
+        /**
+         * Anchors the contents to the left edge of the viewport if it
+         * does not overflow the viewport boundaries.
+         * @type {boolean}
+         * @private
+         */
+        this._pinToLeft = !!options.pinToLeft;
+
+        /**
+         * Anchors the contents to the top edge of the viewport if it
+         * does not overflow the viewport boundaries.
+         * @type {boolean}
+         * @private
+         */
+        this._pinToTop = !!options.pinToTop;
     };
 
     BoundaryInterceptor.prototype = {
@@ -159,17 +192,23 @@ define(function(require) {
          * @method BoundaryInterceptor#getSettings
          * @returns {{
          *     animationDuration: number,
-         *     centerContent: number,
+         *     centerContentX: boolean,
+         *     centerContentY: boolean,
          *     easing: Function,
-         *     mode: {x: string, y: string}
+         *     mode: {x: string, y: string},
+         *     pinToLeft: boolean,
+         *     pinToTop: boolean
          * }}
          */
         getSettings: function() {
             return {
                 animationDuration: this._animationDuration,
-                centerContent: this._centerContent,
+                centerContentX: this._centerContentX,
+                centerContentY: this._centerContentY,
                 easing: this._easing,
-                mode: this._mode
+                mode: this._mode,
+                pinToLeft: this._pinToLeft,
+                pinToTop: this._pinToTop
             };
         },
 
@@ -350,8 +389,12 @@ define(function(require) {
             var headroomY = viewport.height - targetScale * content.height;
 
             // Get the boundaries along each dimension.
-            var boundaryX = this._getBoundedValue(headroomX, targetState.translateX);
-            var boundaryY = this._getBoundedValue(headroomY, targetState.translateY);
+            var boundaryX = this._getBoundedValue(
+                headroomX, targetState.translateX, this._centerContentX, this._pinToLeft
+            );
+            var boundaryY = this._getBoundedValue(
+                headroomY, targetState.translateY, this._centerContentY, this._pinToTop
+            );
 
             return {
                 x: Math.round(boundaryX),
@@ -365,19 +408,30 @@ define(function(require) {
          *        The difference in dimension between the viewport and content:
          *        for content that fits the viewport, headroom will be positive;
          *        for content that overflows, headroom will be negative.
-         * @param targetValue - The value being bound.
+         * @param {number} targetValue - The value being bound.
+         * @param {boolean} centerContent
+         *        If this is true, and headroom is greater than zero, the returned
+         *        value will force content to be centered in the viewport.
+         * @param {boolean} pinToEdge
+         *        If this is true, and headroom is greater than zero, the returned
+         *        value will force content to be aligned to the left or top
+         *        of the viewport. This setting is ignored if centerContent
+         *        is true.
          * @returns {number}
          * @private
          */
-        _getBoundedValue: function(headroom, targetValue) {
+        _getBoundedValue: function(headroom, targetValue, centerContent, pinToEdge) {
             var boundary = targetValue;
 
             // Content dimension fits within the viewport:
             if (headroom > 0) {
 
                 // If centering, use an absolute position.
-                if (this._centerContent) {
+                if (centerContent) {
                     boundary = headroom / 2;
+                }
+                else if (pinToEdge) {
+                    boundary = 0;
                 }
                 else {
                     // Enforce min boundary.

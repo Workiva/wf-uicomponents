@@ -19,8 +19,10 @@ define(function(require) {
 
     var AwesomeMapFactory = require('wf-js-uicomponents/scroll_list/AwesomeMapFactory');
     var DestroyUtil = require('wf-js-common/DestroyUtil');
+    var HorizontalAlignments = require('wf-js-uicomponents/layouts/HorizontalAlignments');
     var Observable = require('wf-js-common/Observable');
     var ScrollModes = require('wf-js-uicomponents/scroll_list/ScrollModes');
+    var VerticalAlignments = require('wf-js-uicomponents/layouts/VerticalAlignments');
 
     /**
      * Creates a new PlaceholderRenderer.
@@ -154,9 +156,13 @@ define(function(require) {
          * @method PlaceholderRenderer#appendPlaceholderToScrollList
          * @param {ItemLayout} itemLayout
          * @param {Object} placeholder
+         * @param {boolean} update
          */
         appendPlaceholderToScrollList: function(itemLayout, placeholder, update) {
             var scrollList = this._scrollList;
+            var hAlignAuto = scrollList.getOptions().horizontalAlign === HorizontalAlignments.AUTO;
+            var hAlignLeft = scrollList.getOptions().horizontalAlign === HorizontalAlignments.LEFT;
+            var vAlignAuto = scrollList.getOptions().verticalAlign === VerticalAlignments.AUTO;
             var listMap = scrollList.getListMap();
 
             var layout = scrollList.getLayout();
@@ -167,17 +173,18 @@ define(function(require) {
             var viewportWidth = viewportSize.width;
 
             if (scrollList.getOptions().mode === ScrollModes.FLOW) {
+                var element = placeholder.element;
                 // Adjust the element's left style to account for the fact that
-                // the list map is responsible for centering content in the viewport.
+                // the list map is responsible for positioning content in the viewport.
                 var adjustedLeft = itemLayout.left;
                 var layoutWidth = layoutSize.width;
-                if (layoutWidth < viewportWidth) {
-                    adjustedLeft = Math.round(itemLayout.left - (viewportWidth - layoutWidth) / 2);
+                if (hAlignAuto && (layoutWidth < viewportWidth)) {
+                    adjustedLeft = Math.round(
+                        itemLayout.left - (viewportWidth - layoutWidth) / 2
+                    );
+                } else if (hAlignLeft) {
+                    adjustedLeft = 0;
                 }
-                else if (layoutWidth > viewportWidth) {
-                    adjustedLeft = Math.round(itemLayout.left + (layoutWidth - viewportWidth) / 2);
-                }
-                var element = placeholder.element;
                 element.style.left = adjustedLeft + 'px';
                 if (!update) {
                     listMap.appendContent(element);
@@ -200,11 +207,11 @@ define(function(require) {
                     transformY = viewportHeight - itemHeight;
                 }
                 // Center content shorter and narrower than the viewport.
-                else if (itemHeight < viewportHeight) {
+                else if (vAlignAuto && itemHeight < viewportHeight) {
                     transformY = Math.round((viewportHeight - itemHeight) / 2);
                 }
                 var itemWidth = itemLayout.outerWidth;
-                if (itemWidth < viewportWidth) {
+                if (hAlignAuto && itemWidth < viewportWidth) {
                     transformX = Math.round((viewportWidth - itemWidth) / 2);
                 }
                 // Ensure we have a item map to work with.
