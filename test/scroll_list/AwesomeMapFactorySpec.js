@@ -223,7 +223,7 @@ define(function(require) {
                     var mapTopWhenCentered = (hostHeight - listHeight) / 2;
                     expect(map.getTranslation().y).toEqual(mapTopWhenCentered);
                 });
-                it('should position the scrollList at the top of the viewport when scrollList' +
+                it('should position the scrollList at the top of the viewport when scrollList ' +
                     'height is less than viewport height and verticalAlign="top"', function() {
                     var listHeight = hostHeight / 2;
                     var map = createMap({
@@ -239,7 +239,7 @@ define(function(require) {
                     var mapLeftWhenCentered = (hostWidth - listWidth) / 2;
                     expect(map.getTranslation().x).toEqual(mapLeftWhenCentered);
                 });
-                it('should position the scrollList at the left edge of the viewport when scrollList' +
+                it('should position the scrollList at the left edge of the viewport when scrollList ' +
                     'width is less than viewport width and horizontalAlign="left"', function() {
                     var listWidth = hostWidth / 2;
                     var map = createMap({

@@ -207,6 +207,20 @@ define(function(require) {
                         .toHaveBeenCalledWith({ x: 50, y: 50, scale: 1 });
                 });
 
+                it('should align the content to the top of the viewport if taller ' +
+                    'than the viewport and verticalAlign="auto"', function() {
+                    scrollListOptions.verticalAlign = VerticalAlignments.TOP;
+                    viewportSize.height = 400;
+                    itemLayout.outerHeight = 500;
+                    viewportSize.width = 500;
+                    itemLayout.outerWidth = 400;
+
+                    renderer.appendPlaceholderToScrollList(itemLayout, placeholder);
+
+                    expect(itemMap.transform)
+                        .toHaveBeenCalledWith({ x: 50, y: 0, scale: 1 });
+                });
+
                 it('should align the content to the top of the viewport if shorter ' +
                     'than the viewport and verticalAlign="top"', function() {
                     scrollListOptions.verticalAlign = VerticalAlignments.TOP;
