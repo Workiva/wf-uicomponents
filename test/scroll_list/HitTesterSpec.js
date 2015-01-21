@@ -4,6 +4,7 @@ define(function(require) {
     var AwesomeMap = require('wf-js-uicomponents/awesome_map/AwesomeMap');
     var Gesture = require('wf-js-uicomponents/awesome_map/Gesture');
     var HitTester = require('wf-js-uicomponents/scroll_list/HitTester');
+    var HorizontalAlignments = require('wf-js-uicomponents/layouts/HorizontalAlignments');
     var InteractionEvent = require('wf-js-uicomponents/awesome_map/InteractionEvent');
     var ItemLayout = require('wf-js-uicomponents/layouts/ItemLayout');
     var ScrollList = require('wf-js-uicomponents/scroll_list/ScrollList');
@@ -114,16 +115,22 @@ define(function(require) {
             });
         });
         describe('testing list maps', function() {
+            var scrollListOptions;
             var scrollList;
             var itemLayout;
             var listMapState;
+            var viewportSize;
+            var layoutSize;
             var event;
             beforeEach(function() {
                 itemLayout = new ItemLayout({ itemIndex: 0 });
 
+                viewportSize = { width: 500, height: 500 };
+                layoutSize = { width: 500, height: 500 };
+
                 var layout = Object.create(VerticalLayout.prototype);
-                spyOn(layout, 'getViewportSize').andReturn({ width: 500, height: 500 });
-                spyOn(layout, 'getSize').andReturn({ width: 500, height: 500 });
+                spyOn(layout, 'getViewportSize').andReturn(viewportSize);
+                spyOn(layout, 'getSize').andReturn(layoutSize);
                 spyOn(layout, 'getVisibleItemRange').andReturn({ startIndex: 0, endIndex: 0 });
                 spyOn(layout, 'getItemLayout').andReturn(itemLayout);
 
@@ -132,9 +139,14 @@ define(function(require) {
                 var listMap = Object.create(AwesomeMap.prototype);
                 spyOn(listMap, 'getCurrentTransformState').andReturn(listMapState);
 
+                scrollListOptions = {
+                    horizontalAlign: HorizontalAlignments.AUTO
+                };
+
                 scrollList = Object.create(ScrollList.prototype);
                 spyOn(scrollList, 'getLayout').andReturn(layout);
                 spyOn(scrollList, 'getListMap').andReturn(listMap);
+                spyOn(scrollList, 'getOptions').andReturn(scrollListOptions);
 
                 var gesture = new Gesture();
                 event = new InteractionEvent('faketype', gesture, gesture);
@@ -208,6 +220,85 @@ define(function(require) {
                     listMapState.translateX = -1;
                     result = HitTester.testListMap(scrollList, point);
                     expect(result).toBe(false);
+                });
+            });
+            describe('when horizontal alignment is "auto"', function() {
+                it('should calculate correct position when viewport is wider than layout', function() {
+                    // In this case the hit tester will assume the layout is
+                    // centered in the viewport initially
+                    layoutSize.width = 300; // make it narrower than the viewport
+                    itemLayout.top = 100;
+                    itemLayout.right = 300;
+                    itemLayout.bottom = 200;
+                    itemLayout.left = 200;
+                    var point = { x: 50, y: 50 };
+                    listMapState.translateX = -100;
+                    listMapState.translateY = -100;
+                    var result = HitTester.testListMap(scrollList, point);
+
+                    expect(result).toEqual({
+                        index: itemLayout.itemIndex,
+                        position: { x: 50, y: 50 }
+                    });
+                });
+                it('should calculate correct position when viewport is narrower than layout', function() {
+                    // In this case the hit tester will assume the layout is
+                    // aligned to the left edge of the viewport initially
+                    viewportSize.width = 300; // make it narrower than the layout
+                    itemLayout.top = 100;
+                    itemLayout.right = 200;
+                    itemLayout.bottom = 200;
+                    itemLayout.left = 100;
+                    var point = { x: 50, y: 50 };
+                    listMapState.translateX = -100;
+                    listMapState.translateY = -100;
+                    var result = HitTester.testListMap(scrollList, point);
+
+                    expect(result).toEqual({
+                        index: itemLayout.itemIndex,
+                        position: { x: 50, y: 50 }
+                    });
+                });
+            });
+            describe('when horizontal alignment is "left"', function() {
+                beforeEach(function() {
+                    scrollListOptions.horizontalAlign = HorizontalAlignments.LEFT;
+                });
+                it('should calculate correct position when viewport is wider than layout', function() {
+                    // In this case the hit tester will assume the layout is
+                    // aligned to the left edge of the viewport initially
+                    layoutSize.width = 300; // make it narrower than the viewport
+                    itemLayout.top = 100;
+                    itemLayout.right = 100;
+                    itemLayout.bottom = 200;
+                    itemLayout.left = 0;
+                    var point = { x: 50, y: 50 };
+                    listMapState.translateX = -25;
+                    listMapState.translateY = -100;
+                    var result = HitTester.testListMap(scrollList, point);
+
+                    expect(result).toEqual({
+                        index: itemLayout.itemIndex,
+                        position: { x: 75, y: 50 }
+                    });
+                });
+                it('should calculate correct position when viewport is narrower than layout', function() {
+                    // In this case the hit tester will assume the layout is
+                    // aligned to the left edge of the viewport initially
+                    viewportSize.width = 300; // make it narrower than the layout
+                    itemLayout.top = 100;
+                    itemLayout.right = 100;
+                    itemLayout.bottom = 200;
+                    itemLayout.left = 0;
+                    var point = { x: 50, y: 50 };
+                    listMapState.translateX = -25;
+                    listMapState.translateY = -100;
+                    var result = HitTester.testListMap(scrollList, point);
+
+                    expect(result).toEqual({
+                        index: itemLayout.itemIndex,
+                        position: { x: 75, y: 50 }
+                    });
                 });
             });
             it('should translate successful hit positions to be relative to original item size', function() {

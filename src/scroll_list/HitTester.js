@@ -14,8 +14,10 @@
  * limitations under the License.
  */
 
-define(function() {
+define(function(require) {
     'use strict';
+
+    var HorizontalAlignments = require('wf-js-uicomponents/layouts/HorizontalAlignments');
 
     function getHitData(itemLayout, position, bounds, mapScale) {
         var scaleFactor = mapScale * itemLayout.scaleToFit;
@@ -101,7 +103,13 @@ define(function() {
             var mapScale = state.scale;
 
             var layout = scrollList.getLayout();
-            var undoLeftBy = (layout.getViewportSize().width - layout.getSize().width) / 2;
+            var layoutWidth = layout.getSize().width;
+            var viewportWidth = layout.getViewportSize().width;
+            var hAlignAuto = scrollList.getOptions().horizontalAlign === HorizontalAlignments.AUTO;
+            var undoLeftBy = 0;
+            if (hAlignAuto && (layoutWidth < viewportWidth)) {
+                undoLeftBy = Math.round((viewportWidth - layoutWidth) / 2);
+            }
             var visibleRange = layout.getVisibleItemRange();
             var itemLayout;
             var validBounds;
