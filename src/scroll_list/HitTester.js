@@ -17,7 +17,7 @@
 define(function(require) {
     'use strict';
 
-    var HorizontalAlignments = require('wf-js-uicomponents/layouts/HorizontalAlignments');
+    var PositionTranslator = require('wf-js-uicomponents/scroll_list/PositionTranslator');
 
     function getHitData(itemLayout, position, bounds, mapScale) {
         var scaleFactor = mapScale * itemLayout.scaleToFit;
@@ -68,14 +68,20 @@ define(function(require) {
             var currentItemIndex = layout.getCurrentItemIndex();
             var itemLayout = layout.getItemLayout(currentItemIndex);
 
+            // Calculate the position of the item within the AwesomeMap's
+            // transformation plane. This will take into account the padding
+            // around the item.
+            var positionTranslator = new PositionTranslator(scrollList);
+            var itemInMap = positionTranslator.viewportToMapBounds(itemLayout);
+
             // This is awful stuff. Tricky currently due to using the item map
             // to center and position content, overriding the layout stuff.
             // Ideally this logic would live in the layout.
             var validBounds = {
-                top: state.translateY + itemLayout.paddingTop * mapScale,
-                right: state.translateX + (itemLayout.outerWidth - itemLayout.paddingRight) * mapScale,
-                bottom: state.translateY + (itemLayout.outerHeight - itemLayout.paddingBottom) * mapScale,
-                left: state.translateX + itemLayout.paddingLeft * mapScale
+                top: state.translateY + itemInMap.top * mapScale,
+                right: state.translateX + itemInMap.right * mapScale,
+                bottom: state.translateY + itemInMap.bottom * mapScale,
+                left: state.translateX + itemInMap.left * mapScale
             };
 
             if (validBounds.left <= point.x && point.x <= validBounds.right &&
@@ -101,30 +107,30 @@ define(function(require) {
             var listMap = scrollList.getListMap();
             var state = listMap.getCurrentTransformState();
             var mapScale = state.scale;
-
             var layout = scrollList.getLayout();
-            var layoutWidth = layout.getSize().width;
-            var viewportWidth = layout.getViewportSize().width;
-            var hAlignAuto = scrollList.getOptions().horizontalAlign === HorizontalAlignments.AUTO;
-            var undoLeftBy = 0;
-            if (hAlignAuto && (layoutWidth < viewportWidth)) {
-                undoLeftBy = Math.round((viewportWidth - layoutWidth) / 2);
-            }
             var visibleRange = layout.getVisibleItemRange();
             var itemLayout;
             var validBounds;
             var i;
+
+            var positionTranslator = new PositionTranslator(scrollList);
+            var itemInMap;
 
             // Again, like above: awful stuff. Tricky currently due to using the
             // list map to center and position content, overriding the layout
             // position. Ideally this logic would live in the layout.
             for (i = visibleRange.startIndex; i <= visibleRange.endIndex; i++) {
                 itemLayout = layout.getItemLayout(i);
+                // Compute the position of the item relative to the AwesomeMap's
+                // transformation plane. This will adjust for the position of
+                // the awesomeMap within the viewport as well as the padding
+                // around the item.
+                itemInMap = positionTranslator.viewportToMapBounds(itemLayout);
                 validBounds = {
-                    top: state.translateY + (itemLayout.top + itemLayout.paddingTop) * mapScale,
-                    right: state.translateX + (itemLayout.right - undoLeftBy - itemLayout.paddingRight) * mapScale,
-                    bottom: state.translateY + (itemLayout.bottom - itemLayout.paddingBottom) * mapScale,
-                    left: state.translateX + (itemLayout.left - undoLeftBy + itemLayout.paddingLeft) * mapScale
+                    top: state.translateY + itemInMap.top * mapScale,
+                    right: state.translateX + itemInMap.right * mapScale,
+                    bottom: state.translateY + itemInMap.bottom * mapScale,
+                    left: state.translateX + itemInMap.left * mapScale
                 };
 
                 if (point.x >= validBounds.left && point.x <= validBounds.right &&

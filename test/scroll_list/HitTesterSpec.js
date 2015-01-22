@@ -8,6 +8,7 @@ define(function(require) {
     var InteractionEvent = require('wf-js-uicomponents/awesome_map/InteractionEvent');
     var ItemLayout = require('wf-js-uicomponents/layouts/ItemLayout');
     var ScrollList = require('wf-js-uicomponents/scroll_list/ScrollList');
+    var ScrollModes = require('wf-js-uicomponents/scroll_list/ScrollModes');
     var TransformState = require('wf-js-uicomponents/awesome_map/TransformState');
     var VerticalLayout = require('wf-js-uicomponents/layouts/VerticalLayout');
 
@@ -22,6 +23,8 @@ define(function(require) {
                 var layout = Object.create(VerticalLayout.prototype);
                 spyOn(layout, 'getCurrentItemIndex').andReturn(itemLayout.itemIndex);
                 spyOn(layout, 'getItemLayout').andReturn(itemLayout);
+                spyOn(layout, 'getViewportSize').andReturn({});
+                spyOn(layout, 'getSize').andReturn({});
 
                 itemMapState = new TransformState();
 
@@ -31,6 +34,10 @@ define(function(require) {
                 scrollList = Object.create(ScrollList.prototype);
                 spyOn(scrollList, 'getLayout').andReturn(layout);
                 spyOn(scrollList, 'getCurrentItemMap').andReturn(itemMap);
+                spyOn(scrollList, 'getOptions').andReturn({
+                    mode: ScrollModes.SINGLE,
+                    horizontalAlign: HorizontalAlignments.AUTO
+                });
             });
             it('should return hit data if the event position is inside the item', function() {
                 itemLayout.outerWidth = 100;
@@ -140,6 +147,7 @@ define(function(require) {
                 spyOn(listMap, 'getCurrentTransformState').andReturn(listMapState);
 
                 scrollListOptions = {
+                    mode: ScrollModes.FLOW,
                     horizontalAlign: HorizontalAlignments.AUTO
                 };
 

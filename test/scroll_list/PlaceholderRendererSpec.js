@@ -95,41 +95,17 @@ define(function(require) {
                     expect(placeholder.element.style.left).toBe('-50px');
                 });
 
-                it('should adjust the left position of the placeholder if layout '+
-                    'is wider than viewport and horizontalAlign="left"', function() {
+                it('should not adjust the left position of the placeholder if '+
+                    'horizontalAlign="left"', function() {
                     scrollListOptions.horizontalAlign = HorizontalAlignments.LEFT;
                     viewportSize.width = 400;
                     layoutSize.width = 500;
-                    itemLayout = { left: -50 };
-                    placeholder = { element: { style: { left: '-50px' } } };
+                    itemLayout = { left: 0 }; // we expect items to be left-aligned
+                    placeholder = { element: { style: { left: '0px' } } };
 
                     renderer.appendPlaceholderToScrollList(itemLayout, placeholder);
 
                     expect(placeholder.element.style.left).toBe('0px');
-                });
-
-                it('should adjust the left position of the placeholder if layout '+
-                    'is narrower than viewport and horizontalAlign="left"', function() {
-                    scrollListOptions.horizontalAlign = HorizontalAlignments.LEFT;
-                    viewportSize.width = 500;
-                    layoutSize.width = 400;
-                    itemLayout = { left: 75 };
-                    placeholder = { element: { style: { left: '75px' } } };
-
-                    renderer.appendPlaceholderToScrollList(itemLayout, placeholder);
-
-                    expect(placeholder.element.style.left).toBe('0px');
-                });
-
-                it('should leave the left position of the placeholder alone if layout is not narrower than viewport', function() {
-                    viewportSize.width = 500;
-                    layoutSize.width = 500;
-                    itemLayout = { left: 50 };
-                    placeholder = { element: { style: { left: '50px' } } };
-
-                    renderer.appendPlaceholderToScrollList(itemLayout, placeholder);
-
-                    expect(placeholder.element.style.left).toBe('50px');
                 });
             });
 
