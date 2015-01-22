@@ -251,6 +251,30 @@ define(function(require) {
         this.onInteractionFinished = Observable.newObservable();
 
         /**
+         * Observbale for subscribing to changes in the scroll position of the
+         * individual items when in 'peek' and 'single' modes.
+         * @method ScrollList#onItemScrollPositionChanged
+         * @param {Function} callback
+         *        Invoked with (sender, {
+         *            event: {@link InteractionEvent},
+         *            x: number,
+         *            y: number
+         *        })
+         */
+        this.onItemScrollPositionChanged = Observable.newObservable();
+
+        /**
+         * Observable for subscribing to the insertion of new items.
+         *
+         * @method ScrollList#onItemsInserted
+         * @param {Function} callback
+         *        Invoked with (sender, {
+         *            count: {number}
+         *        })
+         */
+        this.onItemsInserted = Observable.newObservable();
+
+        /**
          * Observable for subscribing to placeholder rendered events.
          * @method ScrollList#onPlaceholderRendered
          * @param {Function} callback
@@ -285,17 +309,6 @@ define(function(require) {
          *        })
          */
         this.onScrollPositionChanged = Observable.newObservable();
-
-        /**
-         * Observable for subscribing to the insertion of new items.
-         *
-         * @method ScrollList#onItemsInserted
-         * @param {Function} callback
-         *        Invoked with (sender, {
-         *            count: {number}
-         *        })
-         */
-        this.onItemsInserted = Observable.newObservable();
 
         //---------------------------------------------------------
         // Private properties

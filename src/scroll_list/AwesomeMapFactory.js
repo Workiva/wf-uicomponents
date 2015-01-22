@@ -118,6 +118,13 @@ define(function(require) {
                     scale: scrollList.getScale()
                 }]);
             });
+            map.onTranslationChanged(function(source, args) {
+                scrollList.onItemScrollPositionChanged.dispatch([scrollList, {
+                    event: args.event,
+                    x: -args.x,
+                    y: -args.y
+                }]);
+            });
 
             return map;
         },
