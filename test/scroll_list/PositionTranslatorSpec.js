@@ -6,7 +6,6 @@ define(function(require) {
     var ScrollList = require('wf-js-uicomponents/scroll_list/ScrollList');
     var ScrollModes = require('wf-js-uicomponents/scroll_list/ScrollModes');
     var VerticalLayout = require('wf-js-uicomponents/layouts/VerticalLayout');
-    var VerticalAlignments = require('wf-js-uicomponents/layouts/VerticalAlignments');
 
     describe('PositionTranslator', function() {
         function createTranslator(options) {
@@ -28,7 +27,7 @@ define(function(require) {
 
             return new PositionTranslator(scrollList);
         }
-        describe('viewportLeftToMapLeft', function() {
+        describe('getLeftInTransformationPlane', function() {
             it('should account for the offset between the viewport and the map when the content ' +
                 'is narrower than the viewport', function() {
                 var viewportSize = { width: 500 };
@@ -39,7 +38,7 @@ define(function(require) {
                 });
                 var leftOffset = (viewportSize.width - layoutSize.width) / 2;
                 var viewportLeft = 150;
-                var result = positionTranslator.viewportLeftToMapLeft(viewportLeft);
+                var result = positionTranslator.getLeftInTransformationPlane(viewportLeft);
                 expect(result).toEqual(viewportLeft - leftOffset);
             });
             it('should left align the map to the viewport when the content ' +
@@ -51,7 +50,7 @@ define(function(require) {
                     layoutSize: layoutSize
                 });
                 var viewportLeft = 150;
-                var result = positionTranslator.viewportLeftToMapLeft(viewportLeft);
+                var result = positionTranslator.getLeftInTransformationPlane(viewportLeft);
                 expect(result).toEqual(viewportLeft);
             });
             it('should left aligne the map to the viewport when horizontalAlign ' +
@@ -63,119 +62,19 @@ define(function(require) {
                     }
                 });
                 var viewportLeft = 100;
-                var result = positionTranslator.viewportLeftToMapLeft(viewportLeft);
+                var result = positionTranslator.getLeftInTransformationPlane(viewportLeft);
                 expect(result).toEqual(viewportLeft);
             });
             it('should return the value unchanged when not in "flow" mode', function() {
                 var positionTranslator = createTranslator({ scrollListOptions: { mode: '!flow' } });
                 var viewportLeft = 100;
-                var result = positionTranslator.viewportLeftToMapLeft(viewportLeft);
+                var result = positionTranslator.getLeftInTransformationPlane(viewportLeft);
                 expect(result).toEqual(viewportLeft);
             });
         });
-        describe('viewportLeftOfItem', function() {
-            it('should return the left of the ItemLayout when in "flow" mode', function() {
-                var itemLayout = { left: 200 };
-                var positionTranslator = createTranslator();
-                var result = positionTranslator.viewportLeftOfItem(itemLayout);
-                expect(result).toEqual(itemLayout.left);
-            });
-            it('should center the item when the content is narrower than the viewport ' +
-                'and horizontal alignment is "auto"', function() {
-                var itemLayout = { outerWidth: 200 };
-                var viewportSize = { width: 500 };
-                var positionTranslator = createTranslator({
-                    scrollListOptions: {
-                        mode: '!flow',
-                        horizontalAlign: HorizontalAlignments.AUTO
-                    },
-                    viewportSize: viewportSize
-                });
-                var result = positionTranslator.viewportLeftOfItem(itemLayout);
-                expect(result).toEqual((viewportSize.width - itemLayout.outerWidth) / 2);
-            });
-            it('should left align the map to the viewport when the content is ' +
-                'wider than the viewport and horizontal alignment is "auto"', function() {
-                var itemLayout = { outerWidth: 700 };
-                var viewportSize = { width: 500 };
-                var positionTranslator = createTranslator({
-                    scrollListOptions: {
-                        mode: '!flow',
-                        horizontalAlign: HorizontalAlignments.AUTO
-                    },
-                    viewportSize: viewportSize
-                });
-                var result = positionTranslator.viewportLeftOfItem(itemLayout);
-                expect(result).toEqual(0);
-            });
-            it('should left align the map to the viewport when horizontal ' +
-                'alignment is "left"', function() {
-                var itemLayout = { outerWidth: 300 };
-                var viewportSize = { width: 500 };
-                var positionTranslator = createTranslator({
-                    scrollListOptions: {
-                        mode: '!flow',
-                        horizontalAlign: HorizontalAlignments.LEFT
-                    },
-                    viewportSize: viewportSize
-                });
-                var result = positionTranslator.viewportLeftOfItem(itemLayout);
-                expect(result).toEqual(0);
-            });
-        });
-        describe('viewportTopOfItem', function() {
-            it('should return the top of the ItemLayout when in "flow" mode', function() {
-                var itemLayout = { top: 200 };
-                var positionTranslator = createTranslator();
-                var result = positionTranslator.viewportTopOfItem(itemLayout);
-                expect(result).toEqual(itemLayout.top);
-            });
-            it('should center the item when the content is shorter than the viewport ' +
-                'and vertical alignment is "auto"', function() {
-                var itemLayout = { outerHeight: 200 };
-                var viewportSize = { height: 500 };
-                var positionTranslator = createTranslator({
-                    scrollListOptions: {
-                        mode: '!flow',
-                        verticalAlign: VerticalAlignments.AUTO
-                    },
-                    viewportSize: viewportSize
-                });
-                var result = positionTranslator.viewportTopOfItem(itemLayout);
-                expect(result).toEqual((viewportSize.height - itemLayout.outerHeight) / 2);
-            });
-            it('should top align the map to the viewport when the content is ' +
-                'taller than the viewport and vertical alignment is "auto"', function() {
-                var itemLayout = { outerHeight: 700 };
-                var viewportSize = { height: 500 };
-                var positionTranslator = createTranslator({
-                    scrollListOptions: {
-                        mode: '!flow',
-                        verticalAlign: VerticalAlignments.AUTO
-                    },
-                    viewportSize: viewportSize
-                });
-                var result = positionTranslator.viewportTopOfItem(itemLayout);
-                expect(result).toEqual(0);
-            });
-            it('should top align the map to the viewport when vertical ' +
-                'alignment is "top"', function() {
-                var itemLayout = { outerHeight: 200 };
-                var viewportSize = { height: 500 };
-                var positionTranslator = createTranslator({
-                    scrollListOptions: {
-                        mode: '!flow',
-                        verticalAlign: VerticalAlignments.TOP
-                    },
-                    viewportSize: viewportSize
-                });
-                var result = positionTranslator.viewportTopOfItem(itemLayout);
-                expect(result).toEqual(0);
-            });
-        });
-        describe('viewportToMapBounds', function() {
+        describe('getBoundsInTransformationPlane', function() {
             function checkPositionInFlow(positionTranslator, itemLayout, expectedOffset) {
-                var result = positionTranslator.viewportToMapBounds(itemLayout);
+                var result = positionTranslator.getBoundsInTransformationPlane(itemLayout);
                 expect(result.left).toEqual(itemLayout.left - expectedOffset + itemLayout.paddingLeft);
                 expect(result.top).toEqual(itemLayout.top + itemLayout.paddingTop);
                 expect(result.right).toEqual(itemLayout.right - expectedOffset - itemLayout.paddingRight);
@@ -259,7 +158,7 @@ define(function(require) {
                     outerWidth: 300,
                     outerHeight: 200
                 };
-                var result = positionTranslator.viewportToMapBounds(itemLayout);
+                var result = positionTranslator.getBoundsInTransformationPlane(itemLayout);
                 expect(result.left).toEqual(itemLayout.paddingLeft);
                 expect(result.top).toEqual(itemLayout.paddingTop);
                 expect(result.right).toEqual(itemLayout.outerWidth - itemLayout.paddingRight);

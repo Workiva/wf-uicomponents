@@ -159,7 +159,6 @@ define(function(require) {
          */
         appendPlaceholderToScrollList: function(itemLayout, placeholder, update) {
             var scrollList = this._scrollList;
-            var positionTranslator = new PositionTranslator(scrollList);
             var listMap = scrollList.getListMap();
             var layout = scrollList.getLayout();
             var viewportSize = layout.getViewportSize();
@@ -169,7 +168,8 @@ define(function(require) {
                 var element = placeholder.element;
                 // Adjust the element's left style to account for the fact that
                 // the list map is responsible for positioning content in the viewport.
-                var adjustedLeft = positionTranslator.viewportLeftToMapLeft(itemLayout.left);
+                var positionTranslator = new PositionTranslator(scrollList);
+                var adjustedLeft = positionTranslator.getLeftInTransformationPlane(itemLayout.left);
                 element.style.left = adjustedLeft + 'px';
                 if (!update) {
                     listMap.appendContent(element);
@@ -183,18 +183,14 @@ define(function(require) {
                 // As we are appending content in other modes to a separate map,
                 // need to negate the default positional styles and let the map
                 // apply position by transforming its content.
-                var transformY = 0;
-                var transformX = positionTranslator.viewportLeftOfItem(itemLayout);
+                var transformY = itemLayout.offsetTop;
+                var transformX = itemLayout.offsetLeft;
                 // If this item is before the current item and taller than the viewport,
                 // then pan it to the bottom.
                 var itemWidth = itemLayout.outerWidth;
                 var itemHeight = itemLayout.outerHeight;
                 if (layout.getCurrentItemIndex() > itemLayout.itemIndex && itemHeight > viewportHeight) {
                     transformY = viewportHeight - itemHeight;
-                }
-                // Center content shorter and narrower than the viewport.
-                else {
-                    transformY = positionTranslator.viewportTopOfItem(itemLayout);
                 }
                 var itemMap = placeholder.map;
                 if (!itemMap) {

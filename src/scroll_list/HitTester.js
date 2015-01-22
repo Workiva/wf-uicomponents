@@ -68,15 +68,8 @@ define(function(require) {
             var currentItemIndex = layout.getCurrentItemIndex();
             var itemLayout = layout.getItemLayout(currentItemIndex);
 
-            // Calculate the position of the item within the AwesomeMap's
-            // transformation plane. This will take into account the padding
-            // around the item.
             var positionTranslator = new PositionTranslator(scrollList);
-            var itemInMap = positionTranslator.viewportToMapBounds(itemLayout);
-
-            // This is awful stuff. Tricky currently due to using the item map
-            // to center and position content, overriding the layout stuff.
-            // Ideally this logic would live in the layout.
+            var itemInMap = positionTranslator.getBoundsInTransformationPlane(itemLayout);
             var validBounds = {
                 top: state.translateY + itemInMap.top * mapScale,
                 right: state.translateX + itemInMap.right * mapScale,
@@ -85,8 +78,8 @@ define(function(require) {
             };
 
             if (validBounds.left <= point.x && point.x <= validBounds.right &&
-                validBounds.top <= point.y && point.y <= validBounds.bottom) {
-
+                validBounds.top <= point.y && point.y <= validBounds.bottom
+            ) {
                 return getHitData(itemLayout, point, validBounds, mapScale);
             }
 
@@ -115,17 +108,9 @@ define(function(require) {
 
             var positionTranslator = new PositionTranslator(scrollList);
             var itemInMap;
-
-            // Again, like above: awful stuff. Tricky currently due to using the
-            // list map to center and position content, overriding the layout
-            // position. Ideally this logic would live in the layout.
             for (i = visibleRange.startIndex; i <= visibleRange.endIndex; i++) {
                 itemLayout = layout.getItemLayout(i);
-                // Compute the position of the item relative to the AwesomeMap's
-                // transformation plane. This will adjust for the position of
-                // the awesomeMap within the viewport as well as the padding
-                // around the item.
-                itemInMap = positionTranslator.viewportToMapBounds(itemLayout);
+                itemInMap = positionTranslator.getBoundsInTransformationPlane(itemLayout);
                 validBounds = {
                     top: state.translateY + itemInMap.top * mapScale,
                     right: state.translateX + itemInMap.right * mapScale,
@@ -134,8 +119,8 @@ define(function(require) {
                 };
 
                 if (point.x >= validBounds.left && point.x <= validBounds.right &&
-                    point.y >= validBounds.top && point.y <= validBounds.bottom) {
-
+                    point.y >= validBounds.top && point.y <= validBounds.bottom
+                ) {
                     return getHitData(itemLayout, point, validBounds, mapScale);
                 }
             }

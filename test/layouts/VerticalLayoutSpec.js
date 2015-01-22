@@ -23,6 +23,7 @@ define(function(require) {
     var ItemSizeCollection = require('wf-js-uicomponents/layouts/ItemSizeCollection');
     var Renderer = require('wf-js-uicomponents/scroll_list/PlaceholderRenderer');
     var ScaleStrategies = require('wf-js-uicomponents/layouts/ScaleStrategies');
+    var VerticalAlignments = require('wf-js-uicomponents/layouts/VerticalAlignments');
     var VerticalLayout = require('wf-js-uicomponents/layouts/VerticalLayout');
 
     describe('VerticalLayout', function() {
@@ -955,6 +956,17 @@ define(function(require) {
                     it('should set offset top to zero if item is taller than viewport', function() {
                         $viewport.css({ height: 200 });
                         layout = createVerticalLayout({ flow: false });
+
+                        layout.getItemLayouts().forEach(function(item) {
+                            expect(item.offsetTop).toBe(0);
+                        });
+                    });
+
+                    it('should set offset top to zero if vertical alignment is "top"', function() {
+                        layout = createVerticalLayout({
+                            flow: false,
+                            verticalAlign: VerticalAlignments.TOP
+                        });
 
                         layout.getItemLayouts().forEach(function(item) {
                             expect(item.offsetTop).toBe(0);

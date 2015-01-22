@@ -143,78 +143,25 @@ define(function(require) {
                     });
                 });
 
-                it('should center the content horizontally if narrower than the viewport ' +
-                    'and horizontalAlign="auto"', function() {
-                    viewportSize.height = 500;
-                    itemLayout.outerHeight = 400;
-                    viewportSize.width = 500;
-                    itemLayout.outerWidth = 400;
+                it('should use offsetLeft and offsetTop to position the transformation ' +
+                    'plane containing the itemLayout', function() {
+                    itemLayout.offsetLeft = 50;
+                    itemLayout.offsetTop = 60;
 
                     renderer.appendPlaceholderToScrollList(itemLayout, placeholder);
 
-                    expect(itemMap.transform)
-                        .toHaveBeenCalledWith({ x: 50, y: 50, scale: 1 });
-                });
-
-                it('should position the content to the viewport left if narrower than ' +
-                    'the viewport and horizontalAlign="left"', function() {
-                    scrollListOptions.horizontalAlign = HorizontalAlignments.LEFT;
-                    viewportSize.height = 500;
-                    itemLayout.outerHeight = 400;
-                    viewportSize.width = 500;
-                    itemLayout.outerWidth = 400;
-
-                    renderer.appendPlaceholderToScrollList(itemLayout, placeholder);
-
-                    expect(itemMap.transform)
-                        .toHaveBeenCalledWith({ x: 0, y: 50, scale: 1 });
-                });
-
-                it('should center the content vertically if shorter than the viewport ' +
-                    'and verticalAlign="auto"', function() {
-                    viewportSize.height = 500;
-                    itemLayout.outerHeight = 400;
-                    viewportSize.width = 500;
-                    itemLayout.outerWidth = 400;
-
-                    renderer.appendPlaceholderToScrollList(itemLayout, placeholder);
-
-                    expect(itemMap.transform)
-                        .toHaveBeenCalledWith({ x: 50, y: 50, scale: 1 });
-                });
-
-                it('should align the content to the top of the viewport if taller ' +
-                    'than the viewport and verticalAlign="auto"', function() {
-                    scrollListOptions.verticalAlign = VerticalAlignments.TOP;
-                    viewportSize.height = 400;
-                    itemLayout.outerHeight = 500;
-                    viewportSize.width = 500;
-                    itemLayout.outerWidth = 400;
-
-                    renderer.appendPlaceholderToScrollList(itemLayout, placeholder);
-
-                    expect(itemMap.transform)
-                        .toHaveBeenCalledWith({ x: 50, y: 0, scale: 1 });
-                });
-
-                it('should align the content to the top of the viewport if shorter ' +
-                    'than the viewport and verticalAlign="top"', function() {
-                    scrollListOptions.verticalAlign = VerticalAlignments.TOP;
-                    viewportSize.height = 500;
-                    itemLayout.outerHeight = 400;
-                    viewportSize.width = 500;
-                    itemLayout.outerWidth = 400;
-
-                    renderer.appendPlaceholderToScrollList(itemLayout, placeholder);
-
-                    expect(itemMap.transform)
-                        .toHaveBeenCalledWith({ x: 50, y: 0, scale: 1 });
+                    expect(itemMap.transform).toHaveBeenCalledWith({
+                        x: itemLayout.offsetLeft,
+                        y: itemLayout.offsetTop,
+                        scale: 1
+                    });
                 });
 
                 it('should pan the content to its bottom if placeholder precedes the current item', function() {
                     viewportSize.height = 500;
                     itemLayout.itemIndex = 0;
                     itemLayout.outerHeight = 600;
+                    itemLayout.offsetLeft = 0;
 
                     renderer.appendPlaceholderToScrollList(itemLayout, placeholder);
 

@@ -24,6 +24,7 @@ define(function(require) {
     var ItemLayout = require('wf-js-uicomponents/layouts/ItemLayout');
     var Observable = require('wf-js-common/Observable');
     var ScaleStrategies = require('wf-js-uicomponents/layouts/ScaleStrategies');
+    var VerticalAlignments = require('wf-js-uicomponents/layouts/VerticalAlignments');
 
     function getDistanceToViewportCenter(itemLayout, visibleCenter) {
         var distance = 0;
@@ -91,6 +92,9 @@ define(function(require) {
      *
      * @param {number} [options.padding=0]
      *        The padding between the rendered layout and the viewport, in pixels.
+     *
+     * @param {string} [options.verticalAlign='auto']
+     *        The alignment of the items along the y-axis. Can be 'auto' or 'top'.
      */
     var VerticalLayout = function(viewport, itemSizeCollection, renderer, options) {
 
@@ -153,7 +157,8 @@ define(function(require) {
             gap: 0,
             horizontalAlign: HorizontalAlignments.AUTO,
             minNumberOfVirtualItems: 3,
-            padding: 0
+            padding: 0,
+            verticalAlign: VerticalAlignments.AUTO
         }, options);
 
         /**
@@ -815,6 +820,7 @@ define(function(require) {
             var options = this.getOptions();
             var flow = options.flow;
             var horizontalAlign = options.horizontalAlign;
+            var verticalAlign = options.verticalAlign;
             var gapTop = Math.floor(options.gap / 2);
             var gapBottom = Math.ceil(options.gap / 2);
             var padding = options.padding;
@@ -869,6 +875,18 @@ define(function(require) {
                 }
             }
 
+            function getVerticalPosition(outerHeight) {
+                if (verticalAlign === VerticalAlignments.TOP ||
+                    (verticalAlign === VerticalAlignments.AUTO &&
+                        outerHeight > viewportHeight)
+                ) {
+                    return 0;
+                } else {
+                    // center by default
+                    return Math.round((viewportHeight - outerHeight) / 2);
+                }
+            }
+
             for (i = 0; i < numberOfItems; i++) {
                 size = itemSizeCollection.getItem(i);
                 scales = getScales(size);
@@ -907,8 +925,7 @@ define(function(require) {
                 }
                 else { // !flow
                     layout.bottom = layout.top + viewportHeight;
-                    layout.offsetTop = layout.outerHeight < viewportHeight ?
-                        Math.round((viewportHeight - layout.outerHeight) / 2) : 0;
+                    layout.offsetTop = getVerticalPosition(layout.outerHeight);
 
                     layout.left = 0;
                     layout.right = viewportWidth;
