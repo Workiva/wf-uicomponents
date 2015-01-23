@@ -23,6 +23,7 @@ define(function(require) {
     var FitModes = require('wf-js-uicomponents/scroll_list/FitModes');
     var ItemLayout = require('wf-js-uicomponents/layouts/ItemLayout');
     var Observable = require('wf-js-common/Observable');
+    var Orientations = require('wf-js-uicomponents/layouts/Orientations');
     var ScaleStrategies = require('wf-js-uicomponents/layouts/ScaleStrategies');
 
     function getDistanceToViewportCenter(itemLayout, visibleCenter) {
@@ -814,7 +815,10 @@ define(function(require) {
             var viewportSize = this.getViewportSize();
             var viewportWidth = viewportSize.width;
             var viewportHeight = viewportSize.height;
-            var viewportOrientation = viewportWidth > viewportHeight ? 'landscape' : 'portrait';
+            var viewportOrientation = (
+                viewportWidth > viewportHeight ?
+                Orientations.LANDSCAPE : Orientations.PORTRAIT
+            );
 
             // Using some layout options below.
             var options = this.getOptions();
@@ -852,7 +856,7 @@ define(function(require) {
                         else {
                             var sampleOrientation = (
                                 sample.width > sample.height ?
-                                'landscape' : 'portrait'
+                                Orientations.LANDSCAPE : Orientations.PORTRAIT
                             );
                             if (viewportOrientation === sampleOrientation) {
                                 fitMode = FitModes.AUTO;
