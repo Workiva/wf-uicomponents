@@ -171,11 +171,11 @@ define(function(require) {
         this._transforming = false;
 
         /**
-         * Depending on environment, trigger resize on 'resize' or 'orientationChange'
-         * @type {Boolean}
+         * Trigger resize on 'resize'.
+         * @type {string}
          * @private
          */
-        this._resizeEventType = (typeof dependencies.getWindow().cordova !== 'undefined') ? 'orientationchange' : 'resize';
+        this._resizeEventType = 'resize';
 
         //---------------------------------------------------------
         // Initialization

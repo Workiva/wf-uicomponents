@@ -24,7 +24,11 @@ define(function() {
             if (currentItemIndex !== scrollList.getCurrentItem().index) {
                 return;
             }
-            var newScale = scrollList.getCurrentItemMap().getScale();
+            var currentItemMap = scrollList.getCurrentItemMap();
+            if (! currentItemMap) {
+                return;
+            }
+            var newScale = currentItemMap.getScale();
             if (newScale === scale) {
                 return;
             }
