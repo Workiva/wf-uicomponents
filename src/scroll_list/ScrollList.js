@@ -1085,6 +1085,7 @@ define(function(require) {
                 gap: options.gap,
                 horizontalAlign: options.horizontalAlign,
                 padding: options.padding,
+                verticalAlign: options.verticalAlign
             });
 
             this._layout.onCurrentItemIndexChanged(function(/*layout, args*/) {
