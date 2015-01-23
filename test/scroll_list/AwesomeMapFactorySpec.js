@@ -118,6 +118,23 @@ define(function(require) {
                         .toHaveBeenCalledWith([scrollList]);
                 });
             });
+            describe('when the translation of the item map changes', function() {
+                it('dispatch scroll list "onItemScrollPositionCHanged"', function() {
+                    spyOn(scrollList.onItemScrollPositionChanged, 'dispatch');
+                    var mapEventArgs = {
+                        event: {},
+                        x: -100,
+                        y: -100
+                    };
+                    map.onTranslationChanged.dispatch([map, mapEventArgs]);
+                    expect(scrollList.onItemScrollPositionChanged.dispatch)
+                        .toHaveBeenCalledWith([scrollList, {
+                            event: mapEventArgs.event,
+                            x: -mapEventArgs.x,
+                            y: -mapEventArgs.y
+                        }]);
+                });
+            });
         });
         describe('list maps', function() {
             var scrollList;
