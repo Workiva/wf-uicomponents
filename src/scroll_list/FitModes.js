@@ -21,6 +21,7 @@ define(function() {
         AUTO: 'auto',
         WIDTH: 'width',
         HEIGHT: 'height',
+        ORIENTATION: 'orientation',
         NONE: 'none'
     };
 
