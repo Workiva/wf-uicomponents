@@ -212,15 +212,15 @@ define(function(require) {
             });
         });
 
-        describe('cordova accomodations', function() {
+        describe('absence of resize-related cordova accomodations', function() {
 
             beforeEach(setup);
             afterEach(teardown);
 
-            it('should use orientationChange if Cordova is defined', function() {
+            it('should use "resize" even if Cordova is defined', function() {
                 window.cordova = {};
                 createSynthesizer();
-                expect(synthesizer._resizeEventType).toBe('orientationchange');
+                expect(synthesizer._resizeEventType).toBe('resize');
                 window.cordova = undefined;
             });
 
