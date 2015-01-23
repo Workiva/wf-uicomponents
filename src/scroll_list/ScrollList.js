@@ -178,28 +178,6 @@ define(function(require) {
         this.onContentRemoved = Observable.newObservable();
 
         /**
-         * Observable for subscribing to scroll to events.
-         * This event occurs when the peek interceptor decides
-         * to snap to the top of a item.
-         *
-         * @method ScrollList#onScrollToItemFinished
-         * @param {Function} callback
-         *        Invoked with no parameters
-         */
-
-        this.onScrollToItemFinished = Observable.newObservable();
-        /**
-         * Observable for subscribing to scroll to events.
-         * This event occurs when the resulting call to scrollToItem
-         * finishes its animation.
-         *
-         * @method ScrollList#onScrollToItemStarted
-         * @param {Function} callback
-         *        Invoked with no parameters
-         */
-        this.onScrollToItemStarted = Observable.newObservable();
-
-        /**
          * Observable for subscribing to changes to the currently visible item.
          * @method ScrollList#onCurrentItemChanged
          * @param {Function} callback
@@ -251,7 +229,7 @@ define(function(require) {
         this.onInteractionFinished = Observable.newObservable();
 
         /**
-         * Observbale for subscribing to changes in the scroll position of the
+         * Observable for subscribing to changes in the scroll position of the
          * individual items when in 'peek' and 'single' modes.
          * @method ScrollList#onItemScrollPositionChanged
          * @param {Function} callback
@@ -262,6 +240,26 @@ define(function(require) {
          *        })
          */
         this.onItemScrollPositionChanged = Observable.newObservable();
+
+        /**
+         * Observable for subscribing to pending changes in the scroll position
+         * of the individual items when in 'peek' and 'single' modes.
+         *
+         * @method ScrollList#onItemScrollPositionWillChange
+         * @param {Function} callback
+         *        Invoked with (sender, {
+         *            event: {@link InteractionEvent},
+         *            currentPosition: {
+         *                x: {number},
+         *                y: {number}
+         *            },
+         *            nextPosition: {
+         *                x: {number},
+         *                y: {number}
+         *            }
+         *        })
+         */
+        this.onItemScrollPositionWillChange = Observable.newObservable();
 
         /**
          * Observable for subscribing to the insertion of new items.
@@ -286,7 +284,7 @@ define(function(require) {
         this.onPlaceholderRendered = Observable.newObservable();
 
         /**
-         * Observable for subscribing to changes in scale.
+         * Observable for subscribing to scale changes.
          *
          * @method ScrollList#onScaleChanged
          * @param {Function} callback
@@ -296,6 +294,19 @@ define(function(require) {
          *        })
          */
         this.onScaleChanged = Observable.newObservable();
+
+        /**
+         * Observable for subscribing to pending scale changes.
+         *
+         * @method ScrollList#onScaleWillChange
+         * @param {Function} callback
+         *        Invoked with (sender, {
+         *            event: {@link InteractionEvent},
+         *            currentScale: {number},
+         *            nextScale: {number}
+         *        })
+         */
+        this.onScaleWillChange = Observable.newObservable();
 
         /**
          * Observable for subscribing to changes in scroll position.
@@ -309,6 +320,48 @@ define(function(require) {
          *        })
          */
         this.onScrollPositionChanged = Observable.newObservable();
+
+        /**
+         * Observable for subscribing to changes in scroll position.
+         *
+         * @method ScrollList#onScrollPositionWillChange
+         * @param {Function} callback
+         *        Invoked with (sender, {
+         *            event: {@link InteractionEvent},
+         *            currentPosition: {
+         *                x: {number},
+         *                y: {number}
+         *            },
+         *            nextPosition: {
+         *                x: {number},
+         *                y: {number}
+         *            }
+         *        })
+         */
+        this.onScrollPositionWillChange = Observable.newObservable();
+
+        /**
+         * Observable for subscribing to scroll to events.
+         * This event occurs when the peek interceptor decides
+         * to snap to the top of a item.
+         *
+         * @method ScrollList#onScrollToItemFinished
+         * @param {Function} callback
+         *        Invoked with no parameters
+         */
+
+        this.onScrollToItemFinished = Observable.newObservable();
+
+        /**
+         * Observable for subscribing to scroll to events.
+         * This event occurs when the resulting call to scrollToItem
+         * finishes its animation.
+         *
+         * @method ScrollList#onScrollToItemStarted
+         * @param {Function} callback
+         *        Invoked with no parameters
+         */
+        this.onScrollToItemStarted = Observable.newObservable();
 
         //---------------------------------------------------------
         // Private properties

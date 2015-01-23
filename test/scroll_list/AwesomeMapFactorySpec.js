@@ -118,6 +118,23 @@ define(function(require) {
                         .toHaveBeenCalledWith([scrollList]);
                 });
             });
+            describe('when scale will change', function() {
+                it('should dispatch scroll list "onScaleWillChange"', function() {
+                    spyOn(scrollList.onScaleWillChange, 'dispatch');
+                    var mapEventArgs = {
+                        event: {},
+                        currentScale: 1,
+                        nextScale: 2
+                    };
+                    map.onScaleWillChange.dispatch([scrollList, mapEventArgs]);
+                    expect(scrollList.onScaleWillChange.dispatch)
+                        .toHaveBeenCalledWith([scrollList, {
+                            event: mapEventArgs.event,
+                            currentScale: mapEventArgs.currentScale,
+                            nextScale: mapEventArgs.nextScale
+                        }]);
+                });
+            });
             describe('when the translation of the item map changes', function() {
                 it('dispatch scroll list "onItemScrollPositionCHanged"', function() {
                     spyOn(scrollList.onItemScrollPositionChanged, 'dispatch');
@@ -132,6 +149,35 @@ define(function(require) {
                             event: mapEventArgs.event,
                             x: -mapEventArgs.x,
                             y: -mapEventArgs.y
+                        }]);
+                });
+            });
+            describe('when translation will change', function() {
+                it('should dispatch scroll list "onItemScrollPositionWillChange"', function() {
+                    spyOn(scrollList.onItemScrollPositionWillChange, 'dispatch');
+                    var mapEventArgs = {
+                        event: {},
+                        currentTranslation: {
+                            x: -100,
+                            y: -100
+                        },
+                        nextTranslation: {
+                            x: -200,
+                            y: -200
+                        }
+                    };
+                    map.onTranslationWillChange.dispatch([map, mapEventArgs]);
+                    expect(scrollList.onItemScrollPositionWillChange.dispatch)
+                        .toHaveBeenCalledWith([scrollList, {
+                            event: mapEventArgs.event,
+                            currentPosition: {
+                                x: -mapEventArgs.currentTranslation.x,
+                                y: -mapEventArgs.currentTranslation.y
+                            },
+                            nextPosition: {
+                                x: -mapEventArgs.nextTranslation.x,
+                                y: -mapEventArgs.nextTranslation.y
+                            }
                         }]);
                 });
             });
@@ -191,6 +237,23 @@ define(function(require) {
                         .toHaveBeenCalledWith([scrollList]);
                 });
             });
+            describe('when scale will change in flow mode', function() {
+                it('should dispatch scroll list "onScaleWillChange"', function() {
+                    spyOn(scrollList.onScaleWillChange, 'dispatch');
+                    var mapEventArgs = {
+                        event: {},
+                        currentScale: 1,
+                        nextScale: 2
+                    };
+                    map.onScaleWillChange.dispatch([scrollList, mapEventArgs]);
+                    expect(scrollList.onScaleWillChange.dispatch)
+                        .toHaveBeenCalledWith([scrollList, {
+                            event: mapEventArgs.event,
+                            currentScale: mapEventArgs.currentScale,
+                            nextScale: mapEventArgs.nextScale
+                        }]);
+                });
+            });
             describe('when translation changes', function() {
                 it('should dispatch scroll list "onScrollPositionChanged"', function() {
                     spyOn(scrollList.onScrollPositionChanged, 'dispatch');
@@ -205,6 +268,35 @@ define(function(require) {
                             event: mapEventArgs.event,
                             x: -mapEventArgs.x,
                             y: -mapEventArgs.y
+                        }]);
+                });
+            });
+            describe('when translation will change', function() {
+                it('should dispatch scroll list "onScrollPositionWillChange"', function() {
+                    spyOn(scrollList.onScrollPositionWillChange, 'dispatch');
+                    var mapEventArgs = {
+                        event: {},
+                        currentTranslation: {
+                            x: -100,
+                            y: -100
+                        },
+                        nextTranslation: {
+                            x: -200,
+                            y: -200
+                        }
+                    };
+                    map.onTranslationWillChange.dispatch([map, mapEventArgs]);
+                    expect(scrollList.onScrollPositionWillChange.dispatch)
+                        .toHaveBeenCalledWith([scrollList, {
+                            event: mapEventArgs.event,
+                            currentPosition: {
+                                x: -mapEventArgs.currentTranslation.x,
+                                y: -mapEventArgs.currentTranslation.y
+                            },
+                            nextPosition: {
+                                x: -mapEventArgs.nextTranslation.x,
+                                y: -mapEventArgs.nextTranslation.y
+                            }
                         }]);
                 });
             });
