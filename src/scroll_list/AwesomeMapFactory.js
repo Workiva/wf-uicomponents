@@ -118,8 +118,8 @@ define(function(require) {
                     scale: scrollList.getScale()
                 }]);
             });
-            map.onScaleWillChange(function(source, args) {
-                scrollList.onScaleWillChange.dispatch([scrollList, {
+            map.onScaleChanging(function(source, args) {
+                scrollList.onScaleChanging.dispatch([scrollList, {
                     event: args.event,
                     currentScale: args.currentScale,
                     nextScale: args.nextScale,
@@ -132,8 +132,8 @@ define(function(require) {
                     y: -args.y
                 }]);
             });
-            map.onTranslationWillChange(function(source, args) {
-                scrollList.onItemScrollPositionWillChange.dispatch([scrollList, {
+            map.onTranslationChanging(function(source, args) {
+                scrollList.onItemScrollPositionChanging.dispatch([scrollList, {
                     event: args.event,
                     currentPosition: {
                         x: -args.currentTranslation.x,
@@ -216,8 +216,8 @@ define(function(require) {
                         scale: scrollList.getScale()
                     }]);
                 });
-                map.onScaleWillChange(function(source, args) {
-                    scrollList.onScaleWillChange.dispatch([scrollList, {
+                map.onScaleChanging(function(source, args) {
+                    scrollList.onScaleChanging.dispatch([scrollList, {
                         event: args.event,
                         currentScale: args.currentScale,
                         nextScale: args.nextScale,
@@ -235,8 +235,8 @@ define(function(require) {
                     y: -args.y
                 }]);
             });
-            map.onTranslationWillChange(function(source, args) {
-                scrollList.onScrollPositionWillChange.dispatch([scrollList, {
+            map.onTranslationChanging(function(source, args) {
+                scrollList.onScrollPositionChanging.dispatch([scrollList, {
                     event: args.event,
                     currentPosition: {
                         x: -args.currentTranslation.x,

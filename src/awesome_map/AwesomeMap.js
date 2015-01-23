@@ -150,14 +150,14 @@ define(function(require) {
         /**
          * Observable for subscribing to pending scale changes.
          *
-         * @method AwesomeMap#onScaleWillChange
+         * @method AwesomeMap#onScaleChanging
          * @param {Function} callback
          *        Invoked with (sender, {
          *            currentScale: {number}
          *            nextScale: {number}
          *        })
          */
-        this.onScaleWillChange = Observable.newObservable();
+        this.onScaleChanging = Observable.newObservable();
 
         /**
          * Observable for subscribing to the end of a transform.
@@ -186,7 +186,7 @@ define(function(require) {
         /**
          * Observable for subscribing to pending content translation changes.
          *
-         * @method AwesomeMap#onTranslationWillChange
+         * @method AwesomeMap#onTranslationChanging
          * @param {Function} callback
          *        Invoked with (sender, {
          *            currentTranslation: {
@@ -199,7 +199,7 @@ define(function(require) {
          *            }
          *        })
          */
-        this.onTranslationWillChange = Observable.newObservable();
+        this.onTranslationChanging = Observable.newObservable();
 
         /**
          * Observable for subscribing to the start of a transform.

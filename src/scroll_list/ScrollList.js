@@ -245,7 +245,7 @@ define(function(require) {
          * Observable for subscribing to pending changes in the scroll position
          * of the individual items when in 'peek' and 'single' modes.
          *
-         * @method ScrollList#onItemScrollPositionWillChange
+         * @method ScrollList#onItemScrollPositionChanging
          * @param {Function} callback
          *        Invoked with (sender, {
          *            event: {@link InteractionEvent},
@@ -259,7 +259,7 @@ define(function(require) {
          *            }
          *        })
          */
-        this.onItemScrollPositionWillChange = Observable.newObservable();
+        this.onItemScrollPositionChanging = Observable.newObservable();
 
         /**
          * Observable for subscribing to the insertion of new items.
@@ -298,7 +298,7 @@ define(function(require) {
         /**
          * Observable for subscribing to pending scale changes.
          *
-         * @method ScrollList#onScaleWillChange
+         * @method ScrollList#onScaleChanging
          * @param {Function} callback
          *        Invoked with (sender, {
          *            event: {@link InteractionEvent},
@@ -306,7 +306,7 @@ define(function(require) {
          *            nextScale: {number}
          *        })
          */
-        this.onScaleWillChange = Observable.newObservable();
+        this.onScaleChanging = Observable.newObservable();
 
         /**
          * Observable for subscribing to changes in scroll position.
@@ -324,7 +324,7 @@ define(function(require) {
         /**
          * Observable for subscribing to changes in scroll position.
          *
-         * @method ScrollList#onScrollPositionWillChange
+         * @method ScrollList#onScrollPositionChanging
          * @param {Function} callback
          *        Invoked with (sender, {
          *            event: {@link InteractionEvent},
@@ -338,7 +338,7 @@ define(function(require) {
          *            }
          *        })
          */
-        this.onScrollPositionWillChange = Observable.newObservable();
+        this.onScrollPositionChanging = Observable.newObservable();
 
         /**
          * Observable for subscribing to scroll to events.

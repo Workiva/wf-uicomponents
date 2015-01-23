@@ -119,15 +119,15 @@ define(function(require) {
                 });
             });
             describe('when scale will change', function() {
-                it('should dispatch scroll list "onScaleWillChange"', function() {
-                    spyOn(scrollList.onScaleWillChange, 'dispatch');
+                it('should dispatch scroll list "onScaleChanging"', function() {
+                    spyOn(scrollList.onScaleChanging, 'dispatch');
                     var mapEventArgs = {
                         event: {},
                         currentScale: 1,
                         nextScale: 2
                     };
-                    map.onScaleWillChange.dispatch([scrollList, mapEventArgs]);
-                    expect(scrollList.onScaleWillChange.dispatch)
+                    map.onScaleChanging.dispatch([scrollList, mapEventArgs]);
+                    expect(scrollList.onScaleChanging.dispatch)
                         .toHaveBeenCalledWith([scrollList, {
                             event: mapEventArgs.event,
                             currentScale: mapEventArgs.currentScale,
@@ -153,8 +153,8 @@ define(function(require) {
                 });
             });
             describe('when translation will change', function() {
-                it('should dispatch scroll list "onItemScrollPositionWillChange"', function() {
-                    spyOn(scrollList.onItemScrollPositionWillChange, 'dispatch');
+                it('should dispatch scroll list "onItemScrollPositionChanging"', function() {
+                    spyOn(scrollList.onItemScrollPositionChanging, 'dispatch');
                     var mapEventArgs = {
                         event: {},
                         currentTranslation: {
@@ -166,8 +166,8 @@ define(function(require) {
                             y: -200
                         }
                     };
-                    map.onTranslationWillChange.dispatch([map, mapEventArgs]);
-                    expect(scrollList.onItemScrollPositionWillChange.dispatch)
+                    map.onTranslationChanging.dispatch([map, mapEventArgs]);
+                    expect(scrollList.onItemScrollPositionChanging.dispatch)
                         .toHaveBeenCalledWith([scrollList, {
                             event: mapEventArgs.event,
                             currentPosition: {
@@ -238,15 +238,15 @@ define(function(require) {
                 });
             });
             describe('when scale will change in flow mode', function() {
-                it('should dispatch scroll list "onScaleWillChange"', function() {
-                    spyOn(scrollList.onScaleWillChange, 'dispatch');
+                it('should dispatch scroll list "onScaleChanging"', function() {
+                    spyOn(scrollList.onScaleChanging, 'dispatch');
                     var mapEventArgs = {
                         event: {},
                         currentScale: 1,
                         nextScale: 2
                     };
-                    map.onScaleWillChange.dispatch([scrollList, mapEventArgs]);
-                    expect(scrollList.onScaleWillChange.dispatch)
+                    map.onScaleChanging.dispatch([scrollList, mapEventArgs]);
+                    expect(scrollList.onScaleChanging.dispatch)
                         .toHaveBeenCalledWith([scrollList, {
                             event: mapEventArgs.event,
                             currentScale: mapEventArgs.currentScale,
@@ -272,8 +272,8 @@ define(function(require) {
                 });
             });
             describe('when translation will change', function() {
-                it('should dispatch scroll list "onScrollPositionWillChange"', function() {
-                    spyOn(scrollList.onScrollPositionWillChange, 'dispatch');
+                it('should dispatch scroll list "onScrollPositionChanging"', function() {
+                    spyOn(scrollList.onScrollPositionChanging, 'dispatch');
                     var mapEventArgs = {
                         event: {},
                         currentTranslation: {
@@ -285,8 +285,8 @@ define(function(require) {
                             y: -200
                         }
                     };
-                    map.onTranslationWillChange.dispatch([map, mapEventArgs]);
-                    expect(scrollList.onScrollPositionWillChange.dispatch)
+                    map.onTranslationChanging.dispatch([map, mapEventArgs]);
+                    expect(scrollList.onScrollPositionChanging.dispatch)
                         .toHaveBeenCalledWith([scrollList, {
                             event: mapEventArgs.event,
                             currentPosition: {
