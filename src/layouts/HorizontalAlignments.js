@@ -18,7 +18,7 @@ define(function() {
     'use strict';
 
     var HorizontalAligments = {
-        AUTO: 'auto',
+        CENTER: 'center',
         LEFT: 'left'
     };
 

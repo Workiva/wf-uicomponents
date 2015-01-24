@@ -102,7 +102,7 @@ define(function(require) {
     var urlParams = url.getParams();
     var scrollMode = urlParams.scroll || (DeviceInfo.desktop ? 'flow' : 'peek');
     var fitMode = urlParams.fit || 'auto';
-    var horizontalAlign = urlParams.halign || 'auto';
+    var horizontalAlign = urlParams.halign || 'center';
     var totalPages = +urlParams.totalPages || 100;
     var minNumberOfVirtualItems = scrollMode === 'flow' ? (DeviceInfo.desktop ? 15 : 9) : (DeviceInfo.desktop ? 5 : 3);
     var touchScrollingEnabled = Utils.valueOr(urlParams.touchScrollingEnabled, 'true') === 'true';

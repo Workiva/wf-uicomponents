@@ -46,7 +46,7 @@ define(function(require) {
             viewportSize = { width: 500, height: 500 };
             layoutSize = { width: 500, height: 500 };
             scrollListOptions = {
-                horizontalAlign: HorizontalAlignments.AUTO,
+                horizontalAlign: HorizontalAlignments.CENTER,
                 verticalAlign: VerticalAlignments.AUTO
             };
 
@@ -72,7 +72,7 @@ define(function(require) {
                 });
 
                 it('should adjust the left position of the placeholder if layout ' +
-                    'is narrower than viewport and horizontalAlign="auto"', function() {
+                    'is narrower than viewport and horizontalAlign="center"', function() {
                     viewportSize.width = 500;
                     layoutSize.width = 400;
                     itemLayout = { left: 75 };
@@ -83,16 +83,16 @@ define(function(require) {
                     expect(placeholder.element.style.left).toBe('25px');
                 });
 
-                it('should not adjust the left position of the placeholder if layout ' +
-                    'is wider than viewport and horizontalAlign="auto"', function() {
+                it('should adjust the left position of the placeholder if layout ' +
+                    'is wider than viewport and horizontalAlign="center"', function() {
                     viewportSize.width = 400;
                     layoutSize.width = 500;
-                    itemLayout = { left: -50 };
-                    placeholder = { element: { style: { left: '-50px' } } };
+                    itemLayout = { left: 75 };
+                    placeholder = { element: { style: { left: '75px' } } };
 
                     renderer.appendPlaceholderToScrollList(itemLayout, placeholder);
 
-                    expect(placeholder.element.style.left).toBe('-50px');
+                    expect(placeholder.element.style.left).toBe('125px');
                 });
 
                 it('should not adjust the left position of the placeholder if '+

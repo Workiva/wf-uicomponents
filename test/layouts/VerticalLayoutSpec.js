@@ -124,8 +124,8 @@ define(function(require) {
                 expect(options.gap).toBe(0);
             });
 
-            it('should have horizontal align of "auto"', function() {
-                expect(options.horizontalAlign).toBe(HorizontalAlignments.AUTO);
+            it('should have horizontal align of "center"', function() {
+                expect(options.horizontalAlign).toBe(HorizontalAlignments.CENTER);
             });
 
             it('should have padding of 0', function() {

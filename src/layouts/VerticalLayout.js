@@ -84,8 +84,8 @@ define(function(require) {
      * @param {number} [options.gap=0]
      *        The gap between items, in pixels.
      *
-     * @param {string} [options.horizontalAlign='auto']
-     *        The alignment of the items along the x-axis. Can be 'auto' or 'left'.
+     * @param {string} [options.horizontalAlign='center']
+     *        The alignment of the items along the x-axis. Can be 'center' or 'left'.
      *
      * @param {number} [options.minNumberOfVirtualItems=3]
      *        The minimum number of virtual items that the layout will render.
@@ -155,7 +155,7 @@ define(function(require) {
             fitUpscaleLimit: 1,
             flow: true,
             gap: 0,
-            horizontalAlign: HorizontalAlignments.AUTO,
+            horizontalAlign: HorizontalAlignments.CENTER,
             minNumberOfVirtualItems: 3,
             padding: 0,
             verticalAlign: VerticalAlignments.AUTO
@@ -864,10 +864,7 @@ define(function(require) {
             }
 
             function getHorizontalPosition(outerWidth) {
-                if (horizontalAlign === HorizontalAlignments.LEFT ||
-                    (horizontalAlign === HorizontalAlignments.AUTO &&
-                        outerWidth > viewportWidth)
-                ) {
+                if (horizontalAlign === HorizontalAlignments.LEFT) {
                     return 0;
                 } else {
                     // center by default

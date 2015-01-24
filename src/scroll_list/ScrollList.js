@@ -66,7 +66,7 @@ define(function(require) {
      *        the given size of the items. If disabled, scale values are relative
      *        to the size of the items after they are fit to the viewport.
      *
-     * @param {string} [options.fit]
+     * @param {string} [options.fit='width']
      *        The strategy used to resize content to fit the viewport.
      *        Can be 'auto', 'width' or 'height'.
      *
@@ -76,8 +76,8 @@ define(function(require) {
      * @param {number} [options.gap=0]
      *        The gap between items, in pixels.
      *
-     * @param {string} [options.horizontalAlign='auto']
-     *        The alignment of the items along the x-axis. Can be 'auto' or
+     * @param {string} [options.horizontalAlign='center']
+     *        The alignment of the items along the x-axis. Can be 'center' or
      *        'left'.
      *
      * @param {number} [options.minNumberOfVirtualItems=3]
@@ -344,7 +344,7 @@ define(function(require) {
             fit: FitModes.WIDTH,
             fitUpscaleLimit: 1,
             gap: 0,
-            horizontalAlign: HorizontalAlignments.AUTO,
+            horizontalAlign: HorizontalAlignments.CENTER,
             minNumberOfVirtualItems: 3,
             mode: ScrollModes.FLOW,
             padding: 0,

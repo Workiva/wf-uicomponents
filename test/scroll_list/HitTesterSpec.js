@@ -36,7 +36,7 @@ define(function(require) {
                 spyOn(scrollList, 'getCurrentItemMap').andReturn(itemMap);
                 spyOn(scrollList, 'getOptions').andReturn({
                     mode: ScrollModes.SINGLE,
-                    horizontalAlign: HorizontalAlignments.AUTO
+                    horizontalAlign: HorizontalAlignments.CENTER
                 });
             });
             it('should return hit data if the event position is inside the item', function() {
@@ -148,7 +148,7 @@ define(function(require) {
 
                 scrollListOptions = {
                     mode: ScrollModes.FLOW,
-                    horizontalAlign: HorizontalAlignments.AUTO
+                    horizontalAlign: HorizontalAlignments.CENTER
                 };
 
                 scrollList = Object.create(ScrollList.prototype);
@@ -230,11 +230,9 @@ define(function(require) {
                     expect(result).toBe(false);
                 });
             });
-            describe('when horizontal alignment is "auto"', function() {
+            describe('when horizontal alignment is "center"', function() {
                 it('should calculate correct position when viewport is wider than layout', function() {
-                    // In this case the hit tester will assume the layout is
-                    // centered in the viewport initially
-                    layoutSize.width = 300; // make it narrower than the viewport
+                    layoutSize.width = 300;
                     itemLayout.top = 100;
                     itemLayout.right = 300;
                     itemLayout.bottom = 200;
@@ -250,13 +248,11 @@ define(function(require) {
                     });
                 });
                 it('should calculate correct position when viewport is narrower than layout', function() {
-                    // In this case the hit tester will assume the layout is
-                    // aligned to the left edge of the viewport initially
-                    viewportSize.width = 300; // make it narrower than the layout
+                    viewportSize.width = 300;
                     itemLayout.top = 100;
-                    itemLayout.right = 200;
+                    itemLayout.right = 275;
                     itemLayout.bottom = 200;
-                    itemLayout.left = 100;
+                    itemLayout.left = 25;
                     var point = { x: 50, y: 50 };
                     listMapState.translateX = -100;
                     listMapState.translateY = -100;
@@ -264,7 +260,7 @@ define(function(require) {
 
                     expect(result).toEqual({
                         index: itemLayout.itemIndex,
-                        position: { x: 50, y: 50 }
+                        position: { x: 25, y: 50 }
                     });
                 });
             });

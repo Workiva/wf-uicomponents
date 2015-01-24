@@ -20,6 +20,7 @@ define(function(require) {
     var $ = require('jquery');
     var _ = require('lodash');
     var AwesomeMapFactory = require('wf-js-uicomponents/scroll_list/AwesomeMapFactory');
+    var FitModes = require('wf-js-uicomponents/layouts/FitModes');
     var Gesture = require('wf-js-uicomponents/awesome_map/Gesture');
     var HorizontalAlignments = require('wf-js-uicomponents/layouts/HorizontalAlignments');
     var HitTester = require('wf-js-uicomponents/scroll_list/HitTester');
@@ -204,11 +205,13 @@ define(function(require) {
                     options = options || {};
                     var listWidth = options.listWidth || hostWidth;
                     var listHeight = options.listHeight || hostHeight;
-                    var horizontalAlign = options.horizontalAlign || HorizontalAlignments.AUTO;
+                    var fitMode = options.fitMode || FitModes.WIDTH;
+                    var horizontalAlign = options.horizontalAlign || HorizontalAlignments.CENTER;
                     var verticalAlign = options.verticalAlign || VerticalAlignments.AUTO;
                     var scrollList = createScrollList({
                         items: [{ width: listWidth, height: listHeight }],
                         options: {
+                            fit: fitMode,
                             horizontalAlign: horizontalAlign,
                             verticalAlign: verticalAlign
                         }
@@ -233,7 +236,7 @@ define(function(require) {
                     expect(map.getTranslation().y).toEqual(0);
                 });
                 it('should center scrollList horizontally in viewport when scrollList ' +
-                    'width is less than viewport width and horizontalAlign="auto"', function() {
+                    'width is less than viewport width and horizontalAlign="center"', function() {
                     var listWidth = hostWidth / 2;
                     var map = createMap({ listWidth: listWidth });
                     var mapLeftWhenCentered = (hostWidth - listWidth) / 2;
@@ -254,11 +257,15 @@ define(function(require) {
                     var map = createMap({ listHeight: listHeight });
                     expect(map.getTranslation().y).toEqual(0);
                 });
-                it('should position the scrollList at the left edge of the viewport when ' +
+                it('should center scrollList horizontally in viewport when ' +
                     'scrollList width is greater than viewport width', function() {
                     var listWidth = hostWidth * 2;
-                    var map = createMap({ listWidth: listWidth });
-                    expect(map.getTranslation().x).toEqual(0);
+                    var map = createMap({
+                        fitMode: FitModes.NONE,
+                        listWidth: listWidth
+                    });
+                    var mapLeftWhenCentered = (hostWidth - listWidth) / 2;
+                    expect(map.getTranslation().x).toEqual(mapLeftWhenCentered);
                 });
             });
         });

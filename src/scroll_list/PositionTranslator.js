@@ -66,9 +66,7 @@ define(function(require) {
             var hAlign = this._hAlign;
 
             if (this._scrollMode === ScrollModes.FLOW) {
-                if (hAlign === HorizontalAlignments.AUTO &&
-                    (layoutWidth < viewportWidth)
-                ) {
+                if (hAlign === HorizontalAlignments.CENTER) {
                     return Math.round(viewportLeft - (viewportWidth - layoutWidth) / 2);
                 }
             }
@@ -89,9 +87,9 @@ define(function(require) {
                 // when the viewport is wider than the AwesomeMap.
                 var layoutWidth = this._layoutSize.width;
                 var viewportWidth = this._viewportSize.width;
-                var hAlignAuto = this._hAlign === HorizontalAlignments.AUTO;
+                var hAlignCenter = this._hAlign === HorizontalAlignments.CENTER;
                 var undoLeftBy = 0;
-                if (hAlignAuto && (layoutWidth < viewportWidth)) {
+                if (hAlignCenter) {
                     undoLeftBy = Math.round((viewportWidth - layoutWidth) / 2);
                 }
                 return {

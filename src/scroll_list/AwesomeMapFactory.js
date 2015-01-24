@@ -58,7 +58,7 @@ define(function(require) {
         createItemMap: function(scrollList, host) {
             var options = scrollList.getOptions();
             var hAlignLeft = options.horizontalAlign === HorizontalAlignments.LEFT;
-            var hAlignAuto = options.horizontalAlign === HorizontalAlignments.AUTO;
+            var hAlignCenter = options.horizontalAlign === HorizontalAlignments.CENTER;
             var vAlignTop = options.verticalAlign === VerticalAlignments.TOP;
             var vAlignAuto = options.verticalAlign === VerticalAlignments.AUTO;
             var map = new AwesomeMap(host, {
@@ -82,7 +82,7 @@ define(function(require) {
                 constrainToAxes: true
             }));
             map.addInterceptor(new BoundaryInterceptor({
-                centerContentX: hAlignAuto,
+                centerContentX: hAlignCenter,
                 centerContentY: vAlignAuto,
                 mode: 'stop',
                 pinToLeft: hAlignLeft,
@@ -142,7 +142,7 @@ define(function(require) {
             var layout = scrollList.getLayout();
             var options = scrollList.getOptions();
             var hAlignLeft = options.horizontalAlign === HorizontalAlignments.LEFT;
-            var hAlignAuto = options.horizontalAlign === HorizontalAlignments.AUTO;
+            var hAlignCenter = options.horizontalAlign === HorizontalAlignments.CENTER;
             var vAlignTop = options.verticalAlign === VerticalAlignments.TOP;
             var vAlignAuto = options.verticalAlign === VerticalAlignments.AUTO;
             var map = new AwesomeMap(scrollList.getHost(), {
@@ -165,7 +165,7 @@ define(function(require) {
                     map.addInterceptor(new ScaleInterceptor(options.scaleLimits));
                 }
                 map.addInterceptor(new BoundaryInterceptor({
-                    centerContentX: hAlignAuto,
+                    centerContentX: hAlignCenter,
                     centerContentY: vAlignAuto,
                     mode: { x: 'stop', y: 'slow' },
                     pinToLeft: hAlignLeft,
@@ -222,7 +222,7 @@ define(function(require) {
             var viewportSize = layout.getViewportSize();
             var layoutSize = layout.getSize();
             var transformX = 0;
-            if (hAlignAuto && viewportSize.width > layoutSize.width) {
+            if (hAlignCenter) {
                 transformX = (viewportSize.width - layoutSize.width) / 2;
             }
             var transformY = 0;
