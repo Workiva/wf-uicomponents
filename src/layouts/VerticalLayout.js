@@ -20,8 +20,10 @@ define(function(require) {
     var _ = require('lodash');
     var DestroyUtil = require('wf-js-common/DestroyUtil');
     var DOMUtil = require('wf-js-common/DOMUtil');
+    var FitModes = require('wf-js-uicomponents/scroll_list/FitModes');
     var ItemLayout = require('wf-js-uicomponents/layouts/ItemLayout');
     var Observable = require('wf-js-common/Observable');
+    var Orientations = require('wf-js-uicomponents/layouts/Orientations');
     var ScaleStrategies = require('wf-js-uicomponents/layouts/ScaleStrategies');
 
     function getDistanceToViewportCenter(itemLayout, visibleCenter) {
@@ -813,6 +815,10 @@ define(function(require) {
             var viewportSize = this.getViewportSize();
             var viewportWidth = viewportSize.width;
             var viewportHeight = viewportSize.height;
+            var viewportOrientation = (
+                viewportWidth > viewportHeight ?
+                Orientations.LANDSCAPE : Orientations.PORTRAIT
+            );
 
             // Using some layout options below.
             var options = this.getOptions();
@@ -839,6 +845,27 @@ define(function(require) {
             function getScales(item) {
                 function fit(sample) {
                     var fitMode = sample.fit || options.fit;
+                    // Fit mode of ORIENTATION does not apply when scroll mode is flow.
+                    // When it does apply, it simply auto fits content when the
+                    // orientation of the viewport and content matches, otherwise
+                    // it will default to fit to width.
+                    if (fitMode === FitModes.ORIENTATION) {
+                        if (flow) {
+                            fitMode = FitModes.WIDTH;
+                        }
+                        else {
+                            var sampleOrientation = (
+                                sample.width > sample.height ?
+                                Orientations.LANDSCAPE : Orientations.PORTRAIT
+                            );
+                            if (viewportOrientation === sampleOrientation) {
+                                fitMode = FitModes.AUTO;
+                            }
+                            else {
+                                fitMode = FitModes.WIDTH;
+                            }
+                        }
+                    }
                     var scale = ScaleStrategies[fitMode](viewportSize, sample, padding);
                     var result = {
                         default: Math.min(scale, options.fitUpscaleLimit),
