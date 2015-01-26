@@ -170,13 +170,6 @@ define(function(require) {
          */
         this._transforming = false;
 
-        /**
-         * Trigger resize on 'resize'.
-         * @type {string}
-         * @private
-         */
-        this._resizeEventType = 'resize';
-
         //---------------------------------------------------------
         // Initialization
         //---------------------------------------------------------
@@ -221,7 +214,7 @@ define(function(require) {
             this._host.removeEventListener(EventTypes.CONTEXT_MENU, handlers[EventTypes.CONTEXT_MENU], false);
 
             var window = dependencies.getWindow();
-            window.removeEventListener(this._resizeEventType, handlers[EventTypes.RESIZE], false);
+            window.removeEventListener('resize', handlers[EventTypes.RESIZE], false);
 
             // Destroy the instance.
             DestroyUtil.destroy(this);
@@ -677,7 +670,7 @@ define(function(require) {
             this._host.addEventListener('contextmenu', handlers[EventTypes.CONTEXT_MENU]);
 
             // Initialize the window resize handler.
-            dependencies.getWindow().addEventListener(this._resizeEventType, handlers[EventTypes.RESIZE]);
+            dependencies.getWindow().addEventListener('resize', handlers[EventTypes.RESIZE]);
         },
 
         /**

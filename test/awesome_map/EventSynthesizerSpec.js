@@ -212,24 +212,6 @@ define(function(require) {
             });
         });
 
-        describe('absence of resize-related cordova accomodations', function() {
-
-            beforeEach(setup);
-            afterEach(teardown);
-
-            it('should use "resize" even if Cordova is defined', function() {
-                window.cordova = {};
-                createSynthesizer();
-                expect(synthesizer._resizeEventType).toBe('resize');
-                window.cordova = undefined;
-            });
-
-            it('should use "resize" if Cordova is not defined', function() {
-                createSynthesizer();
-                expect(synthesizer._resizeEventType).toBe('resize');
-            });
-        });
-
         describe('invalidate', function() {
 
             beforeEach(setup);

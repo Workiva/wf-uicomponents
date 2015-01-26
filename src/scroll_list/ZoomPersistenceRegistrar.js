@@ -25,7 +25,7 @@ define(function() {
                 return;
             }
             var currentItemMap = scrollList.getCurrentItemMap();
-            if (! currentItemMap) {
+            if (!currentItemMap) {
                 return;
             }
             var newScale = currentItemMap.getScale();
