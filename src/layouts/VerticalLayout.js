@@ -21,7 +21,7 @@ define(function(require) {
     var DestroyUtil = require('wf-js-common/DestroyUtil');
     var DOMUtil = require('wf-js-common/DOMUtil');
     var HorizontalAlignments = require('wf-js-uicomponents/layouts/HorizontalAlignments');
-    var FitModes = require('wf-js-uicomponents/scroll_list/FitModes');
+    var FitModes = require('wf-js-uicomponents/layouts/FitModes');
     var ItemLayout = require('wf-js-uicomponents/layouts/ItemLayout');
     var Observable = require('wf-js-common/Observable');
     var Orientations = require('wf-js-uicomponents/layouts/Orientations');
