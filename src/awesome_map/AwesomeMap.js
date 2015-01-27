@@ -137,7 +137,7 @@ define(function(require) {
         this.onInteractionFinished = Observable.newObservable();
 
         /**
-         * Observable for subscribing to changes in scale.
+         * Observable for subscribing to scale changes.
          *
          * @method AwesomeMap#onScaleChanged
          * @param {Function} callback
@@ -146,6 +146,18 @@ define(function(require) {
          *        })
          */
         this.onScaleChanged = Observable.newObservable();
+
+        /**
+         * Observable for subscribing to pending scale changes.
+         *
+         * @method AwesomeMap#onScaleChanging
+         * @param {Function} callback
+         *        Invoked with (sender, {
+         *            currentScale: {number}
+         *            nextScale: {number}
+         *        })
+         */
+        this.onScaleChanging = Observable.newObservable();
 
         /**
          * Observable for subscribing to the end of a transform.
@@ -160,7 +172,7 @@ define(function(require) {
         this.onTransformFinished = Observable.newObservable();
 
         /**
-         * Observable for subscribing to changes in content translation.
+         * Observable for subscribing to content translation changes.
          *
          * @method AwesomeMap#onTranslationChanged
          * @param {Function} callback
@@ -170,6 +182,24 @@ define(function(require) {
          *        })
          */
         this.onTranslationChanged = Observable.newObservable();
+
+        /**
+         * Observable for subscribing to pending content translation changes.
+         *
+         * @method AwesomeMap#onTranslationChanging
+         * @param {Function} callback
+         *        Invoked with (sender, {
+         *            currentTranslation: {
+         *                x: {number},
+         *                y: {number}
+         *            },
+         *            nextTranslation: {
+         *                x: {number},
+         *                y: {number}
+         *            }
+         *        })
+         */
+        this.onTranslationChanging = Observable.newObservable();
 
         /**
          * Observable for subscribing to the start of a transform.

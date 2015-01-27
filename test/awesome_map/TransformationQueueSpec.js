@@ -40,7 +40,9 @@ define(function(require) {
             map.onTransformStarted = { dispatch: function() {} };
             map.onTransformFinished = { dispatch: function() {} };
             map.onScaleChanged = { dispatch: function() {} };
+            map.onScaleChanging = { dispatch: function() {} };
             map.onTranslationChanged = { dispatch: function() {} };
+            map.onTranslationChanging = { dispatch: function() {} };
 
             spyOn(map, 'getTransformationPlane').andReturn(target);
             spyOn(map, 'getCurrentTransformState').andReturn(currentState);
@@ -135,6 +137,66 @@ define(function(require) {
                 expect(map.onTransformStarted.dispatch).toHaveBeenCalledWith([
                     map,
                     { event: evt, targetState: targetState }
+                ]);
+            });
+
+            it('should dispatch "onScaleChanging" if target scale is different from current scale', function() {
+                spyOn(map.onScaleChanging, 'dispatch');
+                spyOn(transformation, 'execute');
+                targetState.scale = currentState.scale + 1;
+
+                queue.processEvents();
+
+                expect(map.onScaleChanging.dispatch).toHaveBeenCalledWith([
+                    map,
+                    {
+                        currentScale: currentState.scale,
+                        nextScale: targetState.scale
+                    }
+                ]);
+            });
+
+            it('should dispatch "onTranslationChanging" if target translation x is different from current translation', function() {
+                spyOn(map.onTranslationChanging, 'dispatch');
+                spyOn(transformation, 'execute');
+                targetState.translateX += currentState.translateX + 1;
+
+                queue.processEvents();
+
+                expect(map.onTranslationChanging.dispatch).toHaveBeenCalledWith([
+                    map,
+                    {
+                        currentTranslation: {
+                            x: currentState.translateX,
+                            y: currentState.translateY
+                        },
+                        nextTranslation: {
+                            x: targetState.translateX,
+                            y: targetState.translateY
+                        }
+                    }
+                ]);
+            });
+
+            it('should dispatch "onTranslationChanging" if target translation y is different from current translation', function() {
+                spyOn(map.onTranslationChanging, 'dispatch');
+                spyOn(transformation, 'execute');
+                targetState.translateY += currentState.translateY + 1;
+
+                queue.processEvents();
+
+                expect(map.onTranslationChanging.dispatch).toHaveBeenCalledWith([
+                    map,
+                    {
+                        currentTranslation: {
+                            x: currentState.translateX,
+                            y: currentState.translateY
+                        },
+                        nextTranslation: {
+                            x: targetState.translateX,
+                            y: targetState.translateY
+                        }
+                    }
                 ]);
             });
 
