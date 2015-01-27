@@ -28,7 +28,7 @@ define(function(require) {
 
     describe('VerticalLayout', function() {
 
-        var viewportSize = { width: 200, height: 500 };
+        var viewportSize;
         var $viewport = $('<div>').css({ position: 'absolute', top: -10000 });
         var itemMetadata = [];
 
@@ -56,6 +56,7 @@ define(function(require) {
 
 
         beforeEach(function() {
+            viewportSize = { width: 200, height: 500 };
             $viewport.empty().appendTo('body').css(viewportSize);
 
             itemMetadata = [
@@ -727,6 +728,50 @@ define(function(require) {
                     expect(layout.getItemLayout(2).scaleToFit).toEqual(widthScale);
                     expect(layout.getItemLayout(3).scaleToFit).toEqual(noneScale);
                     expect(layout.getItemLayout(4).scaleToFit).toEqual(autoScale);
+                });
+
+                describe('when fit mode is ORIENTATION', function() {
+                    it('should revert to fit mode of width when in flow mode', function() {
+                        var widthScale = 0.3;
+                        spyOn(ScaleStrategies, 'width').andReturn(widthScale);
+
+                        var itemMetadata = [
+                            { width: 100, height: 200 }
+                        ];
+                        var itemSizeCollection = createItemSizeCollection(itemMetadata);
+                        var options = { flow: true, fit: 'orientation' };
+                        layout = new VerticalLayout($viewport[0], itemSizeCollection, renderer, options);
+
+                        expect(layout.getItemLayout(0).scaleToFit).toEqual(widthScale);
+                    });
+                    it('should use auto fit mode if item and viewport are in same orientation', function() {
+                        var autoScale = 0.3;
+                        spyOn(ScaleStrategies, 'auto').andReturn(autoScale);
+
+                        viewportSize = { width: 100, height: 200 };
+                        var itemMetadata = [
+                            { width: 100, height: 200 }
+                        ];
+                        var itemSizeCollection = createItemSizeCollection(itemMetadata);
+                        var options = { flow: false, fit: 'orientation' };
+                        layout = new VerticalLayout($viewport[0], itemSizeCollection, renderer, options);
+
+                        expect(layout.getItemLayout(0).scaleToFit).toEqual(autoScale);
+                    });
+                    it('should use width fit mode if item and viewport are in different orientation', function() {
+                        var widthScale = 0.3;
+                        spyOn(ScaleStrategies, 'auto').andReturn(widthScale);
+
+                        viewportSize = { width: 200, height: 100 };
+                        var itemMetadata = [
+                            { width: 100, height: 200 }
+                        ];
+                        var itemSizeCollection = createItemSizeCollection(itemMetadata);
+                        var options = { flow: false, fit: 'orientation' };
+                        layout = new VerticalLayout($viewport[0], itemSizeCollection, renderer, options);
+
+                        expect(layout.getItemLayout(0).scaleToFit).toEqual(widthScale);
+                    });
                 });
 
                 it('should apply padding to the left and right of all items', function() {

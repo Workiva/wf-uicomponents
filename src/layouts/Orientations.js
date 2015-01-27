@@ -14,16 +14,13 @@
  * limitations under the License.
  */
 
-define(function() {
+define(function(/*require*/) {
     'use strict';
 
-    var FitModes = {
-        AUTO: 'auto',
-        WIDTH: 'width',
-        HEIGHT: 'height',
-        ORIENTATION: 'orientation',
-        NONE: 'none'
+    var Orientations = {
+        HORIZONTAL: 'horizontal',
+        VERTICAL: 'vertical'
     };
 
-    return FitModes;
+    return Orientations;
 });
