@@ -93,13 +93,6 @@ define(function(require) {
 
                 TransformUtil.removeTransition(target);
 
-                // HACK: This forces a recomposite to sharpen the SVG content
-                // contained inside the awesome map transformation plane.
-                target.style.willChange = 'transform, contents';
-                setTimeout(function() {
-                    target.style.willChange = 'transform';
-                }, 0);
-
                 if (cancelledState) {
                     TransformUtil.applyTransform(target, cancelledState);
                     requestAnimFrame(function() {
@@ -109,7 +102,6 @@ define(function(require) {
                 else {
                     done(targetState);
                 }
-
             };
 
             // Register the the transitionEnd event handler.
@@ -281,6 +273,17 @@ define(function(require) {
             else {
                 target.style[BrowserInfo.cssTransformOriginProperty] = '0px 0px';
             }
+        },
+
+        /**
+         * HACK: This forces a recomposite on content contained inside the target.
+         * @param {HTMLElement} target
+         */
+        forceWillChange: function(target) {
+            target.style.willChange = 'transform, contents';
+            setTimeout(function() {
+                target.style.willChange = 'transform';
+            }, 0);
         },
 
         /**

@@ -506,9 +506,11 @@ define(function(require) {
                 this.onScaleChanged.dispatch([this, {
                     scale: state.scale
                 }]);
+                TransformUtil.forceWillChange(this._transformationPlane);
             }
             if (oldState.translateX !== state.translateX ||
-                oldState.translateY !== state.translateY) {
+                oldState.translateY !== state.translateY
+            ) {
                 this.onTranslationChanged.dispatch([this, {
                     x: state.translateX,
                     y: state.translateY
@@ -642,8 +644,12 @@ define(function(require) {
                     // Apply a 2d version of the transformation. This forces
                     // the browser to repaint so we don't end up with blurry
                     // content.
-                    TransformUtil.applyTransform(self.getTransformationPlane(),
-                            self.getCurrentTransformState(), true);
+                    var transformationPlane = self.getTransformationPlane();
+                    TransformUtil.applyTransform(
+                        transformationPlane,
+                        self.getCurrentTransformState(),
+                        true
+                    );
 
                     self.onInteractionFinished.dispatch([self]);
                     if (self._deferInteractionStarted) {
