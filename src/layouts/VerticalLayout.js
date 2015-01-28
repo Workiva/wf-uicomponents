@@ -20,9 +20,13 @@ define(function(require) {
     var _ = require('lodash');
     var DestroyUtil = require('wf-js-common/DestroyUtil');
     var DOMUtil = require('wf-js-common/DOMUtil');
+    var HorizontalAlignments = require('wf-js-uicomponents/layouts/HorizontalAlignments');
+    var FitModes = require('wf-js-uicomponents/layouts/FitModes');
     var ItemLayout = require('wf-js-uicomponents/layouts/ItemLayout');
     var Observable = require('wf-js-common/Observable');
+    var Orientations = require('wf-js-uicomponents/layouts/Orientations');
     var ScaleStrategies = require('wf-js-uicomponents/layouts/ScaleStrategies');
+    var VerticalAlignments = require('wf-js-uicomponents/layouts/VerticalAlignments');
 
     function getDistanceToViewportCenter(itemLayout, visibleCenter) {
         var distance = 0;
@@ -83,7 +87,7 @@ define(function(require) {
      *        The gap between items, in pixels.
      *
      * @param {string} [options.horizontalAlign='center']
-     *        The alignment of the items along the x-axis.
+     *        The alignment of the items along the x-axis. Can be 'center' or 'left'.
      *
      * @param {number} [options.minNumberOfVirtualItems=3]
      *        The minimum number of virtual items that the layout will render.
@@ -91,8 +95,8 @@ define(function(require) {
      * @param {number} [options.padding=0]
      *        The padding between the rendered layout and the viewport, in pixels.
      *
-     * @param {string} [options.verticalAlign='middle']
-     *        The vertical alignment of the items when flow=false.
+     * @param {string} [options.verticalAlign='auto']
+     *        The alignment of the items along the y-axis. Can be 'auto' or 'top'.
      */
     var VerticalLayout = function(viewport, itemSizeCollection, renderer, options) {
 
@@ -153,10 +157,10 @@ define(function(require) {
             fitUpscaleLimit: 1,
             flow: true,
             gap: 0,
-            horizontalAlign: 'center',
+            horizontalAlign: HorizontalAlignments.CENTER,
             minNumberOfVirtualItems: 3,
             padding: 0,
-            verticalAlign: 'middle'
+            verticalAlign: VerticalAlignments.AUTO
         }, options);
 
         /**
@@ -813,10 +817,16 @@ define(function(require) {
             var viewportSize = this.getViewportSize();
             var viewportWidth = viewportSize.width;
             var viewportHeight = viewportSize.height;
+            var viewportOrientation = (
+                viewportWidth > viewportHeight ?
+                Orientations.LANDSCAPE : Orientations.PORTRAIT
+            );
 
             // Using some layout options below.
             var options = this.getOptions();
             var flow = options.flow;
+            var horizontalAlign = options.horizontalAlign;
+            var verticalAlign = options.verticalAlign;
             var gapTop = Math.floor(options.gap / 2);
             var gapBottom = Math.ceil(options.gap / 2);
             var padding = options.padding;
@@ -839,6 +849,27 @@ define(function(require) {
             function getScales(item) {
                 function fit(sample) {
                     var fitMode = sample.fit || options.fit;
+                    // Fit mode of ORIENTATION does not apply when scroll mode is flow.
+                    // When it does apply, it simply auto fits content when the
+                    // orientation of the viewport and content matches, otherwise
+                    // it will default to fit to width.
+                    if (fitMode === FitModes.ORIENTATION) {
+                        if (flow) {
+                            fitMode = FitModes.WIDTH;
+                        }
+                        else {
+                            var sampleOrientation = (
+                                sample.width > sample.height ?
+                                Orientations.LANDSCAPE : Orientations.PORTRAIT
+                            );
+                            if (viewportOrientation === sampleOrientation) {
+                                fitMode = FitModes.AUTO;
+                            }
+                            else {
+                                fitMode = FitModes.WIDTH;
+                            }
+                        }
+                    }
                     var scale = ScaleStrategies[fitMode](viewportSize, sample, padding);
                     var result = {
                         default: Math.min(scale, options.fitUpscaleLimit),
@@ -860,8 +891,24 @@ define(function(require) {
             }
 
             function getHorizontalPosition(outerWidth) {
-                // Currently centering content.
-                return Math.round((viewportWidth - outerWidth) / 2);
+                if (horizontalAlign === HorizontalAlignments.LEFT) {
+                    return 0;
+                } else {
+                    // center by default
+                    return Math.round((viewportWidth - outerWidth) / 2);
+                }
+            }
+
+            function getVerticalPosition(outerHeight) {
+                if (verticalAlign === VerticalAlignments.TOP ||
+                    (verticalAlign === VerticalAlignments.AUTO &&
+                        outerHeight > viewportHeight)
+                ) {
+                    return 0;
+                } else {
+                    // center by default
+                    return Math.round((viewportHeight - outerHeight) / 2);
+                }
             }
 
             for (i = 0; i < numberOfItems; i++) {
@@ -902,8 +949,7 @@ define(function(require) {
                 }
                 else { // !flow
                     layout.bottom = layout.top + viewportHeight;
-                    layout.offsetTop = layout.outerHeight < viewportHeight ?
-                        Math.round((viewportHeight - layout.outerHeight) / 2) : 0;
+                    layout.offsetTop = getVerticalPosition(layout.outerHeight);
 
                     layout.left = 0;
                     layout.right = viewportWidth;

@@ -102,9 +102,11 @@ define(function(require) {
     var urlParams = url.getParams();
     var scrollMode = urlParams.scroll || (DeviceInfo.desktop ? 'flow' : 'peek');
     var fitMode = urlParams.fit || 'auto';
+    var horizontalAlign = urlParams.halign || 'center';
     var totalPages = +urlParams.totalPages || 100;
     var minNumberOfVirtualItems = scrollMode === 'flow' ? (DeviceInfo.desktop ? 15 : 9) : (DeviceInfo.desktop ? 5 : 3);
     var touchScrollingEnabled = Utils.valueOr(urlParams.touchScrollingEnabled, 'true') === 'true';
+    var verticalAlign = urlParams.valign || 'auto';
     var zoomMode = urlParams.scroll && urlParams.scroll !== 'flow';
 
     var itemSizeCollection = new ItemSizeCollection({
@@ -114,14 +116,16 @@ define(function(require) {
     });
 
     var scrollList = window.scrollList = new ScrollList($('#document')[0], itemSizeCollection, {
-        gap: 2,
-        mode: scrollMode,
         fit: fitMode,
+        gap: 2,
+        horizontalAlign: horizontalAlign,
         minNumberOfVirtualItems: minNumberOfVirtualItems,
+        mode: scrollMode,
         padding: 1,
+        persistZoom: zoomMode,
         scaleLimits: { minimum: 0.25, maximum: 3 },
         touchScrollingEnabled: touchScrollingEnabled,
-        persistZoom: zoomMode
+        verticalAlign: verticalAlign
     });
 
     // Instantiate a KeyNavigator
@@ -218,6 +222,14 @@ define(function(require) {
 
         $('#fitMode').val(fitMode).change(function() {
             window.location = url.addParam('fit', this.value).toString();
+        });
+
+        $('#horizAlign').val(horizontalAlign).change(function() {
+            window.location = url.addParam('halign', this.value).toString();
+        });
+
+        $('#verticalAlign').val(verticalAlign).change(function() {
+            window.location = url.addParam('valign', this.value).toString();
         });
 
         $('#zoomToScale').submit(function() {

@@ -14,8 +14,10 @@
  * limitations under the License.
  */
 
-define(function() {
+define(function(require) {
     'use strict';
+
+    var PositionTranslator = require('wf-js-uicomponents/scroll_list/PositionTranslator');
 
     function getHitData(itemLayout, position, bounds, mapScale) {
         var scaleFactor = mapScale * itemLayout.scaleToFit;
@@ -66,19 +68,18 @@ define(function() {
             var currentItemIndex = layout.getCurrentItemIndex();
             var itemLayout = layout.getItemLayout(currentItemIndex);
 
-            // This is awful stuff. Tricky currently due to using the item map
-            // to center and position content, overriding the layout stuff.
-            // Ideally this logic would live in the layout.
+            var positionTranslator = new PositionTranslator(scrollList);
+            var itemInMap = positionTranslator.getBoundsInTransformationPlane(itemLayout);
             var validBounds = {
-                top: state.translateY + itemLayout.paddingTop * mapScale,
-                right: state.translateX + (itemLayout.outerWidth - itemLayout.paddingRight) * mapScale,
-                bottom: state.translateY + (itemLayout.outerHeight - itemLayout.paddingBottom) * mapScale,
-                left: state.translateX + itemLayout.paddingLeft * mapScale
+                top: state.translateY + itemInMap.top * mapScale,
+                right: state.translateX + itemInMap.right * mapScale,
+                bottom: state.translateY + itemInMap.bottom * mapScale,
+                left: state.translateX + itemInMap.left * mapScale
             };
 
             if (validBounds.left <= point.x && point.x <= validBounds.right &&
-                validBounds.top <= point.y && point.y <= validBounds.bottom) {
-
+                validBounds.top <= point.y && point.y <= validBounds.bottom
+            ) {
                 return getHitData(itemLayout, point, validBounds, mapScale);
             }
 
@@ -99,29 +100,27 @@ define(function() {
             var listMap = scrollList.getListMap();
             var state = listMap.getCurrentTransformState();
             var mapScale = state.scale;
-
             var layout = scrollList.getLayout();
-            var undoLeftBy = (layout.getViewportSize().width - layout.getSize().width) / 2;
             var visibleRange = layout.getVisibleItemRange();
             var itemLayout;
             var validBounds;
             var i;
 
-            // Again, like above: awful stuff. Tricky currently due to using the
-            // list map to center and position content, overriding the layout
-            // position. Ideally this logic would live in the layout.
+            var positionTranslator = new PositionTranslator(scrollList);
+            var itemInMap;
             for (i = visibleRange.startIndex; i <= visibleRange.endIndex; i++) {
                 itemLayout = layout.getItemLayout(i);
+                itemInMap = positionTranslator.getBoundsInTransformationPlane(itemLayout);
                 validBounds = {
-                    top: state.translateY + (itemLayout.top + itemLayout.paddingTop) * mapScale,
-                    right: state.translateX + (itemLayout.right - undoLeftBy - itemLayout.paddingRight) * mapScale,
-                    bottom: state.translateY + (itemLayout.bottom - itemLayout.paddingBottom) * mapScale,
-                    left: state.translateX + (itemLayout.left - undoLeftBy + itemLayout.paddingLeft) * mapScale
+                    top: state.translateY + itemInMap.top * mapScale,
+                    right: state.translateX + itemInMap.right * mapScale,
+                    bottom: state.translateY + itemInMap.bottom * mapScale,
+                    left: state.translateX + itemInMap.left * mapScale
                 };
 
                 if (point.x >= validBounds.left && point.x <= validBounds.right &&
-                    point.y >= validBounds.top && point.y <= validBounds.bottom) {
-
+                    point.y >= validBounds.top && point.y <= validBounds.bottom
+                ) {
                     return getHitData(itemLayout, point, validBounds, mapScale);
                 }
             }
