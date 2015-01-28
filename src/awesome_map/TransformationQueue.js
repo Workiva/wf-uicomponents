@@ -182,7 +182,7 @@ define(function(require) {
                 }]);
 
                 // Publish will change events related to transformations
-                self._publishChangingEvents(event, oldState, targetState);
+                map._publishChangingEvents(oldState, targetState);
 
                 // Track the current transformation so it can be cancelled.
                 self._currentTransformation = createTransformation(target, targetState, oldState);
@@ -203,33 +203,6 @@ define(function(require) {
                 });
             };
             processEvent();
-        },
-
-        //---------------------------------------------------------
-        // Private methods
-        //---------------------------------------------------------
-
-        _publishChangingEvents: function(event, currentState, nextState) {
-            var map = this._map;
-            if (currentState.scale !== nextState.scale) {
-                map.onScaleChanging.dispatch([map, {
-                    currentScale: currentState.scale,
-                    nextScale: nextState.scale
-                }]);
-            }
-            if (currentState.translateX !== nextState.translateX ||
-                currentState.translateY !== nextState.translateY) {
-                map.onTranslationChanging.dispatch([map, {
-                    currentTranslation: {
-                        x: currentState.translateX,
-                        y: currentState.translateY
-                    },
-                    nextTranslation: {
-                        x: nextState.translateX,
-                        y: nextState.translateY
-                    }
-                }]);
-            }
         }
     };
 

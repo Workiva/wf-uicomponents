@@ -453,12 +453,11 @@ define(function(require) {
                 y = transformState.translateY;
             }
 
-            this._activeMap.transform({
+            this._activeMap.panTo({
                 x: x,
                 y: y,
-                scale: this._scale
+                duration: 0
             });
-            this._scrollList.render();
         },
 
         /**
