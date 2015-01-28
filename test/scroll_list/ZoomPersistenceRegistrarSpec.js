@@ -77,5 +77,25 @@ define(function(require){
             var previous = scrollList.getItemMap(3);
             expect(previous.getScale()).toBe(3);
         });
+
+        it('should not throw an error in the scale change handler if the previous map does not exist', function() {
+            var scaleChangeSpy = spyOn(scrollList.onScaleChanged, 'dispatch').andCallFake(function() {
+                var that = this;
+                var args = arguments;
+                // Return undefined for subsequent calls to getCurrentItemMap(),
+                // simulating the issue experienced after rotating on Android.
+                spyOn(scrollList, 'getCurrentItemMap').andReturn(undefined);
+                // Call through to the original method we spied on, and verify
+                // it doesn't throw any errors.
+                expect(function() {
+                    scaleChangeSpy.originalValue.apply(that, args);
+                }).not.toThrow();
+            });
+
+            var currentItemMap = scrollList.getCurrentItemMap();
+            currentItemMap.zoomTo({ scale: currentItemMap.getScale() + 1 });
+
+            expect(scaleChangeSpy.callCount).toBe(1);
+        });
     });
 });
