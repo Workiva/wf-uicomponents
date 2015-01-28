@@ -22,10 +22,12 @@ define(function(require) {
     var AwesomeMapFactory = require('wf-js-uicomponents/scroll_list/AwesomeMapFactory');
     var BrowserInfo = require('wf-js-common/BrowserInfo');
     var DestroyUtil = require('wf-js-common/DestroyUtil');
+    var HorizontalAlignments = require('wf-js-uicomponents/layouts/HorizontalAlignments');
     var ItemLayout = require('wf-js-uicomponents/layouts/ItemLayout');
     var PlaceholderRenderer = require('wf-js-uicomponents/scroll_list/PlaceholderRenderer');
     var ScrollList = require('wf-js-uicomponents/scroll_list/ScrollList');
     var ScrollModes = require('wf-js-uicomponents/scroll_list/ScrollModes');
+    var VerticalAlignments = require('wf-js-uicomponents/layouts/VerticalAlignments');
     var VerticalLayout = require('wf-js-uicomponents/layouts/VerticalLayout');
 
     describe('PlaceholderRenderer', function() {
@@ -43,7 +45,10 @@ define(function(require) {
         beforeEach(function() {
             viewportSize = { width: 500, height: 500 };
             layoutSize = { width: 500, height: 500 };
-            scrollListOptions = {};
+            scrollListOptions = {
+                horizontalAlign: HorizontalAlignments.CENTER,
+                verticalAlign: VerticalAlignments.AUTO
+            };
 
             spyOn(listMap, 'appendContent');
             spyOn(listMap, 'removeContent');
@@ -66,37 +71,41 @@ define(function(require) {
                     scrollListOptions.mode = ScrollModes.FLOW;
                 });
 
-                it('should adjust the left position of the placeholder if layout is narrower than viewport', function() {
+                it('should adjust the left position of the placeholder if layout ' +
+                    'is narrower than viewport and horizontalAlign="center"', function() {
                     viewportSize.width = 500;
                     layoutSize.width = 400;
-                    itemLayout = { left: 50 };
-                    placeholder = { element: { style: { left: '50px' } } };
+                    itemLayout = { left: 75 };
+                    placeholder = { element: { style: { left: '75px' } } };
 
                     renderer.appendPlaceholderToScrollList(itemLayout, placeholder);
 
-                    expect(placeholder.element.style.left).toBe('0px');
+                    expect(placeholder.element.style.left).toBe('25px');
                 });
 
-                it('should adjust the left position of the placeholder if layout is wider than viewport', function() {
+                it('should adjust the left position of the placeholder if layout ' +
+                    'is wider than viewport and horizontalAlign="center"', function() {
                     viewportSize.width = 400;
                     layoutSize.width = 500;
-                    itemLayout = { left: -50 };
-                    placeholder = { element: { style: { left: '-50px' } } };
+                    itemLayout = { left: 75 };
+                    placeholder = { element: { style: { left: '75px' } } };
+
+                    renderer.appendPlaceholderToScrollList(itemLayout, placeholder);
+
+                    expect(placeholder.element.style.left).toBe('125px');
+                });
+
+                it('should not adjust the left position of the placeholder if '+
+                    'horizontalAlign="left"', function() {
+                    scrollListOptions.horizontalAlign = HorizontalAlignments.LEFT;
+                    viewportSize.width = 400;
+                    layoutSize.width = 500;
+                    itemLayout = { left: 0 }; // we expect items to be left-aligned
+                    placeholder = { element: { style: { left: '0px' } } };
 
                     renderer.appendPlaceholderToScrollList(itemLayout, placeholder);
 
                     expect(placeholder.element.style.left).toBe('0px');
-                });
-
-                it('should leave the left position of the placeholder alone if layout is not narrower than viewport', function() {
-                    viewportSize.width = 500;
-                    layoutSize.width = 500;
-                    itemLayout = { left: 50 };
-                    placeholder = { element: { style: { left: '50px' } } };
-
-                    renderer.appendPlaceholderToScrollList(itemLayout, placeholder);
-
-                    expect(placeholder.element.style.left).toBe('50px');
                 });
             });
 
@@ -134,30 +143,25 @@ define(function(require) {
                     });
                 });
 
-                it('should center the content horizontally if narrower than the viewport', function() {
-                    viewportSize.width = 500;
-                    itemLayout.outerWidth = 400;
+                it('should use offsetLeft and offsetTop to position the transformation ' +
+                    'plane containing the itemLayout', function() {
+                    itemLayout.offsetLeft = 50;
+                    itemLayout.offsetTop = 60;
 
                     renderer.appendPlaceholderToScrollList(itemLayout, placeholder);
 
-                    expect(itemMap.transform)
-                        .toHaveBeenCalledWith({ x: 50, y: 0, scale: 1 });
-                });
-
-                it('should center the content vertically if shorter than the viewport', function() {
-                    viewportSize.height = 500;
-                    itemLayout.outerHeight = 400;
-
-                    renderer.appendPlaceholderToScrollList(itemLayout, placeholder);
-
-                    expect(itemMap.transform)
-                        .toHaveBeenCalledWith({ x: 0, y: 50, scale: 1 });
+                    expect(itemMap.transform).toHaveBeenCalledWith({
+                        x: itemLayout.offsetLeft,
+                        y: itemLayout.offsetTop,
+                        scale: 1
+                    });
                 });
 
                 it('should pan the content to its bottom if placeholder precedes the current item', function() {
                     viewportSize.height = 500;
                     itemLayout.itemIndex = 0;
                     itemLayout.outerHeight = 600;
+                    itemLayout.offsetLeft = 0;
 
                     renderer.appendPlaceholderToScrollList(itemLayout, placeholder);
 

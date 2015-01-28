@@ -19,9 +19,11 @@ define(function(require) {
 
     var $ = require('jquery');
     var DestroyUtil = require('wf-js-common/DestroyUtil');
+    var HorizontalAlignments = require('wf-js-uicomponents/layouts/HorizontalAlignments');
     var ItemSizeCollection = require('wf-js-uicomponents/layouts/ItemSizeCollection');
     var Renderer = require('wf-js-uicomponents/scroll_list/PlaceholderRenderer');
     var ScaleStrategies = require('wf-js-uicomponents/layouts/ScaleStrategies');
+    var VerticalAlignments = require('wf-js-uicomponents/layouts/VerticalAlignments');
     var VerticalLayout = require('wf-js-uicomponents/layouts/VerticalLayout');
 
     describe('VerticalLayout', function() {
@@ -124,15 +126,11 @@ define(function(require) {
             });
 
             it('should have horizontal align of "center"', function() {
-                expect(options.horizontalAlign).toBe('center');
+                expect(options.horizontalAlign).toBe(HorizontalAlignments.CENTER);
             });
 
             it('should have padding of 0', function() {
                 expect(options.padding).toBe(0);
-            });
-
-            it('should have vertical align of "middle"', function() {
-                expect(options.verticalAlign).toBe('middle');
             });
         });
 
@@ -866,6 +864,21 @@ define(function(require) {
                         });
                     });
 
+                    it('should align items to the viewport left when horizontalAlign = "left"', function() {
+                        var viewportWidth;
+
+                        layout = createVerticalLayout({
+                            flow: true,
+                            horizontalAlign: HorizontalAlignments.LEFT
+                        });
+                        viewportWidth = layout.getViewportSize().width;
+
+                        layout.getItemLayouts().forEach(function(item) {
+                            expect(item.outerWidth).toBeLessThan(viewportWidth);
+                            expect(item.left).toBe(0);
+                        });
+                    });
+
                     it('should apply padding to the top of the first item only', function() {
                         var padding = 20;
 
@@ -994,6 +1007,17 @@ define(function(require) {
                         });
                     });
 
+                    it('should set offset top to zero if vertical alignment is "top"', function() {
+                        layout = createVerticalLayout({
+                            flow: false,
+                            verticalAlign: VerticalAlignments.TOP
+                        });
+
+                        layout.getItemLayouts().forEach(function(item) {
+                            expect(item.offsetTop).toBe(0);
+                        });
+                    });
+
                     it('should center the item in the viewport', function() {
                         var viewportWidth;
 
@@ -1004,6 +1028,21 @@ define(function(require) {
                             if (item.outerWidth < viewportWidth) {
                                 expect(item.offsetLeft).toBe((viewportWidth - item.outerWidth) / 2);
                             }
+                        });
+                    });
+
+                    it('should align items to the viewport left when horizontalAlign = "left"', function() {
+                        var viewportWidth;
+
+                        layout = createVerticalLayout({
+                            flow: false,
+                            horizontalAlign: HorizontalAlignments.LEFT
+                        });
+                        viewportWidth = layout.getViewportSize().width;
+
+                        layout.getItemLayouts().forEach(function(item) {
+                            expect(item.outerWidth).toBeLessThan(viewportWidth);
+                            expect(item.left).toBe(0);
                         });
                     });
 

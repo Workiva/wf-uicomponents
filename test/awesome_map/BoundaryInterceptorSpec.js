@@ -86,7 +86,10 @@ define(function(require) {
         });
 
         it('should allow offsetting boundaries to keep content centered', function() {
-            var interceptor = new BoundaryInterceptor({ centerContent: true });
+            var interceptor = new BoundaryInterceptor({
+                centerContentX: true,
+                centerContentY: true
+            });
             var evt = createEvent(EventTypes.RELEASE);
             var targetState = new TransformState({ translateX: 0, translateY: 0 });
 
@@ -95,6 +98,23 @@ define(function(require) {
 
             expect(targetState.translateX).toBeCloseTo((viewportDimensions.width - contentDimensions.width) / 2);
             expect(targetState.translateY).toBeCloseTo((viewportDimensions.height - contentDimensions.height) / 2);
+        });
+
+        it('should allow pinning content to the left and top edges of the viewport', function() {
+            var interceptor = new BoundaryInterceptor({
+                centerContentX: false,
+                centerContentY: false,
+                pinToLeft: true,
+                pinToTop: true
+            });
+            var evt = createEvent(EventTypes.RELEASE);
+            var targetState = new TransformState({ translateX: 25, translateY: 25 });
+
+            interceptor.register(map);
+            interceptor.handleTransformStarted(null, { event: evt, targetState: targetState });
+
+            expect(targetState.translateX).toEqual(0);
+            expect(targetState.translateY).toEqual(0);
         });
 
         describe('accelerating swipe animations at boundaries', function() {

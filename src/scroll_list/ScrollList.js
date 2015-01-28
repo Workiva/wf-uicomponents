@@ -20,13 +20,15 @@ define(function(require) {
     var _ = require('lodash');
     var AwesomeMapFactory = require('wf-js-uicomponents/scroll_list/AwesomeMapFactory');
     var DestroyUtil = require('wf-js-common/DestroyUtil');
-    var FitModes = require('wf-js-uicomponents/scroll_list/FitModes');
+    var FitModes = require('wf-js-uicomponents/layouts/FitModes');
     var HitTester = require('wf-js-uicomponents/scroll_list/HitTester');
+    var HorizontalAlignments = require('wf-js-uicomponents/layouts/HorizontalAlignments');
     var Observable = require('wf-js-common/Observable');
     var PlaceholderRenderer = require('wf-js-uicomponents/scroll_list/PlaceholderRenderer');
     var ScaleTranslator = require('wf-js-uicomponents/scroll_list/ScaleTranslator');
     var ScrollModes = require('wf-js-uicomponents/scroll_list/ScrollModes');
     var Utils = require('wf-js-common/Utils');
+    var VerticalAlignments = require('wf-js-uicomponents/layouts/VerticalAlignments');
     var VerticalLayout = require('wf-js-uicomponents/layouts/VerticalLayout');
     var ZoomPersistenceRegistrar = require('wf-js-uicomponents/scroll_list/ZoomPersistenceRegistrar');
 
@@ -64,7 +66,7 @@ define(function(require) {
      *        the given size of the items. If disabled, scale values are relative
      *        to the size of the items after they are fit to the viewport.
      *
-     * @param {string} [options.fit]
+     * @param {string} [options.fit='width']
      *        The strategy used to resize content to fit the viewport.
      *        Can be 'auto', 'width' or 'height'.
      *
@@ -73,6 +75,10 @@ define(function(require) {
      *
      * @param {number} [options.gap=0]
      *        The gap between items, in pixels.
+     *
+     * @param {string} [options.horizontalAlign='center']
+     *        The alignment of the items along the x-axis. Can be 'center' or
+     *        'left'.
      *
      * @param {number} [options.minNumberOfVirtualItems=3]
      *        The minimum number of virtual items to render at one time.
@@ -97,6 +103,10 @@ define(function(require) {
      * @param {boolean} [options.persistZoom=false]
      *        When persistZoom is enabled, when in peek mode the zoom level
      *        will persist when changing items. Defaults to false.
+     *
+     * @param {string} [options.verticalAlign='auto']
+     *        The alignments of the items along the y-axis. Can be 'auto' or
+     *        'top'.
      *
      * @example
      *
@@ -334,12 +344,14 @@ define(function(require) {
             fit: FitModes.WIDTH,
             fitUpscaleLimit: 1,
             gap: 0,
+            horizontalAlign: HorizontalAlignments.CENTER,
             minNumberOfVirtualItems: 3,
             mode: ScrollModes.FLOW,
             padding: 0,
+            persistZoom: false,
             scaleLimits: { minimum: 1, maximum: 3 },
             touchScrollingEnabled: true,
-            persistZoom: false
+            verticalAlign: VerticalAlignments.AUTO
         }, options);
 
         /**
@@ -1071,7 +1083,9 @@ define(function(require) {
                 fitUpscaleLimit: options.fitUpscaleLimit,
                 flow: isFlow,
                 gap: options.gap,
+                horizontalAlign: options.horizontalAlign,
                 padding: options.padding,
+                verticalAlign: options.verticalAlign
             });
 
             this._layout.onCurrentItemIndexChanged(function(/*layout, args*/) {
