@@ -21,10 +21,10 @@ define(function(require) {
     var AwesomeMapFactory = require('wf-js-uicomponents/scroll_list/AwesomeMapFactory');
     var DestroyUtil = require('wf-js-common/DestroyUtil');
     var FitModes = require('wf-js-uicomponents/layouts/FitModes');
-    var HitTester = require('wf-js-uicomponents/scroll_list/HitTester');
     var HorizontalAlignments = require('wf-js-uicomponents/layouts/HorizontalAlignments');
     var Observable = require('wf-js-common/Observable');
     var PlaceholderRenderer = require('wf-js-uicomponents/scroll_list/PlaceholderRenderer');
+    var PositionTranslator = require('wf-js-uicomponents/scroll_list/PositionTranslator');
     var ScaleTranslator = require('wf-js-uicomponents/scroll_list/ScaleTranslator');
     var ScrollModes = require('wf-js-uicomponents/scroll_list/ScrollModes');
     var Utils = require('wf-js-common/Utils');
@@ -722,6 +722,55 @@ define(function(require) {
         },
 
         /**
+         * Get the viewport-relative position data for all visible items.
+         *
+         * @param {ScrollList} scrollList
+         * @return {Array.<Object>} An object containing the position data
+         */
+        getVisibleItemPositionData: function() {
+            var activeMap = this.getCurrentItemMap() || this._listMap;
+            var transformState = activeMap.getCurrentTransformState();
+            var scale = transformState.scale;
+
+            var layout = this._layout;
+            var viewportSize = layout.getViewportSize();
+            var visibleItemRange = layout.getVisibleItemRange();
+            var positionTranslator = new PositionTranslator(this);
+
+            var visibleItems = [];
+            for (var i = visibleItemRange.startIndex; i <= visibleItemRange.endIndex; i++) {
+                var itemLayout = layout.getItemLayout(i);
+                var itemBounds = positionTranslator.getBoundsInTransformationPlane(itemLayout);
+
+                // Get the position of each item relative to the viewport
+                var top = Math.round(transformState.translateY + (itemBounds.top) * scale);
+                var right = Math.round(transformState.translateX + (itemBounds.right) * scale);
+                var bottom = Math.round(transformState.translateY + (itemBounds.bottom) * scale);
+                var left = Math.round(transformState.translateX + (itemBounds.left) * scale);
+
+                // Remove items that do not intersect the viewport after
+                // accounting for the offset due to padding.
+                if (top >= viewportSize.height || bottom <= 0 ||
+                    left >= viewportSize.width || right <= 0
+                ) {
+                    continue;
+                }
+
+                var visibleItem = {
+                    itemIndex: i,
+                    scale: scale * itemLayout.scaleToFit,
+                    top: top,
+                    bottom: bottom,
+                    left: left,
+                    right: right
+                };
+                visibleItems.push(visibleItem);
+            }
+
+            return visibleItems;
+        },
+
+        /**
          * Return the index of and position within the item at the given point.
          * If no item is under the given point, return false.
          *
@@ -730,9 +779,23 @@ define(function(require) {
          * @return {boolean|{ index: number, position: { x: number, y: number }}}
          */
         hitTest: function(point) {
-            var method = (this._options.mode === ScrollModes.FLOW ?
-                'testListMap' : 'testItemMap');
-            return HitTester[method](this, point);
+            var visibleItemPositionData = this.getVisibleItemPositionData();
+            for (var i = 0, n = visibleItemPositionData.length; i < n; i++) {
+                var itemPosition = visibleItemPositionData[i];
+
+                if (itemPosition.left <= point.x && point.x <= itemPosition.right &&
+                    itemPosition.top <= point.y && point.y <= itemPosition.bottom
+                ) {
+                    return {
+                        index: itemPosition.itemIndex,
+                        position: {
+                            x: Math.floor((point.x - itemPosition.left) / itemPosition.scale),
+                            y: Math.floor((point.y - itemPosition.top) / itemPosition.scale)
+                        }
+                    };
+                }
+            }
+            return false;
         },
 
         /**

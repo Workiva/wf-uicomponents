@@ -90,7 +90,7 @@ define(function(require) {
                 var hAlignCenter = this._hAlign === HorizontalAlignments.CENTER;
                 var undoLeftBy = 0;
                 if (hAlignCenter) {
-                    undoLeftBy = Math.round((viewportWidth - layoutWidth) / 2);
+                    undoLeftBy = Math.floor((viewportWidth - layoutWidth) / 2);
                 }
                 return {
                     top: itemLayout.top + itemLayout.paddingTop,
@@ -98,17 +98,16 @@ define(function(require) {
                     bottom: itemLayout.bottom - itemLayout.paddingBottom,
                     left: itemLayout.left - undoLeftBy + itemLayout.paddingLeft
                 };
-            } else {
-                // The ScrollList is not in "flow" mode so the coordinates of
-                // the itemLayout are already relative to the map. Just take
-                // into account the padding between the map and the item.
-                return {
-                    top: itemLayout.paddingTop,
-                    right: itemLayout.outerWidth - itemLayout.paddingRight,
-                    bottom: itemLayout.outerHeight - itemLayout.paddingBottom,
-                    left: itemLayout.paddingLeft
-                };
             }
+            // The ScrollList is not in "flow" mode so the coordinates of
+            // the itemLayout are already relative to the map. Just take
+            // into account the padding between the map and the item.
+            return {
+                top: itemLayout.paddingTop,
+                right: itemLayout.outerWidth - itemLayout.paddingRight,
+                bottom: itemLayout.outerHeight - itemLayout.paddingBottom,
+                left: itemLayout.paddingLeft
+            };
         }
     };
 

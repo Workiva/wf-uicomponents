@@ -299,8 +299,17 @@ define(function(require) {
             });
         });
 
+        describe('getting visible item position data', function() {
+            it('should', function() {
+                throw 'not implemented';
+            });
+        });
+
         describe('hit testing', function() {
-            it('should call hit tester with list map if in "flow" mode', function() {
+            it('should', function() {
+                throw 'not implemented';
+            });
+            xit('should call hit tester with list map if in "flow" mode', function() {
                 var fakeResult = {};
                 spyOn(HitTester, 'testListMap').andReturn(fakeResult);
                 testScrollList({ mode: 'flow' }, function(scrollList) {
@@ -310,7 +319,7 @@ define(function(require) {
                     expect(result).toBe(fakeResult);
                 });
             });
-            it('should call hit tester with item map if not in "flow" mode', function() {
+            xit('should call hit tester with item map if not in "flow" mode', function() {
                 var fakeResult = {};
                 spyOn(HitTester, 'testItemMap').andReturn(fakeResult);
                 testScrollList({ mode: '!flow' }, function(scrollList) {
