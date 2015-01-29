@@ -23,7 +23,6 @@ define(function(require) {
     var FitModes = require('wf-js-uicomponents/layouts/FitModes');
     var Gesture = require('wf-js-uicomponents/awesome_map/Gesture');
     var HorizontalAlignments = require('wf-js-uicomponents/layouts/HorizontalAlignments');
-    var HitTester = require('wf-js-uicomponents/scroll_list/HitTester');
     var InteractionEvent = require('wf-js-uicomponents/awesome_map/InteractionEvent');
     var ItemSizeCollection = require('wf-js-uicomponents/layouts/ItemSizeCollection');
     var ScrollList = require('wf-js-uicomponents/scroll_list/ScrollList');
@@ -89,7 +88,7 @@ define(function(require) {
                         index: 1,
                         position: {}
                     };
-                    spyOn(HitTester, 'testItemMap').andReturn(fakeHitTestResult);
+                    spyOn(scrollList, 'hitTest').andReturn(fakeHitTestResult);
                     spyOn(scrollList.onInteraction, 'dispatch');
                     fakeEvent = createInteractionEvent();
                     fakeEvent.position = {};
@@ -99,8 +98,7 @@ define(function(require) {
                     }]);
                 });
                 it('should perform a hit test with the event position', function() {
-                    expect(HitTester.testItemMap)
-                        .toHaveBeenCalledWith(scrollList, fakeEvent.position);
+                    expect(scrollList.hitTest).toHaveBeenCalledWith(fakeEvent.position);
                 });
                 it('should dispatch scroll list "onInteraction"', function() {
                     var expectedDispatchArgs = {
@@ -210,7 +208,7 @@ define(function(require) {
                         index: 1,
                         position: {}
                     };
-                    spyOn(HitTester, 'testListMap').andReturn(fakeHitTestResult);
+                    spyOn(scrollList, 'hitTest').andReturn(fakeHitTestResult);
                     spyOn(scrollList.onInteraction, 'dispatch');
                     fakeEvent = createInteractionEvent();
                     fakeEvent.position = {};
@@ -219,8 +217,7 @@ define(function(require) {
                     }]);
                 });
                 it('should perform a hit test with the event position', function() {
-                    expect(HitTester.testListMap)
-                        .toHaveBeenCalledWith(scrollList, fakeEvent.position);
+                    expect(scrollList.hitTest).toHaveBeenCalledWith(fakeEvent.position);
                 });
                 it('should dispatch scroll list "onInteraction"', function() {
                     var expectedDispatchArgs = {

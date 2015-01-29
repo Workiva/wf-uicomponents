@@ -921,8 +921,8 @@ define(function(require) {
                     top: totalHeight,
                     scales: scales,
                     scaleToFit: scaleToFit,
-                    width: Math.floor(size.width * scaleToFit),
-                    height: Math.floor(size.height * scaleToFit),
+                    width: Math.round(size.width * scaleToFit),
+                    height: Math.round(size.height * scaleToFit),
                     paddingLeft: padding,
                     paddingRight: padding
                 });
@@ -971,7 +971,7 @@ define(function(require) {
             // not scale the padding as it is expected to be independent of the
             // scale applied to the document.
             if (flow) {
-                maxWidth = Math.floor(
+                maxWidth = Math.round(
                     itemSizeCollection.maxWidth * cachedScales.default + (2 * padding)
                 );
             }

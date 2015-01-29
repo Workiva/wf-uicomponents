@@ -90,7 +90,7 @@ define(function(require) {
                 var hAlignCenter = this._hAlign === HorizontalAlignments.CENTER;
                 var undoLeftBy = 0;
                 if (hAlignCenter) {
-                    undoLeftBy = Math.floor((viewportWidth - layoutWidth) / 2);
+                    undoLeftBy = Math.round((viewportWidth - layoutWidth) / 2);
                 }
                 return {
                     top: itemLayout.top + itemLayout.paddingTop,
