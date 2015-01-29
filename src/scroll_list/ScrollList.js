@@ -727,6 +727,11 @@ define(function(require) {
          * @method ScrollList#refresh
          */
         refresh: function() {
+            // Bail if the list is empty.
+            if (this._layout.getItemLayouts().length === 0) {
+                return;
+            }
+
             var listMap = this._listMap;
             var listState = listMap.getCurrentTransformState();
             var contentHeight = listMap.getContentDimensions().height;
@@ -866,6 +871,10 @@ define(function(require) {
                 Math.min(options.index || 0, this._itemSizesCollection.getLength() - 1)
             );
             var itemLayout = layout.getItemLayout(targetIndex);
+            // If the list is empty, there will be no itemLayout
+            if (!itemLayout) {
+                return;
+            }
             var listState = this._listMap.getCurrentTransformState();
             panToOptions.x = listState.translateX;
             panToOptions.y = -itemLayout.top * listState.scale;
@@ -1088,12 +1097,15 @@ define(function(require) {
                 verticalAlign: options.verticalAlign
             });
 
-            this._layout.onCurrentItemIndexChanged(function(/*layout, args*/) {
+            this._layout.onCurrentItemIndexChanged(function(layout, args) {
+                if (args.index === -1) {
+                    return;
+                }
                 var currentItem = self.getCurrentItem();
                 var itemIndex = currentItem.index;
                 var placeholder = currentItem.placeholder;
                 if (!isFlow) {
-                    var itemMap = self._renderer.get(itemIndex).map;
+                    var itemMap = self.getItemMap(itemIndex);
                     self._scaleTranslator.attach(itemMap, itemIndex);
                 }
                 self.onCurrentItemChanged.dispatch([self, {
