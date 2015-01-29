@@ -103,7 +103,7 @@ define(function(require) {
     var scrollMode = urlParams.scroll || (DeviceInfo.desktop ? 'flow' : 'peek');
     var fitMode = urlParams.fit || 'auto';
     var horizontalAlign = urlParams.halign || 'center';
-    var totalPages = +urlParams.totalPages || 100;
+    var totalPages = urlParams.totalPages !== undefined ? urlParams.totalPages : 100;
     var minNumberOfVirtualItems = scrollMode === 'flow' ? (DeviceInfo.desktop ? 15 : 9) : (DeviceInfo.desktop ? 5 : 3);
     var touchScrollingEnabled = Utils.valueOr(urlParams.touchScrollingEnabled, 'true') === 'true';
     var verticalAlign = urlParams.valign || 'auto';
@@ -112,7 +112,7 @@ define(function(require) {
     var itemSizeCollection = new ItemSizeCollection({
         maxWidth: 1022,
         maxHeight: 1022,
-        items: []//generateItemSizes(totalPages)
+        items: generateItemSizes(totalPages)
     });
 
     var scrollList = window.scrollList = new ScrollList($('#document')[0], itemSizeCollection, {
