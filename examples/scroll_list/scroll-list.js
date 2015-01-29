@@ -112,7 +112,7 @@ define(function(require) {
     var itemSizeCollection = new ItemSizeCollection({
         maxWidth: 1022,
         maxHeight: 1022,
-        items: generateItemSizes(totalPages)
+        items: []//generateItemSizes(totalPages)
     });
 
     var scrollList = window.scrollList = new ScrollList($('#document')[0], itemSizeCollection, {
