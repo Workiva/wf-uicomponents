@@ -117,6 +117,9 @@ define(function(require) {
 
             var scrollList = this._scrollList;
             var currentContentIndex = scrollList.getCurrentItem().index;
+            if (currentContentIndex === -1) {
+                return;
+            }
             var newContentIndex;
 
             var listMap = this._awesomeMap;
