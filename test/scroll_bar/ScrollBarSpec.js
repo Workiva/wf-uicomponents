@@ -146,13 +146,13 @@ define(function(require) {
             var e3 = document.createEvent('Event');
             e3.initEvent('mouseup', true, false);
 
-            spyOn(scrollBar._activeMap, 'transform');
+            spyOn(scrollBar._activeMap, 'panTo');
 
             scrollBarEl.dispatchEvent(e1);
             scrollBarEl.dispatchEvent(e2);
             scrollBarEl.dispatchEvent(e3);
 
-            expect(scrollBar._activeMap.transform).toHaveBeenCalled();
+            expect(scrollBar._activeMap.panTo).toHaveBeenCalled();
         }
 
         function testScaleChanged() {
@@ -246,13 +246,14 @@ define(function(require) {
             var startBarOffset;
             var endBarOffset;
 
-            scrollBar._activeMap.transform({ x: NEW_X - DELTA, y: NEW_Y - DELTA, scale: SCALE });
+            scrollBar._activeMap.zoomTo({ scale: SCALE });
+            scrollBar._activeMap.panTo({ x: NEW_X - DELTA, y: NEW_Y - DELTA });
             if (scrollBar.isVertical()) {
                 startBarOffset = parseInt(scrollBar._elements.scroller.style.top);
             } else {
                 startBarOffset = parseInt(scrollBar._elements.scroller.style.left);
             }
-            scrollBar._activeMap.transform({ x: NEW_X, y: NEW_Y, scale: SCALE });
+            scrollBar._activeMap.panTo({ x: NEW_X, y: NEW_Y, scale: SCALE });
 
             waits(10);
 
@@ -276,13 +277,14 @@ define(function(require) {
             var startBarOffset;
             var endBarOffset;
 
-            scrollBar._activeMap.transform({ x: 0, y: 0, scale: SCALE });
+            scrollBar._activeMap.zoomTo({ scale: SCALE });
+            scrollBar._activeMap.panTo({ x: 0, y: 0 });
             if (scrollBar.isVertical()) {
                 startBarOffset = parseInt(scrollBar._elements.scroller.style.top);
             } else {
                 startBarOffset = parseInt(scrollBar._elements.scroller.style.left);
             }
-            scrollBar._activeMap.transform({ x: NEW_X, y: NEW_Y, scale: SCALE });
+            scrollBar._activeMap.panTo({ x: NEW_X, y: NEW_Y });
 
             waits(10);
 

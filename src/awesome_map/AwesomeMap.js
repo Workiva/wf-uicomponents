@@ -137,7 +137,7 @@ define(function(require) {
         this.onInteractionFinished = Observable.newObservable();
 
         /**
-         * Observable for subscribing to changes in scale.
+         * Observable for subscribing to scale changes.
          *
          * @method AwesomeMap#onScaleChanged
          * @param {Function} callback
@@ -146,6 +146,18 @@ define(function(require) {
          *        })
          */
         this.onScaleChanged = Observable.newObservable();
+
+        /**
+         * Observable for subscribing to pending scale changes.
+         *
+         * @method AwesomeMap#onScaleChanging
+         * @param {Function} callback
+         *        Invoked with (sender, {
+         *            currentScale: {number}
+         *            nextScale: {number}
+         *        })
+         */
+        this.onScaleChanging = Observable.newObservable();
 
         /**
          * Observable for subscribing to the end of a transform.
@@ -160,7 +172,7 @@ define(function(require) {
         this.onTransformFinished = Observable.newObservable();
 
         /**
-         * Observable for subscribing to changes in content translation.
+         * Observable for subscribing to content translation changes.
          *
          * @method AwesomeMap#onTranslationChanged
          * @param {Function} callback
@@ -170,6 +182,24 @@ define(function(require) {
          *        })
          */
         this.onTranslationChanged = Observable.newObservable();
+
+        /**
+         * Observable for subscribing to pending content translation changes.
+         *
+         * @method AwesomeMap#onTranslationChanging
+         * @param {Function} callback
+         *        Invoked with (sender, {
+         *            currentTranslation: {
+         *                x: {number},
+         *                y: {number}
+         *            },
+         *            nextTranslation: {
+         *                x: {number},
+         *                y: {number}
+         *            }
+         *        })
+         */
+        this.onTranslationChanging = Observable.newObservable();
 
         /**
          * Observable for subscribing to the start of a transform.
@@ -755,10 +785,11 @@ define(function(require) {
          */
         transform: function(options) {
             var newState = new TransformState({
-                translateX: options.x,
-                translateY: options.y,
+                translateX: Math.round(options.x),
+                translateY: Math.round(options.y),
                 scale: options.scale
             });
+            this._publishChangingEvents(this._currentTransformState, newState);
             TransformUtil.applyTransform(this._transformationPlane, newState);
             this.setCurrentTransformState(newState);
         },
@@ -900,6 +931,35 @@ define(function(require) {
             }
 
             return false;
+        },
+
+        /**
+         * Publish scale and translation changing events. This method is used
+         * elsewhere in the code and should be treated as an internal.
+         *
+         * @param {TransformState} currentState
+         * @param {TransformState} nextState
+         */
+        _publishChangingEvents: function(currentState, nextState) {
+            if (currentState.scale !== nextState.scale) {
+                this.onScaleChanging.dispatch([this, {
+                    currentScale: currentState.scale,
+                    nextScale: nextState.scale
+                }]);
+            }
+            if (currentState.translateX !== nextState.translateX ||
+                currentState.translateY !== nextState.translateY) {
+                this.onTranslationChanging.dispatch([this, {
+                    currentTranslation: {
+                        x: currentState.translateX,
+                        y: currentState.translateY
+                    },
+                    nextTranslation: {
+                        x: nextState.translateX,
+                        y: nextState.translateY
+                    }
+                }]);
+            }
         },
 
         /**

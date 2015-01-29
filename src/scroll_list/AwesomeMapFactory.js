@@ -127,6 +127,33 @@ define(function(require) {
                     scale: scrollList.getScale()
                 }]);
             });
+            map.onScaleChanging(function(source, args) {
+                scrollList.onScaleChanging.dispatch([scrollList, {
+                    event: args.event,
+                    currentScale: args.currentScale,
+                    nextScale: args.nextScale,
+                }]);
+            });
+            map.onTranslationChanged(function(source, args) {
+                scrollList.onItemScrollPositionChanged.dispatch([scrollList, {
+                    event: args.event,
+                    x: -args.x,
+                    y: -args.y
+                }]);
+            });
+            map.onTranslationChanging(function(source, args) {
+                scrollList.onItemScrollPositionChanging.dispatch([scrollList, {
+                    event: args.event,
+                    currentPosition: {
+                        x: -args.currentTranslation.x,
+                        y: -args.currentTranslation.y
+                    },
+                    nextPosition: {
+                        x: -args.nextTranslation.x,
+                        y: -args.nextTranslation.y
+                    }
+                }]);
+            });
 
             return map;
         },
@@ -205,6 +232,13 @@ define(function(require) {
                         scale: scrollList.getScale()
                     }]);
                 });
+                map.onScaleChanging(function(source, args) {
+                    scrollList.onScaleChanging.dispatch([scrollList, {
+                        event: args.event,
+                        currentScale: args.currentScale,
+                        nextScale: args.nextScale,
+                    }]);
+                });
             }
             map.onTranslationChanged(function(source, args) {
                 scrollList.getLayout().setScrollPosition({
@@ -215,6 +249,19 @@ define(function(require) {
                     event: args.event,
                     x: -args.x,
                     y: -args.y
+                }]);
+            });
+            map.onTranslationChanging(function(source, args) {
+                scrollList.onScrollPositionChanging.dispatch([scrollList, {
+                    event: args.event,
+                    currentPosition: {
+                        x: -args.currentTranslation.x,
+                        y: -args.currentTranslation.y
+                    },
+                    nextPosition: {
+                        x: -args.nextTranslation.x,
+                        y: -args.nextTranslation.y
+                    }
                 }]);
             });
 

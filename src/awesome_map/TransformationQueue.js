@@ -181,6 +181,9 @@ define(function(require) {
                     targetState: targetState
                 }]);
 
+                // Publish will change events related to transformations
+                map._publishChangingEvents(oldState, targetState);
+
                 // Track the current transformation so it can be cancelled.
                 self._currentTransformation = createTransformation(target, targetState, oldState);
                 self._currentTransformation.execute(function(newState) {
