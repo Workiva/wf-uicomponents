@@ -972,7 +972,7 @@ define(function(require) {
             // newer, wider items are added dynamically. At the same time, do
             // not scale the padding as it is expected to be independent of the
             // scale applied to the document.
-            if (flow) {
+            if (flow && numberOfItems > 0) {
                 maxWidth = Math.round(
                     itemSizeCollection.maxWidth * cachedScales.default + (2 * padding)
                 );
