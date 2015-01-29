@@ -893,9 +893,10 @@ define(function(require) {
             function getHorizontalPosition(outerWidth) {
                 if (horizontalAlign === HorizontalAlignments.LEFT) {
                     return 0;
-                } else {
-                    // center by default
-                    return Math.round((viewportWidth - outerWidth) / 2);
+                }
+                else {
+                    // Pull to the left if less than a pixel.
+                    return Math.floor((viewportWidth - outerWidth) / 2);
                 }
             }
 
@@ -905,9 +906,10 @@ define(function(require) {
                         outerHeight > viewportHeight)
                 ) {
                     return 0;
-                } else {
-                    // center by default
-                    return Math.round((viewportHeight - outerHeight) / 2);
+                }
+                else {
+                    // Pull to the left if less than a pixel.
+                    return Math.floor((viewportHeight - outerHeight) / 2);
                 }
             }
 

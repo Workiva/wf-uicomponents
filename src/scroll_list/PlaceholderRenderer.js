@@ -20,7 +20,6 @@ define(function(require) {
     var AwesomeMapFactory = require('wf-js-uicomponents/scroll_list/AwesomeMapFactory');
     var DestroyUtil = require('wf-js-common/DestroyUtil');
     var Observable = require('wf-js-common/Observable');
-    var PositionTranslator = require('wf-js-uicomponents/scroll_list/PositionTranslator');
     var ScrollModes = require('wf-js-uicomponents/scroll_list/ScrollModes');
 
     /**
@@ -168,7 +167,7 @@ define(function(require) {
                 var element = placeholder.element;
                 // Adjust the element's left style to account for the fact that
                 // the list map is responsible for positioning content in the viewport.
-                var positionTranslator = new PositionTranslator(scrollList);
+                var positionTranslator = scrollList.getPositionTranslator();
                 var adjustedLeft = positionTranslator.getLeftInTransformationPlane(itemLayout.left);
                 element.style.left = adjustedLeft + 'px';
                 if (!update) {

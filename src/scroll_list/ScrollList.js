@@ -421,6 +421,13 @@ define(function(require) {
         }, options);
 
         /**
+         * Provides tranlation between pure ItemLayouts and elements hosted and
+         * positioned with the help of a transformation plane.
+         * @type {PositionTranslator}
+         */
+        this._positionTranslator = null;
+
+        /**
          * The renderer.
          * @type {Object}
          */
@@ -533,6 +540,16 @@ define(function(require) {
          */
         getOptions: function() {
             return this._options;
+        },
+
+        /**
+         * Gets the scale translator.
+         *
+         * @method ScrollList#getScaleTranslator
+         * @return {ScaleTranslator}
+         */
+        getPositionTranslator: function() {
+            return this._positionTranslator;
         },
 
         /**
@@ -735,7 +752,7 @@ define(function(require) {
             var layout = this._layout;
             var viewportSize = layout.getViewportSize();
             var visibleItemRange = layout.getVisibleItemRange();
-            var positionTranslator = new PositionTranslator(this);
+            var positionTranslator = this._positionTranslator;
 
             var visibleItems = [];
             for (var i = visibleItemRange.startIndex; i <= visibleItemRange.endIndex; i++) {
@@ -743,10 +760,10 @@ define(function(require) {
                 var itemBounds = positionTranslator.getBoundsInTransformationPlane(itemLayout);
 
                 // Get the position of each item relative to the viewport
-                var top = Math.round(transformState.translateY + (itemBounds.top) * scale);
-                var right = Math.round(transformState.translateX + (itemBounds.right) * scale);
-                var bottom = Math.round(transformState.translateY + (itemBounds.bottom) * scale);
-                var left = Math.round(transformState.translateX + (itemBounds.left) * scale);
+                var top = transformState.translateY + (itemBounds.top) * scale;
+                var right = transformState.translateX + (itemBounds.right) * scale;
+                var bottom = transformState.translateY + (itemBounds.bottom) * scale;
+                var left = transformState.translateX + (itemBounds.left) * scale;
 
                 // Remove items that do not intersect the viewport after
                 // accounting for the offset due to padding.
@@ -1163,6 +1180,7 @@ define(function(require) {
             this._initializeLayout();
 
             this._listMap = AwesomeMapFactory.createListMap(this);
+            this._positionTranslator = new PositionTranslator(this);
             this._scaleTranslator = new ScaleTranslator(this, this._listMap, 0);
 
             if (this._options.persistZoom) {
