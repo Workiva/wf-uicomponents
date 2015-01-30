@@ -893,9 +893,10 @@ define(function(require) {
             function getHorizontalPosition(outerWidth) {
                 if (horizontalAlign === HorizontalAlignments.LEFT) {
                     return 0;
-                } else {
-                    // center by default
-                    return Math.round((viewportWidth - outerWidth) / 2);
+                }
+                else {
+                    // Pull to the left if less than a pixel.
+                    return Math.floor((viewportWidth - outerWidth) / 2);
                 }
             }
 
@@ -905,9 +906,10 @@ define(function(require) {
                         outerHeight > viewportHeight)
                 ) {
                     return 0;
-                } else {
-                    // center by default
-                    return Math.round((viewportHeight - outerHeight) / 2);
+                }
+                else {
+                    // Pull to the left if less than a pixel.
+                    return Math.floor((viewportHeight - outerHeight) / 2);
                 }
             }
 
@@ -921,8 +923,8 @@ define(function(require) {
                     top: totalHeight,
                     scales: scales,
                     scaleToFit: scaleToFit,
-                    width: Math.floor(size.width * scaleToFit),
-                    height: Math.floor(size.height * scaleToFit),
+                    width: Math.round(size.width * scaleToFit),
+                    height: Math.round(size.height * scaleToFit),
                     paddingLeft: padding,
                     paddingRight: padding
                 });
@@ -971,7 +973,7 @@ define(function(require) {
             // not scale the padding as it is expected to be independent of the
             // scale applied to the document.
             if (flow && numberOfItems > 0) {
-                maxWidth = Math.floor(
+                maxWidth = Math.round(
                     itemSizeCollection.maxWidth * cachedScales.default + (2 * padding)
                 );
             }

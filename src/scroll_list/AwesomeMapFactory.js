@@ -20,7 +20,6 @@ define(function(require) {
     var AwesomeMap = require('wf-js-uicomponents/awesome_map/AwesomeMap');
     var BoundaryInterceptor = require('wf-js-uicomponents/awesome_map/BoundaryInterceptor');
     var DoubleTapZoomInterceptor = require('wf-js-uicomponents/awesome_map/DoubleTapZoomInterceptor');
-    var HitTester = require('wf-js-uicomponents/scroll_list/HitTester');
     var HorizontalAlignments = require('wf-js-uicomponents/layouts/HorizontalAlignments');
     var MouseWheelNavigationInterceptor = require('wf-js-uicomponents/scroll_list/MouseWheelNavigationInterceptor');
     var PeekInterceptor = require('wf-js-uicomponents/scroll_list/PeekInterceptor');
@@ -107,7 +106,7 @@ define(function(require) {
                 var evt = args.event;
                 var newArgs = { event: evt };
                 if (evt.position) {
-                    var hit = HitTester.testItemMap(scrollList, evt.position);
+                    var hit = scrollList.hitTest(evt.position);
                     if (hit) {
                         newArgs.itemIndex = hit.index;
                         newArgs.itemPosition = hit.position;
@@ -214,7 +213,7 @@ define(function(require) {
                     var evt = args.event;
                     var newArgs = { event: evt };
                     if (evt.position) {
-                        var hit = HitTester.testListMap(scrollList, evt.position);
+                        var hit = scrollList.hitTest(evt.position);
                         if (hit) {
                             newArgs.itemIndex = hit.index;
                             newArgs.itemPosition = hit.position;

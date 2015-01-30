@@ -25,6 +25,7 @@ define(function(require) {
     var HorizontalAlignments = require('wf-js-uicomponents/layouts/HorizontalAlignments');
     var ItemLayout = require('wf-js-uicomponents/layouts/ItemLayout');
     var PlaceholderRenderer = require('wf-js-uicomponents/scroll_list/PlaceholderRenderer');
+    var PositionTranslator = require('wf-js-uicomponents/scroll_list/PositionTranslator');
     var ScrollList = require('wf-js-uicomponents/scroll_list/ScrollList');
     var ScrollModes = require('wf-js-uicomponents/scroll_list/ScrollModes');
     var VerticalAlignments = require('wf-js-uicomponents/layouts/VerticalAlignments');
@@ -57,6 +58,7 @@ define(function(require) {
             spyOn(scrollList, 'getLayout').andReturn(layout);
             spyOn(scrollList, 'getListMap').andReturn(listMap);
             spyOn(scrollList, 'getOptions').andReturn(scrollListOptions);
+            spyOn(scrollList, 'getPositionTranslator').andReturn(new PositionTranslator(scrollList));
 
             renderer = new PlaceholderRenderer(scrollList);
         });

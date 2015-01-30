@@ -21,7 +21,6 @@ define(function(require) {
     var _ = require('lodash');
     var AwesomeMap = require('wf-js-uicomponents/awesome_map/AwesomeMap');
     var DestroyUtil = require('wf-js-common/DestroyUtil');
-    var HitTester = require('wf-js-uicomponents/scroll_list/HitTester');
     var ItemSizeCollection = require('wf-js-uicomponents/layouts/ItemSizeCollection');
     var ScrollList = require('wf-js-uicomponents/scroll_list/ScrollList');
 
@@ -299,25 +298,167 @@ define(function(require) {
             });
         });
 
-        describe('hit testing', function() {
-            it('should call hit tester with list map if in "flow" mode', function() {
-                var fakeResult = {};
-                spyOn(HitTester, 'testListMap').andReturn(fakeResult);
-                testScrollList({ mode: 'flow' }, function(scrollList) {
-                    var point = { x: 1, y: 2 };
-                    var result = scrollList.hitTest(point);
-                    expect(HitTester.testListMap).toHaveBeenCalledWith(scrollList, point);
-                    expect(result).toBe(fakeResult);
-                });
+        describe('getting visible item position data', function() {
+            // NOTE: These are functional tests of other units.
+            var VIEWPORT_WIDTH = 200;
+            var VIEWPORT_HEIGHT = 300;
+            var $host;
+
+            beforeEach(function() {
+                $host = $('<div>').css({
+                    position: 'absolute',
+                    left: -1000,
+                    width: VIEWPORT_WIDTH,
+                    height: VIEWPORT_HEIGHT
+                }).appendTo('body');
             });
-            it('should call hit tester with item map if not in "flow" mode', function() {
-                var fakeResult = {};
-                spyOn(HitTester, 'testItemMap').andReturn(fakeResult);
-                testScrollList({ mode: '!flow' }, function(scrollList) {
-                    var point = { x: 1, y: 2 };
-                    var result = scrollList.hitTest(point);
-                    expect(HitTester.testItemMap).toHaveBeenCalledWith(scrollList, point);
-                    expect(result).toBe(fakeResult);
+
+            afterEach(function() {
+                $host.remove();
+            });
+
+            function setupTest(options) {
+                var itemSizes = [];
+                for (var i = 0, n = options.itemCount || 1; i < n; i++) {
+                    itemSizes.push({ width: options.itemWidth, height: options.itemHeight });
+                }
+
+                var itemSizeCollection = new ItemSizeCollection({
+                    maxWidth: options.itemWidth,
+                    maxHeight: options.itemHeight,
+                    items: itemSizes
+                });
+
+                var scrollList = new ScrollList($host[0], itemSizeCollection, {
+                    padding: options.padding,
+                    gap: options.gap
+                });
+
+                scrollList.zoomTo({ scale: options.zoomToScale });
+                scrollList.scrollToPosition({ x: options.scrollToX, y: options.scrollToY });
+
+                return scrollList;
+            }
+
+            it('should return viewport-relative item position data for all the items in the viewport', function() {
+                var padding = 10;
+                var gap = 10;
+                // Ensure that the items fill the viewport, and the first item
+                // with padding and gap fills the viewport completely.
+                var itemWidth = VIEWPORT_WIDTH - padding * 2;
+                var itemHeight = VIEWPORT_HEIGHT - padding * 2;
+                // Zoom and scroll such that there is padding/gap from the first
+                // item visible.
+                var zoomToScale = 2;
+                var scrollToX = 100;
+                var scrollToY = 200;
+
+                var scrollList = setupTest({
+                    itemCount: 2,
+                    padding: padding,
+                    gap: gap,
+                    itemWidth: itemWidth,
+                    itemHeight: itemHeight,
+                    zoomToScale: zoomToScale,
+                    scrollToX: scrollToX,
+                    scrollToY: scrollToY
+                });
+
+                var itemsInViewport = scrollList.getVisibleItemPositionData();
+                expect(itemsInViewport.length).toBe(2);
+
+                var firstItem = itemsInViewport[0];
+                var expectedTop = (-scrollToY + padding) * zoomToScale;
+                var expectedBottom = expectedTop + itemHeight * zoomToScale;
+                var expectedLeft = (-scrollToX + padding) * zoomToScale;
+                var expectedRight = expectedLeft + itemWidth * zoomToScale;
+                expect(firstItem.top).toBe(expectedTop);
+                expect(firstItem.bottom).toBe(expectedBottom);
+                expect(firstItem.left).toBe(expectedLeft);
+                expect(firstItem.right).toBe(expectedRight);
+                expect(firstItem.scale).toBe(zoomToScale);
+                expect(firstItem.itemIndex).toBe(0);
+
+                var secondItem = itemsInViewport[1];
+                expectedTop = expectedBottom + gap * zoomToScale;
+                expectedBottom = expectedTop + itemHeight * zoomToScale;
+                expect(secondItem.top).toBe(expectedTop);
+                expect(secondItem.bottom).toBe(expectedBottom);
+                expect(firstItem.left).toBe(expectedLeft);
+                expect(firstItem.right).toBe(expectedRight);
+                expect(secondItem.scale).toBe(zoomToScale);
+                expect(secondItem.itemIndex).toBe(1);
+            });
+
+            it('should filter out items that are not in the viewport once accounting for padding', function() {
+                var options = {
+                    itemCount: 2,
+                    padding: 10,
+                    gap: 10
+                };
+                // Ensure that the items fill the viewport, and the first item
+                // with padding and gap fills the viewport completely.
+                options.itemWidth = VIEWPORT_WIDTH - options.padding * 2;
+                options.itemHeight = VIEWPORT_HEIGHT - options.padding * 2;
+                // Zoom and scroll such that there is padding/gap from the first
+                // item visible.
+                options.zoomToScale = 2;
+                options.scrollToX = undefined;
+                options.scrollToY = VIEWPORT_HEIGHT - options.gap / 2;
+
+                var scrollList = setupTest(options);
+                var itemsInViewport = scrollList.getVisibleItemPositionData();
+                expect(itemsInViewport.length).toBe(1);
+            });
+        });
+
+        describe('hit testing', function() {
+            it('should get visible item positions and hit test against them', function() {
+                testScrollList(function(scrollList) {
+                    var item0Position = {
+                        itemIndex: 0,
+                        top: 10,
+                        bottom: 100,
+                        left: 20,
+                        right: 200,
+                        scale: 2
+                    };
+                    var item1Position = {
+                        itemIndex: 1,
+                        top: 110,
+                        bottom: 200,
+                        left: 20,
+                        right: 200,
+                        scale: 2
+                    };
+                    spyOn(scrollList, 'getVisibleItemPositionData').andReturn([
+                        item0Position, item1Position
+                    ]);
+
+                    // Expect false when nothing is hit
+                    var hitResult = scrollList.hitTest({ x: 0, y: 0 });
+                    expect(hitResult).toBe(false);
+
+                    // Expect position relative to actual item size for each item in view.
+                    var point = { x: 100, y: 50 };
+                    hitResult = scrollList.hitTest(point);
+                    expect(hitResult).toEqual({
+                        index: 0,
+                        position: {
+                            x: (point.x - item0Position.left) / item0Position.scale,
+                            y: (point.y - item0Position.top) / item0Position.scale
+                        }
+                    });
+
+                    point = { x: 50, y: 120 };
+                    hitResult = scrollList.hitTest(point);
+                    expect(hitResult).toEqual({
+                        index: 1,
+                        position: {
+                            x: (point.x - item1Position.left) / item1Position.scale,
+                            y: (point.y - item1Position.top) / item1Position.scale
+                        }
+                    });
                 });
             });
         });

@@ -21,10 +21,11 @@ define(function(require) {
     var AwesomeMapFactory = require('wf-js-uicomponents/scroll_list/AwesomeMapFactory');
     var DestroyUtil = require('wf-js-common/DestroyUtil');
     var FitModes = require('wf-js-uicomponents/layouts/FitModes');
-    var HitTester = require('wf-js-uicomponents/scroll_list/HitTester');
     var HorizontalAlignments = require('wf-js-uicomponents/layouts/HorizontalAlignments');
     var Observable = require('wf-js-common/Observable');
     var PlaceholderRenderer = require('wf-js-uicomponents/scroll_list/PlaceholderRenderer');
+    var PositionTranslator = require('wf-js-uicomponents/scroll_list/PositionTranslator');
+    var Rectangle = require('wf-js-common/Rectangle');
     var ScaleTranslator = require('wf-js-uicomponents/scroll_list/ScaleTranslator');
     var ScrollModes = require('wf-js-uicomponents/scroll_list/ScrollModes');
     var Utils = require('wf-js-common/Utils');
@@ -421,6 +422,13 @@ define(function(require) {
         }, options);
 
         /**
+         * Provides translation between pure ItemLayouts and elements hosted and
+         * positioned with the help of a transformation plane.
+         * @type {PositionTranslator}
+         */
+        this._positionTranslator = null;
+
+        /**
          * The renderer.
          * @type {Object}
          */
@@ -533,6 +541,16 @@ define(function(require) {
          */
         getOptions: function() {
             return this._options;
+        },
+
+        /**
+         * Gets the position translator.
+         *
+         * @method ScrollList#getPositionTranslator
+         * @return {PositionTranslator}
+         */
+        getPositionTranslator: function() {
+            return this._positionTranslator;
         },
 
         /**
@@ -722,6 +740,61 @@ define(function(require) {
         },
 
         /**
+         * Get the viewport-relative position data for all visible items.
+         *
+         * @return {Array.<{
+         *     itemIndex: Number,
+         *     scale: Number,
+         *     top: Number,
+         *     bottom: Number,
+         *     left: Number,
+         *     right: Number
+         * }>} List of objects containing the position data
+         */
+        getVisibleItemPositionData: function() {
+            var activeMap = this.getCurrentItemMap() || this._listMap;
+            var transformState = activeMap.getCurrentTransformState();
+            var scale = transformState.scale;
+
+            var layout = this._layout;
+            var viewportSize = layout.getViewportSize();
+            var visibleItemRange = layout.getVisibleItemRange();
+            var positionTranslator = this._positionTranslator;
+
+            var visibleItems = [];
+            for (var i = visibleItemRange.startIndex; i <= visibleItemRange.endIndex; i++) {
+                var itemLayout = layout.getItemLayout(i);
+                var itemBounds = positionTranslator.getBoundsInTransformationPlane(itemLayout);
+
+                // Get the position of each item relative to the viewport
+                var top = transformState.translateY + itemBounds.top * scale;
+                var right = transformState.translateX + itemBounds.right * scale;
+                var bottom = transformState.translateY + itemBounds.bottom * scale;
+                var left = transformState.translateX + itemBounds.left * scale;
+
+                // Remove items that do not intersect the viewport after
+                // accounting for the offset due to padding.
+                if (top >= viewportSize.height || bottom <= 0 ||
+                    left >= viewportSize.width || right <= 0
+                ) {
+                    continue;
+                }
+
+                var visibleItem = {
+                    itemIndex: i,
+                    scale: scale * itemLayout.scaleToFit,
+                    top: top,
+                    bottom: bottom,
+                    left: left,
+                    right: right
+                };
+                visibleItems.push(visibleItem);
+            }
+
+            return visibleItems;
+        },
+
+        /**
          * Return the index of and position within the item at the given point.
          * If no item is under the given point, return false.
          *
@@ -730,9 +803,21 @@ define(function(require) {
          * @return {boolean|{ index: number, position: { x: number, y: number }}}
          */
         hitTest: function(point) {
-            var method = (this._options.mode === ScrollModes.FLOW ?
-                'testListMap' : 'testItemMap');
-            return HitTester[method](this, point);
+            var visibleItemPositionData = this.getVisibleItemPositionData();
+            for (var i = 0, n = visibleItemPositionData.length; i < n; i++) {
+                var itemPosition = visibleItemPositionData[i];
+                var itemRectangle = new Rectangle(itemPosition);
+                if (itemRectangle.contains(point)) {
+                    return {
+                        index: itemPosition.itemIndex,
+                        position: {
+                            x: Math.floor((point.x - itemPosition.left) / itemPosition.scale),
+                            y: Math.floor((point.y - itemPosition.top) / itemPosition.scale)
+                        }
+                    };
+                }
+            }
+            return false;
         },
 
         /**
@@ -1109,6 +1194,7 @@ define(function(require) {
             this._initializeLayout();
 
             this._listMap = AwesomeMapFactory.createListMap(this);
+            this._positionTranslator = new PositionTranslator(this);
             this._scaleTranslator = new ScaleTranslator(this, this._listMap, 0);
 
             if (this._options.persistZoom) {
@@ -1257,10 +1343,7 @@ define(function(require) {
             options = options || {};
             (this.getCurrentItemMap() || this._listMap).zoomTo({
                 scale: scale,
-                // HACK: always give at least 10 ms duration so that
-                // TransformUtil.animate gets used instead of the
-                // simulated zoom
-                duration: Math.max(10, options.duration || 0),
+                duration: options.duration,
                 done: options.done
             });
         }
