@@ -19,6 +19,7 @@ define(function(require) {
 
     var _ = require('lodash');
     var DestroyUtil = require('wf-js-common/DestroyUtil');
+    var DeviceInfo = require('wf-js-common/DeviceInfo');
     var DOMUtil = require('wf-js-common/DOMUtil');
     var EventSynthesizer = require('wf-js-uicomponents/awesome_map/EventSynthesizer');
     var EventTypes = require('wf-js-uicomponents/awesome_map/EventTypes');
@@ -506,7 +507,9 @@ define(function(require) {
                 this.onScaleChanged.dispatch([this, {
                     scale: state.scale
                 }]);
-                TransformUtil.forceWillChange(this._transformationPlane);
+                if (DeviceInfo.browser.webkit) {
+                    TransformUtil.forceRecomposite(this._transformationPlane);
+                }
             }
             if (oldState.translateX !== state.translateX ||
                 oldState.translateY !== state.translateY
@@ -952,6 +955,12 @@ define(function(require) {
                     currentScale: currentState.scale,
                     nextScale: nextState.scale
                 }]);
+                if (DeviceInfo.browser.webkit && !nextState.duration) {
+                    TransformUtil.applyTransition(this._transformationPlane, {
+                        duration: 10,
+                        easing: { css: 'linear' }
+                    });
+                }
             }
             if (currentState.translateX !== nextState.translateX ||
                 currentState.translateY !== nextState.translateY) {

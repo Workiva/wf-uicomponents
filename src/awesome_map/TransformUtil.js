@@ -80,19 +80,9 @@ define(function(require) {
                 return TransformUtil.animateJS(target, targetState, currentState, done);
             }
 
-            var transitionEndEvent = BrowserInfo.Events.TRANSITION_END;
-            var transitionEnded = false;
-            var transitionEndEmulatorId;
             var cancelledState;
 
             var transitionEndHandler = function() {
-                clearTimeout(transitionEndEmulatorId);
-                transitionEnded = true;
-
-                target.removeEventListener(transitionEndEvent, transitionEndHandler);
-
-                TransformUtil.removeTransition(target);
-
                 if (cancelledState) {
                     TransformUtil.applyTransform(target, cancelledState);
                     requestAnimFrame(function() {
@@ -104,14 +94,7 @@ define(function(require) {
                 }
             };
 
-            // Register the the transitionEnd event handler.
-            // Emulate the transition end to cover cases where the browser
-            // doesn't fire the transitionEnd event. This can happen if
-            // properties don't change or a repaint is not triggered.
-            target.addEventListener(transitionEndEvent, transitionEndHandler);
-            transitionEndEmulatorId = setTimeout(transitionEndHandler, targetState.duration + 50);
-
-            TransformUtil.applyTransition(target, targetState);
+            TransformUtil.applyTransition(target, targetState, transitionEndHandler);
             TransformUtil.applyTransform(target, targetState);
 
             return {
@@ -254,8 +237,28 @@ define(function(require) {
          * Applies a CSS transition to the target element.
          * @param {HTMLElement} target
          * @param {TransformState} targetState
+         * @param {Function} [transitionEndHandler]
          */
-        applyTransition: function(target, targetState) {
+        applyTransition: function(target, targetState, transitionEndHandler) {
+            // Register the the transitionEnd event handler.
+            // Emulate the transition end to cover cases where the browser
+            // doesn't fire the transitionEnd event. This can happen if
+            // properties don't change or a repaint is not triggered.
+            var transitionEndEvent = BrowserInfo.Events.TRANSITION_END;
+            var transitionEndHandlerWrapper = function() {
+                clearTimeout(transitionEndEmulatorId);
+                target.removeEventListener(transitionEndEvent, transitionEndHandlerWrapper);
+                TransformUtil.removeTransition(target);
+                if (transitionEndHandler) {
+                    transitionEndHandler();
+                }
+            }
+            var transitionEndEmulatorId = setTimeout(
+                transitionEndHandlerWrapper,
+                targetState.duration + 50
+            );
+            target.addEventListener(transitionEndEvent, transitionEndHandlerWrapper);
+
             target.style[BrowserInfo.cssTransitionProperty] =
                 'all ' +
                 targetState.duration + 'ms ' +
@@ -279,7 +282,7 @@ define(function(require) {
          * HACK: This forces a recomposite on content contained inside the target.
          * @param {HTMLElement} target
          */
-        forceWillChange: function(target) {
+        forceRecomposite: function(target) {
             target.style.willChange = 'transform, contents';
             setTimeout(function() {
                 target.style.willChange = 'transform';
