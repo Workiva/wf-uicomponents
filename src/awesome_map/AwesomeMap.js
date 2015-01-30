@@ -508,7 +508,13 @@ define(function(require) {
                     scale: state.scale
                 }]);
                 if (DeviceInfo.browser.webkit) {
-                    TransformUtil.forceRecomposite(this._transformationPlane);
+                    // HACK: This forces a recomposite on content contained
+                    // inside the transformation plane.
+                    var transformationPlane = this._transformationPlane;
+                    transformationPlane.style.willChange = 'transform, contents';
+                    setTimeout(function() {
+                        transformationPlane.style.willChange = 'transform';
+                    }, 0);
                 }
             }
             if (oldState.translateX !== state.translateX ||

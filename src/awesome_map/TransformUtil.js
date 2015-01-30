@@ -279,17 +279,6 @@ define(function(require) {
         },
 
         /**
-         * HACK: This forces a recomposite on content contained inside the target.
-         * @param {HTMLElement} target
-         */
-        forceRecomposite: function(target) {
-            target.style.willChange = 'transform, contents';
-            setTimeout(function() {
-                target.style.willChange = 'transform';
-            }, 0);
-        },
-
-        /**
          * Parse CSS transform values from a CSS matrix specification. This will
          * work for both 2d and 3d matrices.
          *
