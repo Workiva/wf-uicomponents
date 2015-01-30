@@ -128,11 +128,17 @@ define(function(require) {
                 swipe_max_touches: 1,
                 swipe_velocity: 0
             });
-            var endEvent = createFakeEvent({
-                eventType: Hammer.EVENT_END,
+            // Simulate a transform
+            var transformEvent = createFakeEvent({
+                eventType: Hammer.EVENT_MOVE,
                 touches: ['faketouch', 'faketouch']
             });
+            var endEvent = createFakeEvent({
+                eventType: Hammer.EVENT_END,
+                touches: ['faketouch']
+            });
             simulateSwipeGestureMoves(hammerInstance, { deltaX: 0 }, { deltaX: 2 });
+            CustomSwipeGesture.handler(transformEvent, hammerInstance);
             CustomSwipeGesture.handler(endEvent, hammerInstance);
             expect(hammerInstance.trigger).not.toHaveBeenCalled();
         });

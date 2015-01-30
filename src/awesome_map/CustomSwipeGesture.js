@@ -38,7 +38,16 @@ define(function(require) {
             swipe_max_touches  : 1,
             swipe_velocity     : 0.7
         },
+        cancel: false,
         handler: function swipeGesture(ev, inst) {
+            // Enforce the max touches option.
+            if (inst.options.swipe_max_touches > 0 &&
+                ev.touches.length > inst.options.swipe_max_touches
+            ) {
+                this.cancel = true;
+                return;
+            }
+
             if (ev.eventType === Hammer.EVENT_START) {
                 moves = [ev, ev];
             }
@@ -46,9 +55,8 @@ define(function(require) {
                 moves.push(ev);
             }
             else if (ev.eventType === Hammer.EVENT_END) {
-                // Enforce the max touchs option.
-                if (inst.options.swipe_max_touches > 0 &&
-                    ev.touches.length > inst.options.swipe_max_touches) {
+                if (this.cancel) {
+                    this.cancel = false;
                     return;
                 }
 
