@@ -55,6 +55,8 @@ define(function(require) {
                 moves.push(ev);
             }
             else if (ev.eventType === Hammer.EVENT_END) {
+                // If canceling due to multitouch gesture, then bail out after
+                // flipping the switch so the next swipe begins detection anew.
                 if (this.cancel) {
                     this.cancel = false;
                     return;
