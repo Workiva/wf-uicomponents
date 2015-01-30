@@ -415,9 +415,24 @@ define(function(require) {
         describe('hit testing', function() {
             it('should get visible item positions and hit test against them', function() {
                 testScrollList(function(scrollList) {
+                    var item0Position = {
+                        itemIndex: 0,
+                        top: 10,
+                        bottom: 100,
+                        left: 20,
+                        right: 200,
+                        scale: 2
+                    };
+                    var item1Position = {
+                        itemIndex: 1,
+                        top: 110,
+                        bottom: 200,
+                        left: 20,
+                        right: 200,
+                        scale: 2
+                    };
                     spyOn(scrollList, 'getVisibleItemPositionData').andReturn([
-                        { itemIndex: 0, top: 10, bottom: 100, left: 20, right: 200, scale: 2 },
-                        { itemIndex: 1, top: 110, bottom: 200, left: 20, right: 200, scale: 2 }
+                        item0Position, item1Position
                     ]);
 
                     // Expect false when nothing is hit
@@ -425,11 +440,25 @@ define(function(require) {
                     expect(hitResult).toBe(false);
 
                     // Expect position relative to actual item size for each item in view.
-                    hitResult = scrollList.hitTest({ x: 100, y: 50 });
-                    expect(hitResult).toEqual({ index: 0, position: { x: 40, y: 20 }});
+                    var point = { x: 100, y: 50 };
+                    hitResult = scrollList.hitTest(point);
+                    expect(hitResult).toEqual({
+                        index: 0,
+                        position: {
+                            x: (point.x - item0Position.left) / item0Position.scale,
+                            y: (point.y - item0Position.top) / item0Position.scale
+                        }
+                    });
 
-                    hitResult = scrollList.hitTest({ x: 50, y: 120 });
-                    expect(hitResult).toEqual({ index: 1, position: { x: 15, y: 5 }});
+                    point = { x: 50, y: 120 };
+                    hitResult = scrollList.hitTest(point);
+                    expect(hitResult).toEqual({
+                        index: 1,
+                        position: {
+                            x: (point.x - item1Position.left) / item1Position.scale,
+                            y: (point.y - item1Position.top) / item1Position.scale
+                        }
+                    });
                 });
             });
         });

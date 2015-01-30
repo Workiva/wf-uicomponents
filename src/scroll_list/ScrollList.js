@@ -421,7 +421,7 @@ define(function(require) {
         }, options);
 
         /**
-         * Provides tranlation between pure ItemLayouts and elements hosted and
+         * Provides translation between pure ItemLayouts and elements hosted and
          * positioned with the help of a transformation plane.
          * @type {PositionTranslator}
          */
@@ -543,10 +543,10 @@ define(function(require) {
         },
 
         /**
-         * Gets the scale translator.
+         * Gets the position translator.
          *
-         * @method ScrollList#getScaleTranslator
-         * @return {ScaleTranslator}
+         * @method ScrollList#getPositionTranslator
+         * @return {PositionTranslator}
          */
         getPositionTranslator: function() {
             return this._positionTranslator;
@@ -741,8 +741,14 @@ define(function(require) {
         /**
          * Get the viewport-relative position data for all visible items.
          *
-         * @param {ScrollList} scrollList
-         * @return {Array.<Object>} An object containing the position data
+         * @return {Array.<{
+         *     itemIndex: Number,
+         *     scale: Number,
+         *     top: Number,
+         *     bottom: Number,
+         *     left: Number,
+         *     right: Number
+         * }>} List of objects containing the position data
          */
         getVisibleItemPositionData: function() {
             var activeMap = this.getCurrentItemMap() || this._listMap;
@@ -760,10 +766,10 @@ define(function(require) {
                 var itemBounds = positionTranslator.getBoundsInTransformationPlane(itemLayout);
 
                 // Get the position of each item relative to the viewport
-                var top = transformState.translateY + (itemBounds.top) * scale;
-                var right = transformState.translateX + (itemBounds.right) * scale;
-                var bottom = transformState.translateY + (itemBounds.bottom) * scale;
-                var left = transformState.translateX + (itemBounds.left) * scale;
+                var top = transformState.translateY + itemBounds.top * scale;
+                var right = transformState.translateX + itemBounds.right * scale;
+                var bottom = transformState.translateY + itemBounds.bottom * scale;
+                var left = transformState.translateX + itemBounds.left * scale;
 
                 // Remove items that do not intersect the viewport after
                 // accounting for the offset due to padding.
