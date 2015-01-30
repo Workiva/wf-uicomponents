@@ -25,6 +25,7 @@ define(function(require) {
     var Observable = require('wf-js-common/Observable');
     var PlaceholderRenderer = require('wf-js-uicomponents/scroll_list/PlaceholderRenderer');
     var PositionTranslator = require('wf-js-uicomponents/scroll_list/PositionTranslator');
+    var Rectangle = require('wf-js-common/Rectangle');
     var ScaleTranslator = require('wf-js-uicomponents/scroll_list/ScaleTranslator');
     var ScrollModes = require('wf-js-uicomponents/scroll_list/ScrollModes');
     var Utils = require('wf-js-common/Utils');
@@ -805,10 +806,8 @@ define(function(require) {
             var visibleItemPositionData = this.getVisibleItemPositionData();
             for (var i = 0, n = visibleItemPositionData.length; i < n; i++) {
                 var itemPosition = visibleItemPositionData[i];
-
-                if (itemPosition.left <= point.x && point.x <= itemPosition.right &&
-                    itemPosition.top <= point.y && point.y <= itemPosition.bottom
-                ) {
+                var itemRectangle = new Rectangle(itemPosition);
+                if (itemRectangle.contains(point)) {
                     return {
                         index: itemPosition.itemIndex,
                         position: {
