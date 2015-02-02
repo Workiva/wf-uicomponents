@@ -18,8 +18,8 @@ define(function(/*require*/) {
     'use strict';
 
     var Orientations = {
-        HORIZONTAL: 'horizontal',
-        VERTICAL: 'vertical'
+        LANDSCAPE: 'landscape',
+        PORTRAIT: 'portrait'
     };
 
     return Orientations;
