@@ -77,7 +77,6 @@ define(function(require) {
                 map.addInterceptor(new SwipeNavigationInterceptor(scrollList));
             }
             map.addInterceptor(new SwipeInterceptor({
-                animationDuration: 250,
                 constrainToAxes: true
             }));
             map.addInterceptor(new BoundaryInterceptor({
@@ -184,7 +183,6 @@ define(function(require) {
             if (options.mode === ScrollModes.FLOW) {
                 map.addInterceptor(new DoubleTapZoomInterceptor());
                 map.addInterceptor(new SwipeInterceptor({
-                    animationDuration: 1000,
                     constrainToAxes: true
                 }));
                 if (options.scaleLimits) {
