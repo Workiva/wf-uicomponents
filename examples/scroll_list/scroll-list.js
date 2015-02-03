@@ -107,7 +107,7 @@ define(function(require) {
     var minNumberOfVirtualItems = scrollMode === 'flow' ? (DeviceInfo.desktop ? 15 : 9) : (DeviceInfo.desktop ? 5 : 3);
     var touchScrollingEnabled = Utils.valueOr(urlParams.touchScrollingEnabled, 'true') === 'true';
     var verticalAlign = urlParams.valign || 'auto';
-    var zoomMode = urlParams.scroll && urlParams.scroll !== 'flow';
+    var persistZoom = scrollMode !== 'flow' && (urlParams.persistZoom || false);
 
     var itemSizeCollection = new ItemSizeCollection({
         maxWidth: 1022,
@@ -122,7 +122,7 @@ define(function(require) {
         minNumberOfVirtualItems: minNumberOfVirtualItems,
         mode: scrollMode,
         padding: 1,
-        persistZoom: zoomMode,
+        persistZoom: persistZoom,
         scaleLimits: { minimum: 0.25, maximum: 3 },
         touchScrollingEnabled: touchScrollingEnabled,
         verticalAlign: verticalAlign
