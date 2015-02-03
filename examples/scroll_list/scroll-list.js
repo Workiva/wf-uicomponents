@@ -118,7 +118,7 @@ define(function(require) {
                 right: Number(padding[1]),
                 bottom: Number(padding[2]),
                 left: Number(padding[3])
-            }
+            };
         } else {
             padding = Number(padding);
         }
