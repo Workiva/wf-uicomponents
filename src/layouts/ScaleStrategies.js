@@ -21,11 +21,12 @@ define(function() {
      * Utility to offset a scale to accommodate content margins.
      *
      * @param {number} dimension - The value of the dimension to offset.
-     * @param {number} margin - The margin around the dimensions.
+     * @param {number} marginA - The margin on one side of the item.
+     * @param {number} marginB - The margin on the opposite side of the item.
      * @return {number}
      */
-    function marginScaleOffset(dimension, margin) {
-        return (dimension - margin * 2) / dimension;
+    function marginScaleOffset(dimension, marginA, marginB) {
+        return (dimension - (marginA + marginB)) / dimension;
     }
 
     /**
@@ -45,7 +46,7 @@ define(function() {
          *        The size of the viewport.
          * @param {Array.<{width: number, height: number}>|{width: number, height: number}} itemSizeOrSizes
          *        The size of the item or items to fit.
-         * @param {number} margin
+         * @param {number|{left: number, right: number, top: number, bottom: number}} margin
          *        The margin around the item.
          * @returns {number}
          */
@@ -64,7 +65,7 @@ define(function() {
          *        The size of the viewport.
          * @param {Array.<{height: number}>|{height: number}} itemSizeOrSizes
          *        The size of the item or items to fit.
-         * @param {number} margin
+         * @param {number|{left: number, right: number, top: number, bottom: number}} margin
          *        The margin around the item.
          * @returns {number}
          */
@@ -81,8 +82,18 @@ define(function() {
                 }
             }
 
+            var marginTop;
+            var marginBottom;
+            if (typeof margin === 'object') {
+                marginTop = margin.top;
+                marginBottom = margin.bottom;
+            } else {
+                marginTop = marginBottom = margin;
+            }
+
             // Return the scale to fit height, accounting for page margins.
-            return viewportHeight / maxPageHeight * marginScaleOffset(viewportHeight, margin);
+            return viewportHeight / maxPageHeight *
+                marginScaleOffset(viewportHeight, marginTop, marginBottom);
         },
 
         /**
@@ -102,7 +113,7 @@ define(function() {
          *        The size of the viewport.
          * @param {Array.<{width: number}>|{width: number}} itemSizeOrSizes
          *        The size of the item or items to fit.
-         * @param {number} margin
+         * @param {number|{left: number, right: number, top: number, bottom: number}} margin
          *        The margin around the item.
          * @returns {number}
          */
@@ -119,8 +130,18 @@ define(function() {
                 }
             }
 
+            var marginLeft;
+            var marginRight;
+            if (typeof margin === 'object') {
+                marginLeft = margin.left;
+                marginRight = margin.right;
+            } else {
+                marginLeft = marginRight = margin;
+            }
+
             // Return the scale to fit width, accounting for page margins.
-            return viewportWidth / maxPageWidth * marginScaleOffset(viewportWidth, margin);
+            return viewportWidth / maxPageWidth *
+                marginScaleOffset(viewportWidth, marginLeft, marginRight);
         }
     };
 

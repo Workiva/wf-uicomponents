@@ -785,6 +785,17 @@ define(function(require) {
                     });
                 });
 
+                it('should apply padding to the left and right of all items independently', function() {
+                    var padding = { left: 10, right: 30 };
+
+                    layout = createVerticalLayout({ padding: padding });
+
+                    layout.getItemLayouts().forEach(function(item) {
+                        expect(item.paddingLeft).toBe(padding.left);
+                        expect(item.paddingRight).toBe(padding.right);
+                    });
+                });
+
                 describe('flow: true', function() {
 
                     it('should fit the maximum size of items to the viewport', function() {
@@ -824,6 +835,19 @@ define(function(require) {
                         var layoutSize = layout.getSize();
 
                         // 90 = max page width * scale + 2 * padding
+                        expect(layoutSize.width).toEqual(90);
+                    });
+
+                    it('should correctly account for independent left and right padding', function() {
+                        var padding = { left: 10, right: 30, top: 0, bottom: 0 };
+                        var mockScale = 0.5;
+
+                        spyOn(ScaleStrategies, 'auto').andReturn(mockScale);
+
+                        layout = createVerticalLayout({ flow: true, fit: 'auto', padding: padding });
+                        var layoutSize = layout.getSize();
+
+                        // 90 = max page width * scale + padding.left + padding.right
                         expect(layoutSize.width).toEqual(90);
                     });
 
@@ -894,6 +918,21 @@ define(function(require) {
                         });
                     });
 
+                    it('should apply an independent padding to the top of the first item only', function() {
+                        var padding = { top: 20, bottom: 0, left: 0, right: 0 };
+
+                        layout = createVerticalLayout({ flow: true, padding: padding });
+
+                        layout.getItemLayouts().forEach(function(item, index) {
+                            if (index === 0) {
+                                expect(item.paddingTop).toBe(padding.top);
+                            }
+                            else {
+                                expect(item.paddingTop).not.toBe(padding.top);
+                            }
+                        });
+                    });
+
                     it('should apply padding to the bottom of the last item only', function() {
                         var padding = 20;
 
@@ -905,6 +944,21 @@ define(function(require) {
                             }
                             else {
                                 expect(item.paddingBottom).not.toBe(padding);
+                            }
+                        });
+                    });
+
+                    it('should apply an independent padding to the bottom of the last item only', function() {
+                        var padding = { bottom: 20, top: 0, left: 0, right: 0 };
+
+                        layout = createVerticalLayout({ flow: true, padding: padding });
+
+                        layout.getItemLayouts().forEach(function(item, index) {
+                            if (index === itemMetadata.length - 1) {
+                                expect(item.paddingBottom).toBe(padding.bottom);
+                            }
+                            else {
+                                expect(item.paddingBottom).not.toBe(padding.bottom);
                             }
                         });
                     });
@@ -1054,6 +1108,17 @@ define(function(require) {
                         layout.getItemLayouts().forEach(function(item) {
                             expect(item.paddingTop).toBe(padding);
                             expect(item.paddingBottom).toBe(padding);
+                        });
+                    });
+
+                    it('should apply independent padding to the top and bottom of every item', function() {
+                        var padding = { top: 10, bottom: 30, left: 0, right: 0 };
+
+                        layout = createVerticalLayout({ flow: false, padding: padding });
+
+                        layout.getItemLayouts().forEach(function(item) {
+                            expect(item.paddingTop).toBe(padding.top);
+                            expect(item.paddingBottom).toBe(padding.bottom);
                         });
                     });
                 });
