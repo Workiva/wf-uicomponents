@@ -786,8 +786,11 @@ define(function(require) {
             });
 
             describe('when scrolling in other than "flow" mode', function() {
-                it('should reset the zoom level of all out of view item maps when the scroll completes', function() {
-                    testScrollList({ mode: '!flow' }, function(scrollList) {
+                it('should reset the zoom and position of all out of view item maps when the scroll completes', function() {
+                    // Make sure the viewport is shorter than the items so that
+                    // they overflow vertically.
+                    $host.css({ height: 100 });
+                    testScrollList({ mode: '!flow', fit: 'width' }, function(scrollList) {
                         var listMap = scrollList._listMap;
 
                         // Expect that we panned the list map.
@@ -802,6 +805,7 @@ define(function(require) {
                             for (var i = itemRange.startIndex; i <= itemRange.endIndex; i++) {
                                 var map = _.extend({}, AwesomeMap.prototype);
                                 spyOn(map, 'zoomTo');
+                                spyOn(map, 'panTo');
                                 itemMaps.push(map);
                             }
                         }());
@@ -831,6 +835,12 @@ define(function(require) {
                             }
                             else {
                                 expect(itemMap.zoomTo).toHaveBeenCalledWith({ scale: 1 });
+                                if (i < currentIndexAfterScroll) {
+                                    expect(itemMap.panTo).toHaveBeenCalledWith({ y: -100 });
+                                }
+                                else {
+                                    expect(itemMap.panTo).toHaveBeenCalledWith({ y: 0 });
+                                }
                             }
                         }
                     });

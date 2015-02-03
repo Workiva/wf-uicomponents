@@ -1003,9 +1003,28 @@ define(function(require) {
 
                         var currentItemIndex = layout.getCurrentItemIndex();
                         var itemRange = layout.getRenderedItemRange();
+                        var viewportHeight = layout.getViewportSize().height;
+
                         for (var i = itemRange.startIndex; i <= itemRange.endIndex; i++) {
+                            var itemMap = self.getItemMap(i);
+                            var itemHeight = layout.getItemLayout(i).outerHeight;
+                            var transformY = null;
+                            // For items before the current one, make sure they
+                            // are panned to the bottom of the viewport if they
+                            // overflow vertically.
+                            if (i < currentItemIndex && itemHeight > viewportHeight) {
+                                transformY = viewportHeight - itemHeight;
+                            }
+                            // For items after the current one, make sure they
+                            // are panned to the top of the viewport.
+                            else if (i > currentItemIndex && itemHeight > viewportHeight) {
+                                transformY = 0;
+                            }
                             if (i !== currentItemIndex) {
-                                self.getItemMap(i).zoomTo({ scale: 1 });
+                                itemMap.zoomTo({ scale: 1 });
+                                if (transformY !== null) {
+                                    itemMap.panTo({ y: transformY });
+                                }
                             }
                         }
                     }
