@@ -109,6 +109,21 @@ define(function(require) {
     var verticalAlign = urlParams.valign || 'auto';
     var zoomMode = urlParams.scroll && urlParams.scroll !== 'flow';
 
+    var padding = 1;
+    if (urlParams.padding !== undefined) {
+        padding = urlParams.padding.split(',');
+        if (Array.isArray(padding) && padding.length === 4) {
+            padding = {
+                top: Number(padding[0]),
+                right: Number(padding[1]),
+                bottom: Number(padding[2]),
+                left: Number(padding[3])
+            }
+        } else {
+            padding = Number(padding);
+        }
+    }
+
     var itemSizeCollection = new ItemSizeCollection({
         maxWidth: 1022,
         maxHeight: 1022,
@@ -121,7 +136,7 @@ define(function(require) {
         horizontalAlign: horizontalAlign,
         minNumberOfVirtualItems: minNumberOfVirtualItems,
         mode: scrollMode,
-        padding: 1,
+        padding: padding,
         persistZoom: zoomMode,
         scaleLimits: { minimum: 0.25, maximum: 3 },
         touchScrollingEnabled: touchScrollingEnabled,
