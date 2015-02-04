@@ -26,7 +26,11 @@ define(function() {
      * @return {number}
      */
     function marginScaleOffset(dimension, marginA, marginB) {
-        return (dimension - (marginA + marginB)) / dimension;
+        if (dimension === 0) {
+            return 0;
+        } else {
+            return (dimension - (marginA + marginB)) / dimension;
+        }
     }
 
     /**
@@ -80,6 +84,11 @@ define(function() {
                 if (size.height > maxPageHeight) {
                     maxPageHeight = size.height;
                 }
+            }
+
+            // Avoid division by zero below
+            if (maxPageHeight === 0) {
+                return 0;
             }
 
             var marginTop;
