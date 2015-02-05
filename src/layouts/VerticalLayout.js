@@ -92,7 +92,7 @@ define(function(require) {
      * @param {number} [options.minNumberOfVirtualItems=3]
      *        The minimum number of virtual items that the layout will render.
      *
-     * @param {number} [options.padding=0]
+     * @param {number|{left: number, right: number, top: number, bottom: number}} [options.padding=0]
      *        The padding between the rendered layout and the viewport, in pixels.
      *
      * @param {string} [options.verticalAlign='auto']
@@ -831,6 +831,18 @@ define(function(require) {
             var gapBottom = Math.ceil(options.gap / 2);
             var padding = options.padding;
 
+            // Padding may be specified as a single number to be applied to
+            // all sides, or each side can be set independently.
+            var paddingTop, paddingBottom, paddingLeft, paddingRight;
+            if (typeof padding === 'object') {
+                paddingTop = padding.top;
+                paddingBottom = padding.bottom;
+                paddingLeft = padding.left;
+                paddingRight = padding.right;
+            } else {
+                paddingTop = paddingBottom = paddingLeft = paddingRight = padding;
+            }
+
             // Loop through the items.
             var itemSizeCollection = this._itemSizeCollection;
             var numberOfItems = itemSizeCollection.getLength();
@@ -925,17 +937,17 @@ define(function(require) {
                     scaleToFit: scaleToFit,
                     width: Math.round(size.width * scaleToFit),
                     height: Math.round(size.height * scaleToFit),
-                    paddingLeft: padding,
-                    paddingRight: padding
+                    paddingLeft: paddingLeft,
+                    paddingRight: paddingRight
                 });
 
                 if (flow) {
-                    layout.paddingTop = (i === 0) ? padding : gapTop;
-                    layout.paddingBottom = (i === numberOfItems - 1) ? padding : gapBottom;
+                    layout.paddingTop = (i === 0) ? paddingTop : gapTop;
+                    layout.paddingBottom = (i === numberOfItems - 1) ? paddingBottom : gapBottom;
                 }
                 else { // !flow
-                    layout.paddingTop = padding;
-                    layout.paddingBottom = padding;
+                    layout.paddingTop = paddingTop;
+                    layout.paddingBottom = paddingBottom;
                 }
 
                 layout.outerWidth = layout.width + layout.paddingLeft + layout.paddingRight;
@@ -974,7 +986,7 @@ define(function(require) {
             // scale applied to the document.
             if (flow && numberOfItems > 0) {
                 maxWidth = Math.round(
-                    itemSizeCollection.maxWidth * cachedScales.default + (2 * padding)
+                    itemSizeCollection.maxWidth * cachedScales.default + paddingLeft + paddingRight
                 );
             }
 

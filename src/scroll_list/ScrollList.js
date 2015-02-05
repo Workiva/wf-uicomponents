@@ -88,7 +88,7 @@ define(function(require) {
      *        The interaction mode for the list.
      *        Can be 'flow', 'peek' or 'single'.
      *
-     * @param {number} [options.padding=0]
+     * @param {number|{left: number, right: number, top: number, bottom: number}} [options.padding=0]
      *        The padding around the list, in pixels.
      *
      * @param {false|Object} [options.scaleLimits]
