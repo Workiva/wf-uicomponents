@@ -169,7 +169,7 @@ define(function(require) {
             }
             it('should replace the default Hammer swipe gesture', function() {
                 expect(getCurrentSwipeGesture()).not.toBe(CustomSwipeGesture);
-                CustomSwipeGesture.install();
+                CustomSwipeGesture.register();
                 expect(getCurrentSwipeGesture()).toBe(CustomSwipeGesture);
             });
         });

@@ -75,14 +75,14 @@ define(function(require) {
                 /* jshint camelcase:false */
                 beforeEach(function() {
                     $host = $('<div>').css({ position: 'absolute', top: -10000, left: -10000 }).appendTo('body');
-                    spyOn(CustomSwipeGesture, 'install');
+                    spyOn(CustomSwipeGesture, 'register');
                     hammer = EventSynthesizer.dependencies.createHammerInstance($host[0]);
                 });
                 afterEach(function() {
                     $host.remove();
                 });
-                it('should install the CustomSwipeGesture', function() {
-                    expect(CustomSwipeGesture.install).toHaveBeenCalled();
+                it('should register the CustomSwipeGesture', function() {
+                    expect(CustomSwipeGesture.register).toHaveBeenCalled();
                 });
                 it('should set hold threshold to 10 pixels', function() {
                     expect(hammer.options.hold_threshold).toBe(10);

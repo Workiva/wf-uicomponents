@@ -35,7 +35,7 @@ define(function(require) {
     var dependencies = {
         createHammerInstance: function(host) {
             /* jshint camelcase:false */
-            CustomSwipeGesture.install();
+            CustomSwipeGesture.register();
             return new Hammer(host, {
                 hold_threshold: 10,
                 hold_timeout: 250,
