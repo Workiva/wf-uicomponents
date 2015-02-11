@@ -795,7 +795,7 @@ define(function(require) {
                 translateY: Math.round(options.y),
                 scale: options.scale
             });
-            this._publishChangingEvents(this._currentTransformState, newState);
+            this._publishChangingEvents(null, this._currentTransformState, newState);
             TransformUtil.applyTransform(this._transformationPlane, newState);
             this.setCurrentTransformState(newState);
         },
@@ -943,12 +943,16 @@ define(function(require) {
          * Publish scale and translation changing events. This method is used
          * elsewhere in the code and should be treated as an internal.
          *
+         * @param {InteractionEvent} event
          * @param {TransformState} currentState
          * @param {TransformState} nextState
          */
-        _publishChangingEvents: function(currentState, nextState) {
+        _publishChangingEvents: function(event, currentState, nextState) {
+            var undefinedEvent = { type: undefined };
+            event = event || undefinedEvent;
             if (currentState.scale !== nextState.scale) {
                 this.onScaleChanging.dispatch([this, {
+                    event: event,
                     currentScale: currentState.scale,
                     nextScale: nextState.scale
                 }]);
@@ -956,6 +960,7 @@ define(function(require) {
             if (currentState.translateX !== nextState.translateX ||
                 currentState.translateY !== nextState.translateY) {
                 this.onTranslationChanging.dispatch([this, {
+                    event: event,
                     currentTranslation: {
                         x: currentState.translateX,
                         y: currentState.translateY

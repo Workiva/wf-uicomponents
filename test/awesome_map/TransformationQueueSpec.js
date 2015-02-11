@@ -150,6 +150,7 @@ define(function(require) {
                 expect(map.onScaleChanging.dispatch).toHaveBeenCalledWith([
                     map,
                     {
+                        event: evt,
                         currentScale: currentState.scale,
                         nextScale: targetState.scale
                     }
@@ -166,6 +167,7 @@ define(function(require) {
                 expect(map.onTranslationChanging.dispatch).toHaveBeenCalledWith([
                     map,
                     {
+                        event: evt,
                         currentTranslation: {
                             x: currentState.translateX,
                             y: currentState.translateY
@@ -188,6 +190,7 @@ define(function(require) {
                 expect(map.onTranslationChanging.dispatch).toHaveBeenCalledWith([
                     map,
                     {
+                        event: evt,
                         currentTranslation: {
                             x: currentState.translateX,
                             y: currentState.translateY
