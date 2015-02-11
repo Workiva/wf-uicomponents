@@ -93,12 +93,12 @@ define(function(require) {
             // Install into the detection stack, replacing the default gesture.
             var gestures = Hammer.detection.gestures;
             for (var i = 0, n = gestures.length; i < n; i++) {
-                if (gestures[i].name === CustomSwipeGesture.name) {
+                if (gestures[i].name === this.name) {
                     gestures.splice(i, 1);
                     break;
                 }
             }
-            Hammer.detection.register(CustomSwipeGesture);
+            Hammer.detection.register(this);
             Hammer.gestures.Swipe = this;
         }
     };
