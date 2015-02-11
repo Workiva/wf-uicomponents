@@ -19,6 +19,7 @@ define(function(require) {
 
     var $ = require('jquery');
     var BrowserInfo = require('wf-js-common/BrowserInfo');
+    var CustomSwipeGesture = require('wf-js-uicomponents/awesome_map/CustomSwipeGesture');
     var DestroyUtil = require('wf-js-common/DestroyUtil');
     var EventSynthesizer = require('wf-js-uicomponents/awesome_map/EventSynthesizer');
     var EventTypes = require('wf-js-uicomponents/awesome_map/EventTypes');
@@ -74,10 +75,14 @@ define(function(require) {
                 /* jshint camelcase:false */
                 beforeEach(function() {
                     $host = $('<div>').css({ position: 'absolute', top: -10000, left: -10000 }).appendTo('body');
+                    spyOn(CustomSwipeGesture, 'install');
                     hammer = EventSynthesizer.dependencies.createHammerInstance($host[0]);
                 });
                 afterEach(function() {
                     $host.remove();
+                });
+                it('should install the CustomSwipeGesture', function() {
+                    expect(CustomSwipeGesture.install).toHaveBeenCalled();
                 });
                 it('should set hold threshold to 10 pixels', function() {
                     expect(hammer.options.hold_threshold).toBe(10);

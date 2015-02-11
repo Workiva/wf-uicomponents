@@ -83,6 +83,22 @@ define(function(require) {
                     inst.trigger(this.name + ev.direction, ev);
                 }
             }
+        },
+
+        /**
+         * This is a custom function, not a standard method on Hammer gestures.
+         * It will replace the existing swipe gesture Hammer uses with this one.
+         */
+        install: function() {
+            // Install into the detection stack, replacing the default gesture.
+            var gestures = Hammer.detection.gestures;
+            for (var i = 0, n = gestures.length; i < n; i++) {
+                if (gestures[i].name === CustomSwipeGesture.name) {
+                    gestures.splice(i, 1);
+                    break;
+                }
+            }
+            Hammer.detection.register(CustomSwipeGesture);
         }
     };
 
