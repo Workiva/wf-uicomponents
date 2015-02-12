@@ -153,5 +153,25 @@ define(function(require) {
             CustomSwipeGesture.handler(endEvent, hammerInstance);
             expect(hammerInstance.trigger).not.toHaveBeenCalled();
         });
+
+        describe('installing', function() {
+            function getCurrentSwipeGesture() {
+                var gestures = Hammer.detection.gestures;
+                var currentSwipeGesture;
+                for (var i = 0, n = gestures.length; i < n; i++) {
+                    if (gestures[i].name === CustomSwipeGesture.name) {
+                        // Ensure we don't have two swipe gestures registered.
+                        expect(currentSwipeGesture).toBeUndefined();
+                        currentSwipeGesture = gestures[i];
+                    }
+                }
+                return currentSwipeGesture;
+            }
+            it('should replace the default Hammer swipe gesture', function() {
+                expect(getCurrentSwipeGesture()).not.toBe(CustomSwipeGesture);
+                CustomSwipeGesture.register();
+                expect(getCurrentSwipeGesture()).toBe(CustomSwipeGesture);
+            });
+        });
     });
 });
