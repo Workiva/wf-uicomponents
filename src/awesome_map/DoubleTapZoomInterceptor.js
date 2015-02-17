@@ -59,7 +59,9 @@ define(function(require) {
          * @param {TransformState} args.currentState
          */
         handleInteraction: function(source, args) {
-            if (args.event.type === EventTypes.DOUBLE_TAP) {
+            if (args.event.type === EventTypes.DOUBLE_TAP &&
+                args.event.source.type.indexOf('touch') === 0
+            ) {
                 this._handleDoubleTap = true;
             }
         },

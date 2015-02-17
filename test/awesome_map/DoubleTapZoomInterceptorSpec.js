@@ -25,7 +25,7 @@ define(function(require) {
     var TransformState = require('wf-js-uicomponents/awesome_map/TransformState');
 
     function createEvent(type, gesture) {
-        gesture = gesture || new Gesture();
+        gesture = gesture || new Gesture({ source: { type: 'touch' }});
         return new InteractionEvent(type, gesture, gesture);
     }
 
@@ -48,7 +48,7 @@ define(function(require) {
 
         function simulateDoubleTap(originalScale, expectedScale, callback) {
             var state = new TransformState({ scale: originalScale });
-            var gesture = new Gesture();
+            var gesture = new Gesture({ source: { type: 'touch' }});
             var position = { x: 100, y: 50 };
             var doubletap;
             var release;
