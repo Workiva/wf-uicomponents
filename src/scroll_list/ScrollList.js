@@ -62,6 +62,11 @@ define(function(require) {
      *
      * @param {Object} [options]
      *
+     * @param {number} [options.defaultScale]
+     *        Scale the default size of items by the given value. This setting
+     *        is only relevant when options.fit='none', as other modes will
+     *        size the content to fit the viewport.
+     *
      * @param {boolean} [options.disableScaleTranslation]
      *        Disable the scale translation that makes scale values relative to
      *        the given size of the items. If disabled, scale values are relative
@@ -407,6 +412,7 @@ define(function(require) {
          * @type {Object}
          */
         this._options = _.extend({
+            defaultScale: 1,
             disableScaleTranslation: false,
             fit: FitModes.WIDTH,
             fitUpscaleLimit: 1,
@@ -1257,6 +1263,7 @@ define(function(require) {
             var isFlow = options.mode === ScrollModes.FLOW;
 
             this._layout = new VerticalLayout(this._host, this._itemSizesCollection, this._renderer, {
+                defaultScale: options.defaultScale,
                 minNumberOfVirtualItems: options.minNumberOfVirtualItems,
                 eagerRenderingFactor: isFlow ? 2 : 1,
                 fit: options.fit,

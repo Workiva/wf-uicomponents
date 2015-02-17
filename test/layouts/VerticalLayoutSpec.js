@@ -730,6 +730,22 @@ define(function(require) {
                     expect(layout.getItemLayout(4).scaleToFit).toEqual(autoScale);
                 });
 
+                it('should apply the default scale when not fitting to the viewport', function() {
+                    spyOn(ScaleStrategies, 'auto').andReturn(1);
+                    spyOn(ScaleStrategies, 'height').andReturn(1);
+                    spyOn(ScaleStrategies, 'width').andReturn(1);
+                    spyOn(ScaleStrategies, 'none').andReturn(1);
+
+                    var itemMetadata = [
+                        { width: 100, height: 200 }
+                    ];
+                    var itemSizeCollection = createItemSizeCollection(itemMetadata);
+                    var options = { flow: false, fit: 'none', defaultScale: 2, fitUpscaleLimit: 100 };
+                    layout = new VerticalLayout($viewport[0], itemSizeCollection, renderer, options);
+
+                    expect(layout.getItemLayout(0).scaleToFit).toEqual(options.defaultScale);
+                });
+
                 describe('when fit mode is ORIENTATION', function() {
                     it('should revert to fit mode of width when in flow mode', function() {
                         var widthScale = 0.3;

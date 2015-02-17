@@ -61,6 +61,11 @@ define(function(require) {
      * @param {Object} [options]
      *        Configuration options for this layout.
      *
+     * @param {number} [options.defaultScale]
+     *        Scale the default size of items by the given value. This setting
+     *        is only relevant when options.fit='none', as other modes will
+     *        size the content to fit the viewport.
+     *
      * @param {number} [options.directionalRenderingWeight=0.8]
      *        Number from 0 to 1 that affects the balance of additional items
      *        added in the current scroll direction. For example, 0.5 will spread
@@ -151,6 +156,7 @@ define(function(require) {
          * @type {Object}
          */
         this._options = _.extend({
+            defaultScale: 1,
             directionalRenderingWeight: 0.8,
             eagerRenderingFactor: 1,
             fit: 'width',
@@ -882,15 +888,14 @@ define(function(require) {
                             }
                         }
                     }
-                    var scale = ScaleStrategies[fitMode](viewportSize, sample, padding);
-                    var result = {
-                        default: Math.min(scale, options.fitUpscaleLimit),
+                    var scalesToFit = {
                         width: ScaleStrategies.width(viewportSize, sample, padding),
                         height: ScaleStrategies.height(viewportSize, sample, padding),
                         auto: ScaleStrategies.auto(viewportSize, sample, padding),
-                        none: ScaleStrategies.none()
+                        none: ScaleStrategies.none() * options.defaultScale
                     };
-                    return result;
+                    scalesToFit.default = Math.min(scalesToFit[fitMode], options.fitUpscaleLimit);
+                    return scalesToFit;
                 }
                 // If flowing, scale all the items at once.
                 if (flow) {
