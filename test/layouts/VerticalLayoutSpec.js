@@ -730,7 +730,7 @@ define(function(require) {
                     expect(layout.getItemLayout(4).scaleToFit).toEqual(autoScale);
                 });
 
-                it('should apply the default scale when not fitting to the viewport', function() {
+                it('should apply the initial item scale when not fitting to the viewport', function() {
                     spyOn(ScaleStrategies, 'auto').andReturn(1);
                     spyOn(ScaleStrategies, 'height').andReturn(1);
                     spyOn(ScaleStrategies, 'width').andReturn(1);
@@ -740,10 +740,10 @@ define(function(require) {
                         { width: 100, height: 200 }
                     ];
                     var itemSizeCollection = createItemSizeCollection(itemMetadata);
-                    var options = { flow: false, fit: 'none', defaultScale: 2, fitUpscaleLimit: 100 };
+                    var options = { flow: false, fit: 'none', initialItemScale: 2, fitUpscaleLimit: 100 };
                     layout = new VerticalLayout($viewport[0], itemSizeCollection, renderer, options);
 
-                    expect(layout.getItemLayout(0).scaleToFit).toEqual(options.defaultScale);
+                    expect(layout.getItemLayout(0).scaleToFit).toEqual(options.initialItemScale);
                 });
 
                 describe('when fit mode is ORIENTATION', function() {

@@ -61,11 +61,6 @@ define(function(require) {
      * @param {Object} [options]
      *        Configuration options for this layout.
      *
-     * @param {number} [options.defaultScale]
-     *        Scale the default size of items by the given value. This setting
-     *        is only relevant when options.fit='none', as other modes will
-     *        size the content to fit the viewport.
-     *
      * @param {number} [options.directionalRenderingWeight=0.8]
      *        Number from 0 to 1 that affects the balance of additional items
      *        added in the current scroll direction. For example, 0.5 will spread
@@ -93,6 +88,11 @@ define(function(require) {
      *
      * @param {string} [options.horizontalAlign='center']
      *        The alignment of the items along the x-axis. Can be 'center' or 'left'.
+     *
+     * @param {number} [options.initialItemScale]
+     *        Scale the default size of items by the given value. This setting
+     *        is only relevant when options.fit='none', as other modes will
+     *        size the content to fit the viewport.
      *
      * @param {number} [options.minNumberOfVirtualItems=3]
      *        The minimum number of virtual items that the layout will render.
@@ -156,7 +156,7 @@ define(function(require) {
          * @type {Object}
          */
         this._options = _.extend({
-            defaultScale: 1,
+            initialItemScale: 1,
             directionalRenderingWeight: 0.8,
             eagerRenderingFactor: 1,
             fit: 'width',
@@ -892,7 +892,7 @@ define(function(require) {
                         width: ScaleStrategies.width(viewportSize, sample, padding),
                         height: ScaleStrategies.height(viewportSize, sample, padding),
                         auto: ScaleStrategies.auto(viewportSize, sample, padding),
-                        none: ScaleStrategies.none() * options.defaultScale
+                        none: ScaleStrategies.none() * options.initialItemScale
                     };
                     scalesToFit.default = Math.min(scalesToFit[fitMode], options.fitUpscaleLimit);
                     return scalesToFit;
