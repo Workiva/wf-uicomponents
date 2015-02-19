@@ -81,6 +81,11 @@ define(function(require) {
      *        The alignment of the items along the x-axis. Can be 'center' or
      *        'left'.
      *
+     * @param {number} [options.initialItemScale]
+     *        Scale the default size of items by the given value. This setting
+     *        is only relevant when options.fit='none', as other modes will
+     *        size the content to fit the viewport.
+     *
      * @param {number} [options.minNumberOfVirtualItems=3]
      *        The minimum number of virtual items to render at one time.
      *
@@ -407,6 +412,7 @@ define(function(require) {
          * @type {Object}
          */
         this._options = _.extend({
+            initialItemScale: 1,
             disableScaleTranslation: false,
             fit: FitModes.WIDTH,
             fitUpscaleLimit: 1,
@@ -1257,6 +1263,7 @@ define(function(require) {
             var isFlow = options.mode === ScrollModes.FLOW;
 
             this._layout = new VerticalLayout(this._host, this._itemSizesCollection, this._renderer, {
+                initialItemScale: options.initialItemScale,
                 minNumberOfVirtualItems: options.minNumberOfVirtualItems,
                 eagerRenderingFactor: isFlow ? 2 : 1,
                 fit: options.fit,

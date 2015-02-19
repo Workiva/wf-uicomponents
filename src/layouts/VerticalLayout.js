@@ -89,6 +89,11 @@ define(function(require) {
      * @param {string} [options.horizontalAlign='center']
      *        The alignment of the items along the x-axis. Can be 'center' or 'left'.
      *
+     * @param {number} [options.initialItemScale]
+     *        Scale the default size of items by the given value. This setting
+     *        is only relevant when options.fit='none', as other modes will
+     *        size the content to fit the viewport.
+     *
      * @param {number} [options.minNumberOfVirtualItems=3]
      *        The minimum number of virtual items that the layout will render.
      *
@@ -151,6 +156,7 @@ define(function(require) {
          * @type {Object}
          */
         this._options = _.extend({
+            initialItemScale: 1,
             directionalRenderingWeight: 0.8,
             eagerRenderingFactor: 1,
             fit: 'width',
@@ -882,15 +888,14 @@ define(function(require) {
                             }
                         }
                     }
-                    var scale = ScaleStrategies[fitMode](viewportSize, sample, padding);
-                    var result = {
-                        default: Math.min(scale, options.fitUpscaleLimit),
+                    var scalesToFit = {
                         width: ScaleStrategies.width(viewportSize, sample, padding),
                         height: ScaleStrategies.height(viewportSize, sample, padding),
                         auto: ScaleStrategies.auto(viewportSize, sample, padding),
-                        none: ScaleStrategies.none()
+                        none: ScaleStrategies.none() * options.initialItemScale
                     };
-                    return result;
+                    scalesToFit.default = Math.min(scalesToFit[fitMode], options.fitUpscaleLimit);
+                    return scalesToFit;
                 }
                 // If flowing, scale all the items at once.
                 if (flow) {
