@@ -1,6 +1,9 @@
 define(function(require) {
     'use strict';
 
+    var Hammer = require('hammerjs');
+    require('hammerjs.fakemultitouch');
+    require('hammerjs.showtouches');
     var $ = require('jquery');
     var console = require('wf-js-common/console');
     var DeviceInfo = require('wf-js-common/DeviceInfo');
@@ -11,6 +14,15 @@ define(function(require) {
     var ScrollList = require('wf-js-uicomponents/scroll_list/ScrollList');
     var Url = require('wf-js-common/Url');
     var Utils = require('wf-js-common/Utils');
+
+    //---------------------------------------------------------
+    // Hammer touch simulation
+    //---------------------------------------------------------
+
+    if (!DeviceInfo.browser.ie) {
+        Hammer.plugins.showTouches();
+        Hammer.plugins.fakeMultitouch();
+    }
 
     //---------------------------------------------------------
     // Initialize ViewerComponent

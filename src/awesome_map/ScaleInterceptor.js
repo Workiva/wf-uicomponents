@@ -36,6 +36,13 @@ define(function(require) {
     var INERTIAL_SCALE_FACTOR = 4;
 
     /**
+     * The difference between the viewport and content dimension below which
+     * the content will be snapped to fit after zooming.
+     * @type {number}
+     */
+    var SNAP_TO_BOUNDS_THRESHOLD = 40;
+
+    /**
      * Values for the mode option.
      * @readonly
      * @enum {string}
@@ -290,6 +297,20 @@ define(function(require) {
             }
             else if (originalScale > this._maximum) {
                 newScale = this._maximum;
+            }
+            else { // REVIEW: Limit to touch events?
+                var contentSize = this._awesomeMap.getContentDimensions();
+                var viewportSize = this._awesomeMap.getViewportDimensions();
+                var widthDelta = Math.abs(viewportSize.width - contentSize.width * originalScale);
+                if (widthDelta <= SNAP_TO_BOUNDS_THRESHOLD) {
+                    newScale = viewportSize.width / contentSize.width;
+                }
+                else {
+                    var heightDelta = Math.abs(viewportSize.height - contentSize.height * originalScale);
+                    if (heightDelta <= SNAP_TO_BOUNDS_THRESHOLD) {
+                        newScale = viewportSize.height / contentSize.height;
+                    }
+                }
             }
 
             // If the scale has been limited, zoom the targetState over duration.
