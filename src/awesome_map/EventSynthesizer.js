@@ -317,7 +317,7 @@ define(function(require) {
                         pageX: event.pageX,
                         pageY: event.pageY
                     },
-                    srcEvent: event.source
+                    srcEvent: event.source || event
                 };
                 self._dispatchEvent(EventTypes.CONTEXT_MENU, gesture);
             };
@@ -427,7 +427,7 @@ define(function(require) {
                         pageX: event.pageX,
                         pageY: event.pageY
                     },
-                    srcEvent: event.source
+                    srcEvent: event.source || event
                 };
                 self._dispatchEvent(EventTypes.MOUSE_MOVE, gesture);
             };
@@ -444,7 +444,7 @@ define(function(require) {
                 var gesture = {
                     deltaX: event.distance.x,
                     deltaY: event.distance.y,
-                    srcEvent: event.source
+                    srcEvent: event.source || event
                 };
 
                 // Dispatch the mouse wheel.
@@ -598,7 +598,7 @@ define(function(require) {
                     self._currentHostRect = hostRect;
 
                     gesture = {
-                        srcEvent: event,
+                        srcEvent: event.source || event,
                         target: self._host
                     };
 
