@@ -105,7 +105,7 @@ define(function(require) {
     var horizontalAlign = urlParams.halign || 'center';
     var totalPages = urlParams.totalPages !== undefined ? urlParams.totalPages : 100;
     var minNumberOfVirtualItems = scrollMode === 'flow' ? (DeviceInfo.desktop ? 15 : 9) : (DeviceInfo.desktop ? 5 : 3);
-    var touchScrollingEnabled = Utils.valueOr(urlParams.touchScrollingEnabled, 'true') === 'true';
+    var mousePanningEnabled = Utils.valueOr(urlParams.mousePanningEnabled, 'true') === 'true';
     var verticalAlign = urlParams.valign || 'auto';
     var persistZoom = scrollMode !== 'flow' && (urlParams.persistZoom || false);
 
@@ -139,7 +139,7 @@ define(function(require) {
         padding: padding,
         persistZoom: persistZoom,
         scaleLimits: { minimum: 0.25, maximum: 3 },
-        touchScrollingEnabled: touchScrollingEnabled,
+        mousePanningEnabled: mousePanningEnabled,
         verticalAlign: verticalAlign
     });
 

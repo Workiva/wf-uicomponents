@@ -62,7 +62,7 @@ define(function(require) {
             var vAlignAuto = options.verticalAlign === VerticalAlignments.AUTO;
             var map = new AwesomeMap(host, {
                 cancelMouseWheelEvents: false,
-                touchScrollingEnabled: options.touchScrollingEnabled
+                mousePanningEnabled: options.mousePanningEnabled
             });
 
             // Register interceptors.
@@ -172,7 +172,7 @@ define(function(require) {
             var vAlignAuto = options.verticalAlign === VerticalAlignments.AUTO;
             var map = new AwesomeMap(scrollList.getHost(), {
                 cancelMouseWheelEvents: true,
-                touchScrollingEnabled: options.touchScrollingEnabled
+                mousePanningEnabled: options.mousePanningEnabled
             });
 
             // Set content dimensions to the dimensions of the layout.
