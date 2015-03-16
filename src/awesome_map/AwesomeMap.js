@@ -638,9 +638,6 @@ define(function(require) {
             var queue = this._transformationQueue;
             var event = args.event;
             var eventType = event.type;
-            // TOMTODO - remove console.logs!
-            // console.log(event);
-            console.log(eventType, 'isMouse', EventSource.isMouse(event), 'isTouch', EventSource.isTouch(event), 'isWheel', EventSource.isWheel(event), 'isPointer', EventSource.isPointer(event));
             var done = function() {
                 // Let consumers know that an interaction is complete
                 // when a release event is finished processing.
