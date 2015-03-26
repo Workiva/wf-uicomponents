@@ -311,7 +311,7 @@ define(function(require) {
 
             it('should dispatch contextmenu events', function() {
                 var eventType = EventTypes.CONTEXT_MENU;
-                var event = { pageX: 10, pageY: 20, source: {} };
+                var event = { pageX: 10, pageY: 20 };
 
                 handlers[eventType](event);
 
@@ -319,7 +319,7 @@ define(function(require) {
                 expect(dispatchEvent.calls[0].args[0]).toBe(eventType);
                 expect(dispatchEvent.calls[0].args[1].center.pageX).toBe(event.pageX);
                 expect(dispatchEvent.calls[0].args[1].center.pageY).toBe(event.pageY);
-                expect(dispatchEvent.calls[0].args[1].srcEvent).toBe(event.source);
+                expect(dispatchEvent.calls[0].args[1].srcEvent).toBe(event);
             });
 
             it('should dispatch double tap events', function() {
@@ -364,7 +364,7 @@ define(function(require) {
 
             it('should dispatch mousemove events', function() {
                 var eventType = EventTypes.MOUSE_MOVE;
-                var event = { pageX: 10, pageY: 20, source: {} };
+                var event = { pageX: 10, pageY: 20 };
 
                 handlers[eventType](event);
 
@@ -372,7 +372,7 @@ define(function(require) {
                 expect(dispatchEvent.calls[0].args[0]).toBe(eventType);
                 expect(dispatchEvent.calls[0].args[1].center.pageX).toBe(event.pageX);
                 expect(dispatchEvent.calls[0].args[1].center.pageY).toBe(event.pageY);
-                expect(dispatchEvent.calls[0].args[1].srcEvent).toBe(event.source);
+                expect(dispatchEvent.calls[0].args[1].srcEvent).toBe(event);
             });
 
             it('should not dispatch mousemove events if dragging', function() {

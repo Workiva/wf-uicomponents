@@ -307,7 +307,7 @@ define(function(require) {
         _getContextMenuHandler: function() {
             var self = this;
             /**
-             * Handler for double-tap events.
+             * Handler for rightClick/ContentMenu events.
              * @param {Object} event - The source event.
              * @private
              */
@@ -317,7 +317,7 @@ define(function(require) {
                         pageX: event.pageX,
                         pageY: event.pageY
                     },
-                    srcEvent: event.source || event
+                    srcEvent: event
                 };
                 self._dispatchEvent(EventTypes.CONTEXT_MENU, gesture);
             };
@@ -427,7 +427,7 @@ define(function(require) {
                         pageX: event.pageX,
                         pageY: event.pageY
                     },
-                    srcEvent: event.source || event
+                    srcEvent: event
                 };
                 self._dispatchEvent(EventTypes.MOUSE_MOVE, gesture);
             };
@@ -444,7 +444,7 @@ define(function(require) {
                 var gesture = {
                     deltaX: event.distance.x,
                     deltaY: event.distance.y,
-                    srcEvent: event.source || event
+                    srcEvent: event.source // Event.source because this is a normalized event from MouseAdapter.
                 };
 
                 // Dispatch the mouse wheel.
@@ -598,7 +598,7 @@ define(function(require) {
                     self._currentHostRect = hostRect;
 
                     gesture = {
-                        srcEvent: event.source || event,
+                        srcEvent: event,
                         target: self._host
                     };
 
