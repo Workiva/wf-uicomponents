@@ -1052,7 +1052,8 @@ define(function(require) {
                 return;
             }
             var listState = this._listMap.getCurrentTransformState();
-            panToOptions.x = listState.translateX;
+            //panToOptions.x = listState.translateX;
+            panToOptions.x = -itemLayout.left * listState.scale;
             panToOptions.y = -itemLayout.top * listState.scale;
 
             // If given a content offset within the item, adjust the panToOptions.
@@ -1348,7 +1349,8 @@ define(function(require) {
             else {
                 var listMapScale = this._listMap.getCurrentTransformState().scale;
                 translation = getTranslation(listMapScale);
-                panToOptions.x = translation.x;
+                //panToOptions.x = translation.x;
+                //panToOptions.x += translation.x;
                 panToOptions.y += translation.y;
             }
         },
