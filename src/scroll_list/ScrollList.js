@@ -1066,7 +1066,7 @@ define(function(require) {
                     panToOptions,
                     offset,
                     itemLayout.scaleToFit,
-                    (itemLayout.left + itemLayout.paddingLeft),
+                    (itemLayout.left || 0 + itemLayout.paddingLeft || 0),
                     viewportAnchorLocation
                 );
             }

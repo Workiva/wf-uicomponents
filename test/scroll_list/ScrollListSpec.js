@@ -854,12 +854,7 @@ define(function(require) {
                 // for now, but it could easily be something else in practice.
                 var scaleToFit = 1;
                 var itemIndex = 2;
-                var itemLayout = {
-                    top: pageSize * itemIndex,
-                    scaleToFit: scaleToFit,
-                    left: 0,
-                    paddingLeft: 0
-                };
+                var itemLayout = { top: pageSize * itemIndex, scaleToFit: scaleToFit };
                 var viewportSize = { width: 200, height: 400 };
                 var offset = { x: 100, y: 200 };
                 var createScrollList = function(options) {
