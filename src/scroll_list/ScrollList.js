@@ -1052,7 +1052,6 @@ define(function(require) {
                 return;
             }
             var listState = this._listMap.getCurrentTransformState();
-            //panToOptions.x = listState.translateX;
             panToOptions.currentX = listState.translateX;
             panToOptions.x = panToOptions.currentX;
             panToOptions.y = -((itemLayout.top||0)+(itemLayout.paddingTop||0)) * listState.scale;
