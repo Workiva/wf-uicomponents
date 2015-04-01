@@ -778,6 +778,7 @@ define(function(require) {
 
                     expect(map.panTo).toHaveBeenCalledWith({
                         x: currentState.translateX,
+                        currentX: currentState.translateX,
                         y: -itemLayout.top * currentState.scale,
                         duration: 0,
                         done: jasmine.any(Function)
@@ -885,6 +886,7 @@ define(function(require) {
 
                         expect(map.panTo).toHaveBeenCalledWith({
                             x: -(offset.x * scale * scaleToFit) + (viewportSize.width / 2),
+                            currentX: 0,
                             y: -(itemIndex * pageSize * scale * scaleToFit) -
                                (offset.y * scale * scaleToFit) + (viewportSize.height / 2),
                             duration: 0,
@@ -918,6 +920,7 @@ define(function(require) {
 
                         expect(listMap.panTo).toHaveBeenCalledWith({
                             x: 0,
+                            currentX: 0,
                             y: -(itemIndex * pageSize * scale * scaleToFit),
                             duration: 0,
                             done: jasmine.any(Function)
@@ -951,6 +954,7 @@ define(function(require) {
 
                         expect(map.panTo).toHaveBeenCalledWith({
                             x: 0,
+                            currentX: 0,
                             y: -(itemIndex * pageSize * scale * scaleToFit) -
                                (offset.y * scale * scaleToFit),
                             duration: 0,
@@ -984,6 +988,7 @@ define(function(require) {
 
                         expect(listMap.panTo).toHaveBeenCalledWith({
                             x: 0,
+                            currentX: 0,
                             y: -(itemIndex * pageSize * scale * scaleToFit),
                             duration: 0,
                             done: jasmine.any(Function)
@@ -1017,6 +1022,7 @@ define(function(require) {
 
                         expect(map.panTo).toHaveBeenCalledWith({
                             x: 0,
+                            currentX: 0,
                             y: -(itemIndex * pageSize * scale * scaleToFit) -
                               (offset.y * scale * scaleToFit) + viewportSize.height,
                             duration: 0,
@@ -1050,6 +1056,7 @@ define(function(require) {
 
                         expect(listMap.panTo).toHaveBeenCalledWith({
                             x: 0,
+                            currentX: 0,
                             y: -(itemIndex * pageSize * scale * scaleToFit),
                             duration: 0,
                             done: jasmine.any(Function)
