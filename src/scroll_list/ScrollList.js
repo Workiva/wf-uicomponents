@@ -1053,11 +1053,13 @@ define(function(require) {
             }
             var listState = this._listMap.getCurrentTransformState();
             //panToOptions.x = listState.translateX;
-            panToOptions.x = -itemLayout.left * listState.scale;
-            panToOptions.y = -itemLayout.top * listState.scale;
+            panToOptions.currentX = listState.translateX;
+            panToOptions.x = panToOptions.currentX;
+            panToOptions.y = -(itemLayout.top + itemLayout.paddingTop) * listState.scale;
 
             // If given a content offset within the item, adjust the panToOptions.
             if (options.offset) {
+                panToOptions.x = -(itemLayout.left + itemLayout.paddingLeft) * listState.scale;
                 var viewportAnchorLocation = options.viewportAnchorLocation || 'top';
                 var offset = options.offset || { x: 0, y: 0 };
                 offset.x = offset.x || 0;
@@ -1309,19 +1311,19 @@ define(function(require) {
                 var translation;
                 if (viewportAnchorLocation === 'top') {
                     translation = {
-                        x: 0, // Top has no concept of x.  Keep existing.
+                        x: panToOptions.currentX, // Top has no concept of x.  Keep existing.
                         y: -scaledOffsetY
                     };
                 }
                 else if (viewportAnchorLocation === 'center') {
                     translation = {
-                        x: (viewportSize.width / 2) - scaledOffsetX,
+                        x: (viewportSize.width / 2) - scaledOffsetX + panToOptions.x,
                         y: (viewportSize.height / 2) - scaledOffsetY,
                     };
                 }
                 else if (viewportAnchorLocation === 'bottom') {
                     translation = {
-                        x: 0, // Bottom has no concept of x.  Keep existing.
+                        x: panToOptions.currentX, // Bottom has no concept of x.  Keep existing.
                         y: viewportSize.height - scaledOffsetY
                     };
                 }
@@ -1349,7 +1351,7 @@ define(function(require) {
             else {
                 var listMapScale = this._listMap.getCurrentTransformState().scale;
                 translation = getTranslation(listMapScale);
-                panToOptions.x += translation.x;
+                panToOptions.x = translation.x;
                 panToOptions.y += translation.y;
             }
         },
