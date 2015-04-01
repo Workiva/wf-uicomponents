@@ -1052,7 +1052,8 @@ define(function(require) {
                 return;
             }
             var listState = this._listMap.getCurrentTransformState();
-            panToOptions.x = listState.translateX;
+            //panToOptions.x = listState.translateX;
+            panToOptions.x = -itemLayout.left * listState.scale;
             panToOptions.y = -itemLayout.top * listState.scale;
 
             // If given a content offset within the item, adjust the panToOptions.
@@ -1066,7 +1067,6 @@ define(function(require) {
                     panToOptions,
                     offset,
                     itemLayout.scaleToFit,
-                    (itemLayout.left || 0 + itemLayout.paddingLeft || 0),
                     viewportAnchorLocation
                 );
             }
@@ -1298,18 +1298,18 @@ define(function(require) {
          * Companion method to `scrollToItem` responsible for calculating and
          * applying the offset to the map panToOptions, depending on the viewportAnchorLocation
          */
-        _applyItemOffset: function(panToOptions, offset, itemScaleToFit, itemLayoutLeft, viewportAnchorLocation) {
+        _applyItemOffset: function(panToOptions, offset, itemScaleToFit, viewportAnchorLocation) {
             var viewportSize = this._layout.getViewportSize();
 
             // All of these translations adjust based on scale, so that when a user asks for
             // the item at 200 px, it always yields the same place, regardless of zoom.
             var getTranslation = function(scale) {
-                var scaledOffsetX = (itemScaleToFit * offset.x + itemLayoutLeft) * scale;
+                var scaledOffsetX = itemScaleToFit * offset.x * scale;
                 var scaledOffsetY = itemScaleToFit * offset.y * scale;
                 var translation;
                 if (viewportAnchorLocation === 'top') {
                     translation = {
-                        x: panToOptions.x, // Top has no concept of x.  Keep existing.
+                        x: 0, // Top has no concept of x.  Keep existing.
                         y: -scaledOffsetY
                     };
                 }
@@ -1321,7 +1321,7 @@ define(function(require) {
                 }
                 else if (viewportAnchorLocation === 'bottom') {
                     translation = {
-                        x: panToOptions.x, // Bottom has no concept of x.  Keep existing.
+                        x: 0, // Bottom has no concept of x.  Keep existing.
                         y: viewportSize.height - scaledOffsetY
                     };
                 }
@@ -1349,7 +1349,7 @@ define(function(require) {
             else {
                 var listMapScale = this._listMap.getCurrentTransformState().scale;
                 translation = getTranslation(listMapScale);
-                panToOptions.x = translation.x;
+                panToOptions.x += translation.x;
                 panToOptions.y += translation.y;
             }
         },
