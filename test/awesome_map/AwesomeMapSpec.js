@@ -428,13 +428,15 @@ define(function(require) {
             });
         });
 
-        describe('setting touchScrollingEnabled to false', function() {
+        describe('setting mousePanningEnabled to false', function() {
             var args = {};
 
             beforeEach(function() {
-                awesomeMap = new AwesomeMap($host[0], { touchScrollingEnabled: false });
+                awesomeMap = new AwesomeMap($host[0], { mousePanningEnabled: false });
                 var gesture = new Gesture();
                 args.event = new InteractionEvent({ simulated: false }, gesture, gesture);
+                var sourceEvent = document.createEvent('MouseEvent');
+                args.event.source = sourceEvent;
 
                 spyOn(awesomeMap._transformationQueue, 'enqueue');
             });

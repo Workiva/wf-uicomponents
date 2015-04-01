@@ -101,10 +101,10 @@ define(function(require) {
      *        set to false to remove the default interceptor or
      *        pass an object with custom options for the interceptor.
      *
-     * @param {boolean} [options.touchScrollingEnabled=true]
-     *        When touch scrolling is enabled, dragging and swiping will scroll
-     *        the list and pan items. When disabled, the mouse wheel and
-     *        scrollbar are the only default means of scrolling.
+     * @param {boolean} [options.mousePanningEnabled=true]
+     *        When mouse panning is enabled, dragging will scroll
+     *        the list and pan items. When disabled, touches, the mouse wheel, and
+     *        scrollbar are the only means of scrolling.
      *
      * @param {boolean} [options.persistZoom=false]
      *        When persistZoom is enabled, when in peek mode the zoom level
@@ -423,7 +423,7 @@ define(function(require) {
             padding: 0,
             persistZoom: false,
             scaleLimits: { minimum: 1, maximum: 3 },
-            touchScrollingEnabled: true,
+            mousePanningEnabled: true,
             verticalAlign: VerticalAlignments.AUTO
         }, options);
 

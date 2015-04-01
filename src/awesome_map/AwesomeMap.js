@@ -20,6 +20,7 @@ define(function(require) {
     var _ = require('lodash');
     var DestroyUtil = require('wf-js-common/DestroyUtil');
     var DOMUtil = require('wf-js-common/DOMUtil');
+    var EventSource = require('wf-js-common/EventSource');
     var EventSynthesizer = require('wf-js-uicomponents/awesome_map/EventSynthesizer');
     var EventTypes = require('wf-js-uicomponents/awesome_map/EventTypes');
     var InteractionSimulator = require('wf-js-uicomponents/awesome_map/InteractionSimulator');
@@ -48,9 +49,9 @@ define(function(require) {
      *        Cancel wheel events so that the browser hosting the map doesn't
      *        bounce when attempting to scroll with a mouse.
      *
-     * @param {boolean} [options.touchScrollingEnabled=true]
-     *        When touch scrolling is enabled, dragging and swiping will scroll
-     *        the list and pan items. When disabled, the following events have
+     * @param {boolean} [options.mousePanningEnabled=true]
+     *        When mouse panning is enabled, dragging will scroll
+     *        the list and pan items. When disabled, the following mouse events have
      *        no effect: drag, swipe, dragstart, dragend
      *
      * @example <caption>Simple Instantiation</caption>
@@ -95,7 +96,7 @@ define(function(require) {
          */
         this._options = _.extend({
             cancelMouseWheelEvents: true,
-            touchScrollingEnabled: true
+            mousePanningEnabled: true
         }, options);
 
         //---------------------------------------------------------
@@ -927,7 +928,7 @@ define(function(require) {
                 return true;
             }
 
-            if (!this._options.touchScrollingEnabled && (
+            if (!this._options.mousePanningEnabled && EventSource.isMouse(event) && (
                 event.type === EventTypes.DRAG ||
                 event.type === EventTypes.SWIPE ||
                 event.type === EventTypes.DRAG_START ||
