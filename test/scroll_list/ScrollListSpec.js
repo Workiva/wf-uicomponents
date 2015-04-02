@@ -786,6 +786,49 @@ define(function(require) {
                 });
             });
 
+            it('should pan to 0,0 for first page', function() {
+                testScrollList(function(scrollList) {
+                    var done = function() {};
+                    var map = scrollList.getListMap();
+                    var currentState = { translateX: 0, scale: 2 };
+                    var itemLayout = {
+                        bottom: 419,
+                        height: 398,
+                        itemIndex: 0,
+                        left: 300,
+                        offsetLeft: 5,
+                        offsetTop: 5,
+                        outerHeight: 419,
+                        outerWidth: 687,
+                        paddingBottom: 5,
+                        paddingLeft: 16,
+                        paddingRight: 16,
+                        paddingTop: 16,
+                        right: 687,
+                        scaleToFit: 0.6498015873015873,
+                        top: 0,
+                        width: 655
+                    };
+
+                    spyOn(map, 'panTo');
+                    spyOn(map, 'getCurrentTransformState').andReturn(currentState);
+                    spyOn(scrollList._layout, 'getItemLayout').andReturn(itemLayout);
+
+                    scrollList.scrollToItem({
+                        index: 1,
+                        done: done
+                    });
+
+                    expect(map.panTo).toHaveBeenCalledWith({
+                        x: 0,
+                        currentX: 0,
+                        y: 0,
+                        duration: 0,
+                        done: jasmine.any(Function)
+                    });
+                });
+            });
+
             describe('when scrolling in other than "flow" mode', function() {
                 it('should reset the zoom and position of all out of view item maps when the scroll completes', function() {
                     // Make sure the viewport is shorter than the items so that
