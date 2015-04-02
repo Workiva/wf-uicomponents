@@ -1054,11 +1054,12 @@ define(function(require) {
             var listState = this._listMap.getCurrentTransformState();
             panToOptions.currentX = listState.translateX;
             panToOptions.x = panToOptions.currentX;
-            panToOptions.y = -((itemLayout.top||0)+(itemLayout.paddingTop||0)) * listState.scale;
+            panToOptions.y = -((itemLayout.top||0)) * listState.scale;
 
             // If given a content offset within the item, adjust the panToOptions.
             if (options.offset) {
                 panToOptions.x = -((itemLayout.left||0)+(itemLayout.paddingLeft||0)) * listState.scale;
+                panToOptions.y += -((itemLayout.paddingTop||0) * listState.scale);
                 var viewportAnchorLocation = options.viewportAnchorLocation || 'top';
                 var offset = options.offset || { x: 0, y: 0 };
                 offset.x = offset.x || 0;
