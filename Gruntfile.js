@@ -12,7 +12,7 @@ module.exports = function(grunt) {
                 paths: {
                     hammerjs: 'bower_components/hammerjs/dist/hammer',
                     jquery: 'bower_components/jquery/jquery',
-                    lodash: 'bower_components/lodash/dist/lodash',
+                    lodash: 'bower_components/lodash/lodash',
                     modernizr: 'bower_components/modernizr/modernizr',
                     'wf-js-common': 'bower_components/wf-common/src',
                     'wf-js-uicomponents': './src'
