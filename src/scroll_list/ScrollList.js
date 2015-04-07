@@ -1349,10 +1349,15 @@ define(function(require) {
             else {
                 var listState = this._listMap.getCurrentTransformState();
                 var left; // Calculate the absolute left offset of the AwesomeMap
-                left = this._listMap.getViewportDimensions().width;
-                left = left-this._listMap.getContentDimensions().width;
-                left = (left/2.0);
-                left = itemLayout.left-left;
+                if (this.getOptions().horizontalAlign === 'center') {
+                    left = this._listMap.getViewportDimensions().width;
+                    left = left - this._listMap.getContentDimensions().width;
+                    left = (left / 2.0);
+                    left = itemLayout.left - left;
+                }
+                else if (this.getOptions().horizontalAlignment === 'left') {
+                    left = itemLayout.left;
+                }
 
                 panToOptions.x = -((left||0)+(itemLayout.paddingLeft||0)) * listState.scale;
                 panToOptions.y += -((itemLayout.paddingTop||0) * listState.scale);
