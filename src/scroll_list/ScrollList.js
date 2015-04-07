@@ -1052,14 +1052,12 @@ define(function(require) {
                 return;
             }
             var listState = this._listMap.getCurrentTransformState();
+            panToOptions.x = listState.translateX;
             panToOptions.currentX = listState.translateX;
-            panToOptions.x = panToOptions.currentX;
             panToOptions.y = -(itemLayout.top||0) * listState.scale;
 
             // If given a content offset within the item, adjust the panToOptions.
             if (options.offset) {
-                panToOptions.x = -((itemLayout.left||0)+(itemLayout.paddingLeft||0)) * listState.scale;
-                panToOptions.y += -((itemLayout.paddingTop||0) * listState.scale);
                 var viewportAnchorLocation = options.viewportAnchorLocation || 'top';
                 var offset = options.offset || { x: 0, y: 0 };
                 offset.x = offset.x || 0;
@@ -1068,7 +1066,7 @@ define(function(require) {
                 this._applyItemOffset(
                     panToOptions,
                     offset,
-                    itemLayout.scaleToFit,
+                    itemLayout,
                     viewportAnchorLocation
                 );
             }
@@ -1300,14 +1298,14 @@ define(function(require) {
          * Companion method to `scrollToItem` responsible for calculating and
          * applying the offset to the map panToOptions, depending on the viewportAnchorLocation
          */
-        _applyItemOffset: function(panToOptions, offset, itemScaleToFit, viewportAnchorLocation) {
+        _applyItemOffset: function(panToOptions, offset, itemLayout, viewportAnchorLocation) {
             var viewportSize = this._layout.getViewportSize();
 
             // All of these translations adjust based on scale, so that when a user asks for
             // the item at 200 px, it always yields the same place, regardless of zoom.
             var getTranslation = function(scale) {
-                var scaledOffsetX = itemScaleToFit * offset.x * scale;
-                var scaledOffsetY = itemScaleToFit * offset.y * scale;
+                var scaledOffsetX = itemLayout.scaleToFit * offset.x * scale;
+                var scaledOffsetY = itemLayout.scaleToFit * offset.y * scale;
                 var translation;
                 if (viewportAnchorLocation === 'top') {
                     translation = {
@@ -1349,6 +1347,15 @@ define(function(require) {
             }
             // If not using a item map, we can pan to the position directly.
             else {
+                var listState = this._listMap.getCurrentTransformState();
+                var left; // Calculate the absolute left offset of the AwesomeMap
+                left = this._listMap.getViewportDimensions().width;
+                left = left-this._listMap.getContentDimensions().width;
+                left = (left/2.0);
+                left = itemLayout.left-left;
+
+                panToOptions.x = -((left||0)+(itemLayout.paddingLeft||0)) * listState.scale;
+                panToOptions.y += -((itemLayout.paddingTop||0) * listState.scale);
                 var listMapScale = this._listMap.getCurrentTransformState().scale;
                 translation = getTranslation(listMapScale);
                 panToOptions.x = translation.x;
