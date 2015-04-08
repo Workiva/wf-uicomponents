@@ -488,7 +488,7 @@ define(function(require) {
 
             it('should preventDefault on MSHoldVisual events if _cancelTouchContextMenuEvents is true', function() {
                 var eventType = EventTypes.MS_HOLD_VISUAL;
-                var evt = { preventDefault: function(){} };
+                var evt = { preventDefault: function() {} };
                 spyOn(evt, 'preventDefault');
                 handlers[eventType](evt);
 

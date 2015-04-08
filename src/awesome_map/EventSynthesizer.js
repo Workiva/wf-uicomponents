@@ -271,8 +271,7 @@ define(function(require) {
             // The slate is cleaned on release events.
             if (lastGesture) {
                 iterativeGesture = gesture.createIterativeGesture(lastGesture);
-            }
-            else {
+            } else {
                 iterativeGesture = gesture;
             }
 
@@ -375,8 +374,7 @@ define(function(require) {
                 };
                 if (self._transforming) {
                     self._deferEvent(event, handler);
-                }
-                else {
+                } else {
                     handler();
                 }
             };
@@ -397,8 +395,7 @@ define(function(require) {
                 };
                 if (self._transforming) {
                     self._deferEvent(event, handler);
-                }
-                else {
+                } else {
                     handler();
                     self._invokeDeferredEventHandlers();
                 }
@@ -419,8 +416,7 @@ define(function(require) {
                 };
                 if (self._transforming) {
                     self._deferEvent(event, handler);
-                }
-                else {
+                } else {
                     handler();
                 }
             };
@@ -491,7 +487,7 @@ define(function(require) {
             var self = this;
 
             return function(event) {
-                if(self._cancelTouchContextMenuEvents) {
+                if (self._cancelTouchContextMenuEvents) {
                     // Prevent the Windows "box hint" that appears during a hold.
                     event.preventDefault();
                 }
@@ -525,8 +521,7 @@ define(function(require) {
                 };
                 if (self._dragging) {
                     self._deferEvent(event, handler);
-                }
-                else {
+                } else {
                     handler();
                 }
             };
@@ -569,8 +564,7 @@ define(function(require) {
                 };
                 if (self._dragging) {
                     self._deferEvent(event, handler);
-                }
-                else {
+                } else {
                     handler();
                 }
             };
@@ -590,8 +584,7 @@ define(function(require) {
                 };
                 if (self._dragging) {
                     self._deferEvent(event, handler);
-                }
-                else {
+                } else {
                     handler();
                     self._invokeDeferredEventHandlers();
                 }
@@ -612,8 +605,7 @@ define(function(require) {
                 };
                 if (self._dragging) {
                     self._deferEvent(event, handler);
-                }
-                else {
+                } else {
                     handler();
                 }
             };
