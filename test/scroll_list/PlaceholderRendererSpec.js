@@ -51,8 +51,11 @@ define(function(require) {
                 verticalAlign: VerticalAlignments.AUTO
             };
 
+            var transformationPlane = document.createElement('div');
+
             spyOn(listMap, 'appendContent');
             spyOn(listMap, 'removeContent');
+            spyOn(listMap, 'getTransformationPlane').andReturn(transformationPlane);
             spyOn(layout, 'getViewportSize').andReturn(viewportSize);
             spyOn(layout, 'getSize').andReturn(layoutSize);
             spyOn(scrollList, 'getLayout').andReturn(layout);
@@ -71,6 +74,9 @@ define(function(require) {
 
                 beforeEach(function() {
                     scrollListOptions.mode = ScrollModes.FLOW;
+                    placeholder = {
+                        element: document.createElement('div')
+                    };
                 });
 
                 it('should adjust the left position of the placeholder if layout ' +
@@ -78,7 +84,7 @@ define(function(require) {
                     viewportSize.width = 500;
                     layoutSize.width = 400;
                     itemLayout = { left: 75 };
-                    placeholder = { element: { style: { left: '75px' } } };
+                    placeholder.element.style.left = '75px';
 
                     renderer.appendPlaceholderToScrollList(itemLayout, placeholder);
 
@@ -90,7 +96,7 @@ define(function(require) {
                     viewportSize.width = 400;
                     layoutSize.width = 500;
                     itemLayout = { left: 75 };
-                    placeholder = { element: { style: { left: '75px' } } };
+                    placeholder.element.style.left = '75px';
 
                     renderer.appendPlaceholderToScrollList(itemLayout, placeholder);
 
@@ -103,7 +109,7 @@ define(function(require) {
                     viewportSize.width = 400;
                     layoutSize.width = 500;
                     itemLayout = { left: 0 }; // we expect items to be left-aligned
-                    placeholder = { element: { style: { left: '0px' } } };
+                    placeholder.element.style.left = '0px';
 
                     renderer.appendPlaceholderToScrollList(itemLayout, placeholder);
 
@@ -202,9 +208,13 @@ define(function(require) {
                     });
 
                     it('should append the element to the list map', function() {
+                        var placeholderContainer = renderer.getPlaceholderContainer();
+                        spyOn(placeholderContainer, 'appendChild');
                         renderer.appendPlaceholderToScrollList(itemLayout, placeholder);
 
                         expect(listMap.appendContent)
+                            .toHaveBeenCalledWith(placeholderContainer);
+                        expect(placeholderContainer.appendChild)
                             .toHaveBeenCalledWith(placeholder.element);
                     });
 
@@ -219,9 +229,15 @@ define(function(require) {
                 describe('when item map exists', function() {
 
                     it('should append the element to the list map', function() {
+                        var placeholderContainer = renderer.getPlaceholderContainer();
+                        spyOn(placeholderContainer, 'appendChild');
                         renderer.appendPlaceholderToScrollList(itemLayout, placeholder);
 
-                        expect(listMap.appendContent).toHaveBeenCalledWith(placeholder.element);
+                        expect(listMap.appendContent)
+                            .toHaveBeenCalledWith(placeholderContainer);
+                        expect(placeholderContainer.appendChild)
+                            .toHaveBeenCalledWith(placeholder.element);
+
                     });
                 });
             });
@@ -396,10 +412,12 @@ define(function(require) {
         describe('when removing a placeholder', function() {
 
             var itemLayout;
+            var placeholderContainer;
 
             beforeEach(function() {
                 spyOn(renderer, 'appendPlaceholderToScrollList');
                 itemLayout = new ItemLayout({ itemIndex: 0 });
+                placeholderContainer = renderer.getPlaceholderContainer();
             });
 
             it('should return false if the placeholder does not exist', function() {
@@ -418,10 +436,12 @@ define(function(require) {
             it('should remove the element from the list map', function() {
                 renderer.render(itemLayout);
                 var placeholder = renderer.get(0);
+                spyOn(placeholderContainer, 'contains').andReturn(true);
+                spyOn(placeholderContainer, 'removeChild');
 
                 renderer.remove(0);
 
-                expect(listMap.removeContent).toHaveBeenCalledWith(placeholder.element);
+                expect(placeholderContainer.removeChild).toHaveBeenCalledWith(placeholder.element);
             });
 
             it('should clear the item map', function() {

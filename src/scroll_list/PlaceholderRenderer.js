@@ -34,7 +34,6 @@ define(function(require) {
      * @constructor
      */
     var PlaceholderRenderer = function(scrollList) {
-
         //---------------------------------------------------------
         // Observables
         //---------------------------------------------------------
@@ -121,6 +120,12 @@ define(function(require) {
          * @type {ScrollList}
          */
         this._scrollList = scrollList;
+
+        /**
+         * The div.placeholder-container where placeholders are rendered
+         * @type {HTMLElement}
+         */
+        this._placeholderContainer = null;
     };
 
     PlaceholderRenderer.prototype = {
@@ -158,20 +163,20 @@ define(function(require) {
          */
         appendPlaceholderToScrollList: function(itemLayout, placeholder, update) {
             var scrollList = this._scrollList;
-            var listMap = scrollList.getListMap();
             var layout = scrollList.getLayout();
             var viewportSize = layout.getViewportSize();
             var viewportHeight = viewportSize.height;
+            var element = placeholder.element;
 
+            var placeholderContainer = this.getPlaceholderContainer();
             if (scrollList.getOptions().mode === ScrollModes.FLOW) {
-                var element = placeholder.element;
                 // Adjust the element's left style to account for the fact that
                 // the list map is responsible for positioning content in the viewport.
                 var positionTranslator = scrollList.getPositionTranslator();
                 var adjustedLeft = positionTranslator.getLeftInTransformationPlane(itemLayout.left);
                 element.style.left = adjustedLeft + 'px';
                 if (!update) {
-                    listMap.appendContent(element);
+                    placeholderContainer.appendChild(element);
                 }
             }
             // Only need to handle peek/single modes if not updating an item
@@ -193,13 +198,13 @@ define(function(require) {
                 }
                 var itemMap = placeholder.map;
                 if (!itemMap) {
-                    placeholder.element.removeChild(placeholder.contentContainer);
-                    listMap.appendContent(placeholder.element);
-                    itemMap = AwesomeMapFactory.createItemMap(scrollList, placeholder.element);
+                    element.removeChild(placeholder.contentContainer);
+                    placeholderContainer.appendChild(element);
+                    itemMap = AwesomeMapFactory.createItemMap(scrollList, element);
                     placeholder.map = itemMap;
                 }
                 else {
-                    listMap.appendContent(placeholder.element);
+                    placeholderContainer.appendChild(element);
                 }
                 // Set the static content dimensions and transform to center.
                 itemMap.setContentDimensions({ width: itemWidth, height: itemHeight });
@@ -273,6 +278,7 @@ define(function(require) {
          * @method PlaceholderRenderer#refresh
          */
         refresh: function() {
+            this._placeholderContainer = null;
             var allPlaceholders = this._pool.slice();
             var activePlaceholders = this._placeholders;
 
@@ -305,7 +311,12 @@ define(function(require) {
 
             this.unload(itemIndex);
 
-            this._scrollList.getListMap().removeContent(placeholder.element);
+            var placeholderContainer = this.getPlaceholderContainer();
+
+            if (placeholderContainer.contains(placeholder.element)) {
+                placeholderContainer.removeChild(placeholder.element);
+            }
+
             if (placeholder.map) {
                 placeholder.map.clearContent();
             }
@@ -459,6 +470,31 @@ define(function(require) {
             while (element.firstChild) {
                 element.removeChild(element.firstChild);
             }
+        },
+
+        getPlaceholderContainer: function() {
+            if (this._placeholderContainer) {
+                return this._placeholderContainer;
+            }
+            var className = 'scrollList-placeholderContainer';
+
+            // Find the placeholder-container if one is already in the DOM
+            var scrollList = this._scrollList;
+            var listMap = scrollList.getListMap();
+            var transformationPlane = listMap.getTransformationPlane();
+            var placeholderContainer = transformationPlane.querySelector('.' + className);
+            if (placeholderContainer) {
+                this._placeholderContainer = placeholderContainer;
+                return placeholderContainer;
+            }
+
+            // Create a placeholder-container if necessary
+            placeholderContainer = document.createElement('div');
+            placeholderContainer.className = className;
+            listMap.appendContent(placeholderContainer);
+
+            this._placeholderContainer = placeholderContainer;
+            return placeholderContainer;
         }
     };
 
