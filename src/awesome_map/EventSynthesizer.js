@@ -21,6 +21,7 @@ define(function(require) {
     var CustomSwipeGesture = require('wf-js-uicomponents/awesome_map/CustomSwipeGesture');
     var DestroyUtil = require('wf-js-common/DestroyUtil');
     var DOMUtil = require('wf-js-common/DOMUtil');
+    var EventSource = require('wf-js-common/EventSource');
     var EventTypes = require('wf-js-uicomponents/awesome_map/EventTypes');
     var Gesture = require('wf-js-uicomponents/awesome_map/Gesture');
     var Hammer = require('hammerjs');
@@ -69,6 +70,18 @@ define(function(require) {
      * @param {boolean} [configuration.cancelMouseWheelEvents=true]
      *        Cancel mouse wheel events when handled so that browser window does not shift.
      *
+     * @param {boolean} [configuration.cancelTouchContextMenuEvents=true]
+     *        Stop propagation and default actions of touch events that have a type of contextmenu.
+     *        EventSynthesizer will still handle these type of events. Can be used together with
+     *        ignoreTouchContextMenuEvents to entirely snuff this kind of event. These events
+     *        are fired by Windows 8 for holds.
+     *
+     * @param {boolean} [configuration.ignoreTouchContextMenuEvents=true]
+     *        Make the EventSynthesizer not handle touch events that have a type of contextmenu.
+     *        Events will still propagate and do their default action. Can be used together with
+     *        cancelTouchContextMenuEvents to entirely snuff this kind of event. Touch contextmenu
+     *        events are fired by Windows 8 for holds.
+     *
      * @example
      *
      * var host = document.getElementById('host');
@@ -95,12 +108,10 @@ define(function(require) {
         //---------------------------------------------------------
         // Private properties
         //---------------------------------------------------------
-
-        /**
-         * Cancel mouse wheel events so that browser window does not shift.
-         * @type {boolean}
-         */
         this._cancelMouseWheelEvents = Utils.valueOr(configuration.cancelMouseWheelEvents, true);
+
+        this._cancelTouchContextMenuEvents =
+            Utils.valueOr(configuration.cancelTouchContextMenuEvents, true);
 
         /**
          * The rectangle for the current host.
@@ -134,6 +145,9 @@ define(function(require) {
          */
         this._eventHandlers = null;
 
+        this._ignoreTouchContextMenuEvents =
+            Utils.valueOr(configuration.ignoreTouchContextMenuEvents, true);
+
         /**
          * Tracks the previous gesture in order to yield iterative event deltas.
          * @type {Gesture}
@@ -148,11 +162,6 @@ define(function(require) {
          */
         this._hammer = null;
 
-        /**
-         * The element to watch for events.
-         * @type {HTMLElement}
-         * @private
-         */
         this._host = configuration.host;
 
         /**
@@ -169,6 +178,14 @@ define(function(require) {
          * @private
          */
         this._transforming = false;
+
+        /**
+         * Used to be explicit that the event listeners are not using capture. The consistency also
+         * makes sure that we remove the same listener as we add. See
+         * https://developer.mozilla.org/en-US/docs/Web/API/EventTarget/removeEventListener
+         * @type {Boolean}
+         */
+        this._useCapture = false;
 
         //---------------------------------------------------------
         // Initialization
@@ -210,11 +227,13 @@ define(function(require) {
             }
 
             this._mouseAdapter.dispose();
-            this._host.removeEventListener(EventTypes.MOUSE_MOVE, handlers[EventTypes.MOUSE_MOVE], false);
-            this._host.removeEventListener(EventTypes.CONTEXT_MENU, handlers[EventTypes.CONTEXT_MENU], false);
+            this._host.removeEventListener(EventTypes.MOUSE_MOVE, handlers[EventTypes.MOUSE_MOVE], this._useCapture);
+            this._host.removeEventListener(EventTypes.CONTEXT_MENU, handlers[EventTypes.CONTEXT_MENU], this._useCapture);
+            this._host.removeEventListener(EventTypes.MS_HOLD_VISUAL,
+                handlers[EventTypes.MS_HOLD_VISUAL], this._useCapture);
 
             var window = dependencies.getWindow();
-            window.removeEventListener('resize', handlers[EventTypes.RESIZE], false);
+            window.removeEventListener('resize', handlers[EventTypes.RESIZE], this._useCapture);
 
             // Destroy the instance.
             DestroyUtil.destroy(this);
@@ -312,6 +331,14 @@ define(function(require) {
              * @private
              */
             return function(event) {
+                if (EventSource.isTouch(event) && self._cancelTouchContextMenuEvents) {
+                    BrowserInfo.Events.cancelEvent(event);
+                }
+
+                if (EventSource.isTouch(event) && self._ignoreTouchContextMenuEvents) {
+                    return;
+                }
+
                 var gesture = {
                     center: {
                         pageX: event.pageX,
@@ -456,6 +483,17 @@ define(function(require) {
                 // Prevent bubbling so the screen doesn't shift.
                 if (self._cancelMouseWheelEvents) {
                     BrowserInfo.Events.cancelEvent(event.source);
+                }
+            };
+        },
+
+        _getMsHoldVisualHandler: function() {
+            var self = this;
+
+            return function(event) {
+                if(self._cancelTouchContextMenuEvents) {
+                    // Prevent the Windows "box hint" that appears during a hold.
+                    event.preventDefault();
                 }
             };
         },
@@ -630,6 +668,7 @@ define(function(require) {
             handlers[EventTypes.MOUSE_WHEEL] = this._getMouseWheelHandler(EventTypes.MOUSE_WHEEL);
             handlers[EventTypes.MOUSE_WHEEL_START] = this._getMouseWheelHandler(EventTypes.MOUSE_WHEEL_START);
             handlers[EventTypes.MOUSE_WHEEL_END] = this._getMouseWheelHandler(EventTypes.MOUSE_WHEEL_END);
+            handlers[EventTypes.MS_HOLD_VISUAL] = this._getMsHoldVisualHandler(EventTypes.MS_HOLD_VISUAL);
             handlers[EventTypes.RELEASE] = this._getReleaseHandler();
             handlers[EventTypes.RESIZE] = this._getWindowResizeHandler();
             handlers[EventTypes.SWIPE] = this._getSwipeHandler();
@@ -664,13 +703,16 @@ define(function(require) {
             this._mouseAdapter.onMouseWheel(handlers[EventTypes.MOUSE_WHEEL]);
             this._mouseAdapter.onMouseWheelStart(handlers[EventTypes.MOUSE_WHEEL_START]);
             this._mouseAdapter.onMouseWheelEnd(handlers[EventTypes.MOUSE_WHEEL_END]);
-            this._host.addEventListener(EventTypes.MOUSE_MOVE, handlers[EventTypes.MOUSE_MOVE]);
+            this._host.addEventListener(EventTypes.MOUSE_MOVE, handlers[EventTypes.MOUSE_MOVE], this._useCapture);
 
             // Handle contextmenu events.
-            this._host.addEventListener('contextmenu', handlers[EventTypes.CONTEXT_MENU]);
+            this._host.addEventListener('contextmenu', handlers[EventTypes.CONTEXT_MENU], this._useCapture);
+
+            this._host.addEventListener(EventTypes.MS_HOLD_VISUAL,
+                handlers[EventTypes.MS_HOLD_VISUAL], this._useCapture);
 
             // Initialize the window resize handler.
-            dependencies.getWindow().addEventListener('resize', handlers[EventTypes.RESIZE]);
+            dependencies.getWindow().addEventListener('resize', handlers[EventTypes.RESIZE], this._useCapture);
         },
 
         /**

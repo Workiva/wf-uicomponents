@@ -87,6 +87,13 @@ define(function() {
         MOUSE_WHEEL_END: 'mousewheelend',
 
         /**
+         * User is holding on a touchscreen and a box shows up to indicate release will show a
+         * context menu.
+         * @type {String}
+         */
+        MS_HOLD_VISUAL: 'MSHoldVisual',
+
+        /**
          * User releases all fingers on touch or releases mouse-clicks on desktop.
          * @type {string}
          */

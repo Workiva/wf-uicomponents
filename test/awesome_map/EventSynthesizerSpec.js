@@ -21,6 +21,7 @@ define(function(require) {
     var BrowserInfo = require('wf-js-common/BrowserInfo');
     var CustomSwipeGesture = require('wf-js-uicomponents/awesome_map/CustomSwipeGesture');
     var DestroyUtil = require('wf-js-common/DestroyUtil');
+    var EventSource = require('wf-js-common/EventSource');
     var EventSynthesizer = require('wf-js-uicomponents/awesome_map/EventSynthesizer');
     var EventTypes = require('wf-js-uicomponents/awesome_map/EventTypes');
     var Gesture = require('wf-js-uicomponents/awesome_map/Gesture');
@@ -36,6 +37,7 @@ define(function(require) {
         var mouseAdapter;
         var window;
         var createSynthesizer;
+        var useCapture = false;
 
         function setup() {
             var dependencies = EventSynthesizer.dependencies;
@@ -57,7 +59,9 @@ define(function(require) {
                 options = options || {};
                 synthesizer = new EventSynthesizer({
                     host: $host[0],
-                    cancelMouseWheelEvents: !!options.cancelMouseWheelEvents
+                    cancelMouseWheelEvents: !!options.cancelMouseWheelEvents,
+                    cancelTouchContextMenuEvents: !!options.cancelTouchContextMenuEvents,
+                    ignoreTouchContextMenuEvents: !!options.ignoreTouchContextMenuEvents
                 });
                 handlers = synthesizer.getEventHandlers();
             };
@@ -130,7 +134,7 @@ define(function(require) {
                 var handler = handlers[EventTypes.CONTEXT_MENU];
 
                 expect(handler).toBeDefined();
-                expect(host.addEventListener).toHaveBeenCalledWith(EventTypes.CONTEXT_MENU, handler);
+                expect(host.addEventListener).toHaveBeenCalledWith(EventTypes.CONTEXT_MENU, handler, useCapture);
             });
 
             it('should register a double tap handler with hammer', function() {
@@ -157,7 +161,7 @@ define(function(require) {
                 var handler = handlers[EventTypes.MOUSE_MOVE];
 
                 expect(handler).toBeDefined();
-                expect(host.addEventListener).toHaveBeenCalledWith(EventTypes.MOUSE_MOVE, handler);
+                expect(host.addEventListener).toHaveBeenCalledWith(EventTypes.MOUSE_MOVE, handler, useCapture);
             });
 
             it('should register a mouse wheel handler with mouse adapter', function() {
@@ -181,6 +185,13 @@ define(function(require) {
                 expect(mouseAdapter.onMouseWheelEnd).toHaveBeenCalledWith(handler);
             });
 
+            it('should register a MSHoldVisual handler against the host object', function() {
+                var handler = handlers[EventTypes.MS_HOLD_VISUAL];
+
+                expect(handler).toBeDefined();
+                expect(host.addEventListener).toHaveBeenCalledWith(EventTypes.MS_HOLD_VISUAL, handler, useCapture);
+            });
+
             it('should register a release handler with hammer', function() {
                 expectHammerHandlerRegistration(EventTypes.RELEASE);
             });
@@ -189,7 +200,7 @@ define(function(require) {
                 var handler = handlers[EventTypes.RESIZE];
 
                 expect(handler).toBeDefined();
-                expect(window.addEventListener).toHaveBeenCalledWith(EventTypes.RESIZE, handler);
+                expect(window.addEventListener).toHaveBeenCalledWith(EventTypes.RESIZE, handler, useCapture);
             });
 
             it('should register a swipe handler with hammer', function() {
@@ -265,13 +276,19 @@ define(function(require) {
             it('should remove the host mousemove handler', function() {
                 var handler = handlers[EventTypes.MOUSE_MOVE];
                 synthesizer.dispose();
-                expect(host.removeEventListener).toHaveBeenCalledWith('mousemove', handler, false);
+                expect(host.removeEventListener).toHaveBeenCalledWith('mousemove', handler, useCapture);
             });
 
             it('should remove the host contextmenu handler', function() {
                 var handler = handlers[EventTypes.CONTEXT_MENU];
                 synthesizer.dispose();
-                expect(host.removeEventListener).toHaveBeenCalledWith('contextmenu', handler, false);
+                expect(host.removeEventListener).toHaveBeenCalledWith('contextmenu', handler, useCapture);
+            });
+
+            it('should remove the host MSHoldVisual handler', function() {
+                var handler = handlers[EventTypes.MS_HOLD_VISUAL];
+                synthesizer.dispose();
+                expect(host.removeEventListener).toHaveBeenCalledWith(EventTypes.MS_HOLD_VISUAL, handler, useCapture);
             });
 
             it('should dispose the mouse adapter', function() {
@@ -285,7 +302,7 @@ define(function(require) {
 
                 synthesizer.dispose();
 
-                expect(window.removeEventListener).toHaveBeenCalledWith('resize', handler, false);
+                expect(window.removeEventListener).toHaveBeenCalledWith('resize', handler, useCapture);
             });
 
             it('should destroy the instance', function() {
@@ -304,22 +321,44 @@ define(function(require) {
 
             beforeEach(function() {
                 setup();
+                var options = {
+                    cancelTouchContextMenuEvents: true,
+                    ignoreTouchContextMenuEvents: true
+                };
+                createSynthesizer(options)
                 spyOn(synthesizer, '_dispatchEvent');
                 dispatchEvent = synthesizer._dispatchEvent;
             });
             afterEach(teardown);
 
-            it('should dispatch contextmenu events', function() {
+            describe('contextmenu events', function() {
                 var eventType = EventTypes.CONTEXT_MENU;
                 var event = { pageX: 10, pageY: 20 };
+                it('should dispatch', function() {
+                    handlers[eventType](event);
 
-                handlers[eventType](event);
+                    expect(dispatchEvent).toHaveBeenCalled();
+                    expect(dispatchEvent.calls[0].args[0]).toBe(eventType);
+                    expect(dispatchEvent.calls[0].args[1].center.pageX).toBe(event.pageX);
+                    expect(dispatchEvent.calls[0].args[1].center.pageY).toBe(event.pageY);
+                    expect(dispatchEvent.calls[0].args[1].srcEvent).toBe(event);
+                });
 
-                expect(dispatchEvent).toHaveBeenCalled();
-                expect(dispatchEvent.calls[0].args[0]).toBe(eventType);
-                expect(dispatchEvent.calls[0].args[1].center.pageX).toBe(event.pageX);
-                expect(dispatchEvent.calls[0].args[1].center.pageY).toBe(event.pageY);
-                expect(dispatchEvent.calls[0].args[1].srcEvent).toBe(event);
+                it('should cancel a touch event if _cancelTouchContextMenuEvents is true', function() {
+                    spyOn(EventSource, 'isTouch').andReturn(true);
+                    spyOn(BrowserInfo.Events, 'cancelEvent');
+                    handlers[eventType](event);
+
+                    expect(BrowserInfo.Events.cancelEvent).toHaveBeenCalledWith(event);
+                });
+
+                it('should not dispatch a touch event if _ignoreTouchContextMenuEvents is true', function() {
+                    spyOn(EventSource, 'isTouch').andReturn(true);
+                    handlers[eventType](event);
+
+                    expect(dispatchEvent).not.toHaveBeenCalled();
+                });
+
             });
 
             it('should dispatch double tap events', function() {
@@ -445,6 +484,15 @@ define(function(require) {
                 expect(dispatchEvent.calls[0].args[0]).toBe(eventType);
                 expect(dispatchEvent.calls[0].args[1].deltaX).toBe(0);
                 expect(dispatchEvent.calls[0].args[1].deltaY).toBe(0);
+            });
+
+            it('should preventDefault on MSHoldVisual events if _cancelTouchContextMenuEvents is true', function() {
+                var eventType = EventTypes.MS_HOLD_VISUAL;
+                var evt = { preventDefault: function(){} };
+                spyOn(evt, 'preventDefault');
+                handlers[eventType](evt);
+
+                expect(evt.preventDefault).toHaveBeenCalled;
             });
 
             it('should dispatch release events', function() {
