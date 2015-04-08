@@ -2,9 +2,9 @@ requirejs.config({
     baseUrl: './',
     paths: {
         bowser: '../../bower_components/bowser/bowser',
-        hammerjs: '../../bower_components/hammerjs/dist/hammer',
-        jquery: '../../bower_components/jquery/jquery',
-        lodash: '../../bower_components/lodash/dist/lodash',
+        hammerjs: '../../bower_components/hammerjs/dist/hammer.min',
+        jquery: '../../bower_components/jquery/jquery.min',
+        lodash: '../../bower_components/lodash/lodash.min',
         modernizr: '../../bower_components/modernizr/modernizr',
         'hammerjs.fakemultitouch': '../vendor/hammer.fakemultitouch',
         'hammerjs.showtouches': '../vendor/hammer.showtouches',
