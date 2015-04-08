@@ -476,18 +476,21 @@ define(function(require) {
             if (this._placeholderContainer) {
                 return this._placeholderContainer;
             }
+            var className = 'scrollList-placeholderContainer';
 
-
+            // Find the placeholder-container if one is already in the DOM
             var scrollList = this._scrollList;
             var listMap = scrollList.getListMap();
             var transformationPlane = listMap.getTransformationPlane();
-            var placeholderContainer = transformationPlane.querySelector('.placeholder-container');
+            var placeholderContainer = transformationPlane.querySelector('.' + className);
             if (placeholderContainer) {
+                this._placeholderContainer = placeholderContainer;
                 return placeholderContainer;
             }
 
+            // Create a placeholder-container if necessary
             placeholderContainer = document.createElement('div');
-            placeholderContainer.className = 'placeholder-container';
+            placeholderContainer.className = className;
             listMap.appendContent(placeholderContainer);
 
             this._placeholderContainer = placeholderContainer;
