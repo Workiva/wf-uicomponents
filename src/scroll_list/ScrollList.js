@@ -1053,7 +1053,8 @@ define(function(require) {
             }
             var listState = this._listMap.getCurrentTransformState();
             panToOptions.x = listState.translateX;
-            panToOptions.y = -itemLayout.top * listState.scale;
+            panToOptions.currentX = listState.translateX;
+            panToOptions.y = -(itemLayout.top||0) * listState.scale;
 
             // If given a content offset within the item, adjust the panToOptions.
             if (options.offset) {
@@ -1065,7 +1066,7 @@ define(function(require) {
                 this._applyItemOffset(
                     panToOptions,
                     offset,
-                    itemLayout.scaleToFit,
+                    itemLayout,
                     viewportAnchorLocation
                 );
             }
@@ -1297,30 +1298,30 @@ define(function(require) {
          * Companion method to `scrollToItem` responsible for calculating and
          * applying the offset to the map panToOptions, depending on the viewportAnchorLocation
          */
-        _applyItemOffset: function(panToOptions, offset, itemScaleToFit, viewportAnchorLocation) {
+        _applyItemOffset: function(panToOptions, offset, itemLayout, viewportAnchorLocation) {
             var viewportSize = this._layout.getViewportSize();
 
             // All of these translations adjust based on scale, so that when a user asks for
             // the item at 200 px, it always yields the same place, regardless of zoom.
             var getTranslation = function(scale) {
-                var scaledOffsetX = itemScaleToFit * offset.x * scale;
-                var scaledOffsetY = itemScaleToFit * offset.y * scale;
+                var scaledOffsetX = itemLayout.scaleToFit * offset.x * scale;
+                var scaledOffsetY = itemLayout.scaleToFit * offset.y * scale;
                 var translation;
                 if (viewportAnchorLocation === 'top') {
                     translation = {
-                        x: panToOptions.x, // Top has no concept of x.  Keep existing.
+                        x: panToOptions.currentX, // Top has no concept of x.  Keep existing.
                         y: -scaledOffsetY
                     };
                 }
                 else if (viewportAnchorLocation === 'center') {
                     translation = {
-                        x: (viewportSize.width / 2) - scaledOffsetX,
+                        x: (viewportSize.width / 2) - scaledOffsetX + panToOptions.x,
                         y: (viewportSize.height / 2) - scaledOffsetY,
                     };
                 }
                 else if (viewportAnchorLocation === 'bottom') {
                     translation = {
-                        x: panToOptions.x, // Bottom has no concept of x.  Keep existing.
+                        x: panToOptions.currentX, // Bottom has no concept of x.  Keep existing.
                         y: viewportSize.height - scaledOffsetY
                     };
                 }
@@ -1346,6 +1347,20 @@ define(function(require) {
             }
             // If not using a item map, we can pan to the position directly.
             else {
+                var listState = this._listMap.getCurrentTransformState();
+                var left; // Calculate the absolute left offset of the AwesomeMap
+                if (this.getOptions().horizontalAlign === 'center') {
+                    left = this._listMap.getViewportDimensions().width;
+                    left = left - this._listMap.getContentDimensions().width;
+                    left = (left / 2.0);
+                    left = itemLayout.left - left;
+                }
+                else if (this.getOptions().horizontalAlignment === 'left') {
+                    left = itemLayout.left;
+                }
+
+                panToOptions.x = -((left||0)+(itemLayout.paddingLeft||0)) * listState.scale;
+                panToOptions.y += -((itemLayout.paddingTop||0) * listState.scale);
                 var listMapScale = this._listMap.getCurrentTransformState().scale;
                 translation = getTranslation(listMapScale);
                 panToOptions.x = translation.x;
