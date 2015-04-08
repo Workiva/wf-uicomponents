@@ -10,9 +10,9 @@ module.exports = function(grunt) {
             },
             requireConfig: {
                 paths: {
-                    hammerjs: 'bower_components/hammerjs/dist/hammer',
-                    jquery: 'bower_components/jquery/jquery',
-                    lodash: 'bower_components/lodash/dist/lodash',
+                    hammerjs: 'bower_components/hammerjs/dist/hammer.min',
+                    jquery: 'bower_components/jquery/jquery.min',
+                    lodash: 'bower_components/lodash/lodash.min',
                     modernizr: 'bower_components/modernizr/modernizr',
                     'wf-js-common': 'bower_components/wf-common/src',
                     'wf-js-uicomponents': './src'
