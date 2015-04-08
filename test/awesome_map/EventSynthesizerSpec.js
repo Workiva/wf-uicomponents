@@ -325,7 +325,7 @@ define(function(require) {
                     cancelTouchContextMenuEvents: true,
                     ignoreTouchContextMenuEvents: true
                 };
-                createSynthesizer(options)
+                createSynthesizer(options);
                 spyOn(synthesizer, '_dispatchEvent');
                 dispatchEvent = synthesizer._dispatchEvent;
             });
@@ -492,7 +492,7 @@ define(function(require) {
                 spyOn(evt, 'preventDefault');
                 handlers[eventType](evt);
 
-                expect(evt.preventDefault).toHaveBeenCalled;
+                expect(evt.preventDefault).toHaveBeenCalled();
             });
 
             it('should dispatch release events', function() {
