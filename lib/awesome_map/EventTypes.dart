@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+part of wUIComponents;
+
 enum EventTypes {
   /// User right clicks on desktop.
   contextMenu,

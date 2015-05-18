@@ -14,8 +14,7 @@
  * limitations under the License.
  */
 
-import 'dart:html' show HtmlElement;
-import 'dart:math';
+part of wUIComponents;
 
 /// The minimum amount of pixel difference between touches to trigger a zoom.
 const num minimumPixelDistanceChange = 2; // 4 pixels

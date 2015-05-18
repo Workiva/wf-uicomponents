@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+part of wUIComponents;
+
 /// Select easing functions from http://www.robertpenner.com/easing/.
 ///
 /// Each implementing class provides a CSS cubic beizer representing
