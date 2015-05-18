@@ -14,226 +14,144 @@
  * limitations under the License.
  */
 
-define(function(require) {
-    'use strict';
+part of wUIComponents;
 
-    var EasingFunctions = require('wf-js-uicomponents/awesome_map/EasingFunctions');
-    var EventTypes = require('wf-js-uicomponents/awesome_map/EventTypes');
+/// A TransformState encapsulates the information needed to apply a
+/// [Transformation] to an HTML element.
+class TransformState {
+    /// The animation duration, in ms.
+    num duration;
 
-    /**
-     * Creates a new TransformState, copying properties from the given template object.
-     *
-     * @classdesc
-     *
-     * A TransformState encapsulates the information needed to apply a
-     * {@link Transformation} to an HTML element.
-     *
-     * @name TransformState
-     * @constructor
-     *
-     * @param {Object} [template]
-     *        A TransformState-like object.
-     *
-     * @example
-     *
-     * // Will use default values for all properties not specified in the template.
-     * var state = new TransformState({
-     *     scale: 2,
-     *     duration: 500
-     * });
-     */
-    var TransformState = function(template) {
-        template = template || {};
+    /// The easing function to use during animations.
+    EasingFunction easing;
 
-        //---------------------------------------------------------
-        // Public properties
-        //---------------------------------------------------------
+    /// The scale.
+    num scale;
 
-        /**
-         * The animation duration, in ms.
-         * @member TransformState#duration
-         * @type {number}
-         * @default 0
-         */
-        this.duration = template.duration || 0;
+    /// The translation along the x-axis.
+    num translateX;
 
-        /**
-         * The easing function to use during animations.
-         * See {@link module:EasingFunctions|EasingFunctions}.
-         * @member TransformState#easing
-         * @type {Function}
-         * @default {@link module:EasingFunctions|EasingFunctions}.easeOutQuart
-         */
-        this.easing = template.easing || EasingFunctions.easeOutQuart;
+    /// The translation along the y-axis.
+    num translateY;
 
-        /**
-         * The scale.
-         * @member TransformState#scale
-         * @type {number}
-         * @default 1
-         */
-        this.scale = template.scale || 1;
-
-        /**
-         * The translation along the x-axis.
-         * @member TransformState#translateX
-         * @type {number}
-         * @default 0
-         */
-        this.translateX = template.translateX || 0;
-
-        /**
-         * The translation along the y-axis.
-         * @member TransformState#translateY
-         * @type {number}
-         * @default 0
-         */
-        this.translateY = template.translateY || 0;
-    };
-
-    TransformState.prototype = {
-
-        //---------------------------------------------------------
-        // Public methods
-        //---------------------------------------------------------
-
-        /**
-         * Clones the instance.
-         * @method TransformState#clone
-         * @returns {TransformState}
-         */
-        clone: function() {
-            return new TransformState(this);
-        },
-
-        /**
-         * Checks whether this state is equal to the other state.
-         * @method
-         * @param {TransformState} other
-         * @returns {boolean}
-         */
-        equals: function(other) {
-            return other.scale === this.scale &&
-                   other.translateX === this.translateX &&
-                   other.translateY === this.translateY;
-        },
-
-        /**
-         * Modify the state by simulating a pan.
-         * @param {number} deltaX - The position change along the x-axis.
-         * @param {number} deltaY - The position change along the y-axis.
-         */
-        panBy: function(deltaX, deltaY) {
-            this.translateX = Math.round(this.translateX + deltaX);
-            this.translateY = Math.round(this.translateY + deltaY);
-        },
-
-        /**
-         * Modify the state by simulating a zoom.
-         * @param {number} scale - The relative scale to zoom by.
-         * @param {number} deltaX - The position change along the x-axis.
-         * @param {number} deltaY - The position change along the y-axis.
-         * @param {number} positionX - The x-axis position of the interaction.
-         * @param {number} positionY - The y-axis position of the interaction.
-         */
-        zoomBy: function(scale, deltaX, deltaY, positionX, positionY) {
-            var currentScale = this.scale;
-            var newScale;
-
-            // Simulate an origin in order to calculate the final translation.
-            var translateX = this.translateX;
-            var translateY = this.translateY;
-            var originX = (positionX - translateX) / currentScale;
-            var originY = (positionY - translateY) / currentScale;
-
-            // Offset the current translation by the simulated origin.
-            translateX += originX * (currentScale - 1);
-            translateY += originY * (currentScale - 1);
-
-            // Update the scale and translation from the gesture.
-            newScale = currentScale * scale;
-            translateX += deltaX;
-            translateY += deltaY;
-
-            // Adjust translation before removing simulated origin.
-            translateX -= originX * (newScale - 1);
-            translateY -= originY * (newScale - 1);
-
-            // Assign the new values.
-            this.scale = newScale;
-            this.translateX = Math.round(translateX);
-            this.translateY = Math.round(translateY);
+    TransformState({
+        duration: 0,
+        easing: null,
+        scale: 1,
+        translateX: 0,
+        translateY: 0
+    }) {
+        if (easing == null) {
+            easing = new EaseOutQuart();
         }
-    };
+    }
 
-    //---------------------------------------------------------
-    // Static members
-    //---------------------------------------------------------
-
-    /**
-     * Gets the target TransformState for the event.
-     * @method TransformState.fromEvent
-     * @param {InteractionEvent} event - An interaction event.
-     * @param {TransformState} currentState - The current transform state.
-     * @returns {TransformState}
-     *          Returns a target state if the event has a default handler;
-     *          otherwise it returns the current transform state.
-     */
-    TransformState.fromEvent = function(event, currentState) {
-        var position = event.position || { x: 0, y: 0 };
-        var gesture = event.iterativeGesture;
-        var newState = currentState.clone();
-        var targetState;
-
-        // Setup the default return values.
-        newState.duration = gesture.duration;
+    /// Gets the target TransformState for the event.
+    /// Returns a target state if the event has a default handler;
+    /// otherwise it returns the current transform state.
+    TransformState.fromEvent(InteractionEvent event, TransformState currentState) {
+        TransformState(
+            duration: gesture.duration,
+            easing: currentState.easing,
+            scale: currentState.scale,
+            translateX: currentState.translateX,
+            translateY: currentState.translateY
+        );
+        Point<num> position = event.position == null
+            ? new Point<num>(0, 0)
+            : event.position;
+        Gesture gesture = event.iterativeGesture;
 
         // Handle events that need to defer the calculation of deltas.
-        if (event.simulated && event.targetState) {
-            targetState = event.targetState;
-            if (targetState.translateX !== undefined) {
-                gesture.deltaX = targetState.translateX - currentState.translateX;
+        if (event.simulated && event.targetState != null) {
+            TransformState targetState = event.targetState;
+            if (targetState.translateX != null) {
+                gesture.deltaX = targetState.translateX - translateX;
             }
-            if (targetState.translateY !== undefined) {
-                gesture.deltaY = targetState.translateY - currentState.translateY;
+            if (targetState.translateY != null) {
+                gesture.deltaY = targetState.translateY - translateY;
             }
-            if (targetState.scale !== undefined) {
-                gesture.scale = targetState.scale / currentState.scale;
+            if (targetState.scale != null) {
+                gesture.scale = targetState.scale / scale;
             }
         }
 
         switch (event.type) {
-
-        case EventTypes.DRAG:
-        case EventTypes.DRAG_END:
-        case EventTypes.DRAG_START:
-        case EventTypes.MOUSE_WHEEL:
-
-            newState.panBy(gesture.deltaX, gesture.deltaY);
-            break;
-
-        case EventTypes.TRANSFORM:
-
-            newState.zoomBy(gesture.scale, gesture.deltaX, gesture.deltaY, position.x, position.y);
-            break;
-
-        case EventTypes.TRANSFORM_END:
-        case EventTypes.TRANSFORM_START:
-
-            // No translation on start or end because the gesture deltas can be huge
-            // due to the addition and release of fingers.
-            // For example: 1 finger at (100, 100) then a 2nd finger at (200, 200)
-            // will yield a delta of (50, 50) representing the change from the position
-            // of the first finger to the center point between two fingers.
-            newState.zoomBy(gesture.scale, 0, 0, position.x, position.y);
-            break;
-
-        default:
-            break;
+            case EventTypes.drag:
+            case EventTypes.dragEnd:
+            case EventTypes.dragStart:
+            case EventTypes.mouseWheel:
+                panBy(gesture.deltaX, gesture.deltaY);
+                break;
+            case EventTypes.transform:
+                zoomBy(gesture.scale, gesture.deltaX, gesture.deltaY, position.x, position.y);
+                break;
+            case EventTypes.transformEnd:
+            case EventTypes.transformStart:
+                // No translation on start or end because the gesture deltas can be huge
+                // due to the addition and release of fingers.
+                // For example: 1 finger at (100, 100) then a 2nd finger at (200, 200)
+                // will yield a delta of (50, 50) representing the change from the position
+                // of the first finger to the center point between two fingers.
+                zoomBy(gesture.scale, 0, 0, position.x, position.y);
+                break;
+            default:
+                break;
         }
+    }
 
-        return newState;
-    };
+    /// Creates a copy of the transformation state
+    TransformState clone() {
+        return new TransformState(duration: duration, easing: easing,
+            scale: scale, translateX: translateX, translateY: translateY);
+    }
 
-    return TransformState;
-});
+    /// Checks whether this state is equal to the other state.
+    /// NOTE: This used to be called `equals` before the dart port.
+    bool stateEquals(TransformState other) {
+        return other.scale == scale &&
+            other.translateX == translateX &&
+            other.translateY == translateY;
+    }
+
+    /// Modify the state by simulating a pan.
+    void panBy(num deltaX, num deltaY) {
+        translateX = (translateX + deltaX).round();
+        translateY = (translateY + deltaY).round();
+    }
+
+    /// Modify the state by simulating a zoom.
+    /// [scale] - The relative scale to zoom by.
+    /// [deltaX] - The position change along the x-axis.
+    /// [deltaY] - The position change along the y-axis.
+    /// [positionX] - The x-axis position of the interaction.
+    /// [positionY] - The y-axis position of the interaction.
+    void zoomBy(num scale, num deltaX, num deltaY, Point<num> position) {
+        num currentScale = this.scale;
+        num newScale;
+
+        // Simulate an origin in order to calculate the final translation.
+        num translateX = this.translateX;
+        num translateY = this.translateY;
+        num originX = (position.x - translateX) / currentScale;
+        num originY = (position.y - translateY) / currentScale;
+
+        // Offset the current translation by the simulated origin.
+        translateX += originX * (currentScale - 1);
+        translateY += originY * (currentScale - 1);
+
+        // Update the scale and translation from the gesture.
+        newScale = currentScale * scale;
+        translateX += deltaX;
+        translateY += deltaY;
+
+        // Adjust translation before removing simulated origin.
+        translateX -= originX * (newScale - 1);
+        translateY -= originY * (newScale - 1);
+
+        // Assign the new values.
+        this.scale = newScale;
+        this.translateX = translateX.round();
+        this.translateY = translateY.round();
+    }
+}

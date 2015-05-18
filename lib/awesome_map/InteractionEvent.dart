@@ -14,114 +14,63 @@
  * limitations under the License.
  */
 
-define(function() {
-    'use strict';
+part of wUIComponents;
 
-    /**
-     * Creates an InteractionEvent from the given type and gestures.
-     *
-     * @classdesc
-     *
-     * An InteractionEvent represents the events synthesized by an
-     * {@link EventSynthesizer} or simulated by an {@link InteractionSimulator}.
-     *
-     * @name InteractionEvent
-     * @constructor
-     *
-     * @param {string} type
-     *        The type of event.
-     *
-     * @param {Gesture} cumulativeGesture
-     *        Gesture representing the current state of the interaction.
-     *
-     * @param {Gesture} iterativeGesture
-     *        Gesture representing the iterative state of the gesture.
-     *
-     * @example
-     *
-     * // Create an InteractionEvent from a captured gesture.
-     * var cumulativeGesture = new Gesture(...);
-     * var iterativeGesture = lastGesture.createIterativeGesture(cumulativeGesture);
-     *
-     * var interactionEvent = new InteractionEvent(EventTypes.DRAG, cumulativeGesture, iterativeGesture);
-     */
-    var InteractionEvent = function(type, cumulativeGesture, iterativeGesture) {
 
-        //---------------------------------------------------------
-        // Public properties
-        //---------------------------------------------------------
+/// Creates an InteractionEvent from the given type and gestures.
+///
+/// An InteractionEvent represents the events synthesized by an
+/// [EventSynthesizer] or simulated by an [InteractionSimulator].
+///
+/// For example:
+///
+///     // Create an InteractionEvent from a captured gesture.
+///     Gesture cumulativeGesture = new Gesture(...);
+///     Gesture iterativeGesture = lastGesture.createIterativeGesture(
+///         cumulativeGesture);
+///
+///     Gesture interactionEvent = new InteractionEvent(
+///         EventTypes.drag, cumulativeGesture, iterativeGesture);
+class InteractionEvent {
 
-        /**
-         * Whether the event has been cancelled by an observer.
-         * @member InteractionEvent#cancelled
-         * @type {boolean}
-         * @default false
-         */
-        this.cancelled = false;
+    /// Whether the event has been cancelled by an observer.
+    bool cancelled = false;
 
-        /**
-         * The cumulative state of the interaction when the event was triggered.
-         * This should reflect the change in state from the initial touch gesture.
-         * @member InteractionEvent#cancelled
-         * @type {Gesture}
-         */
-        this.cumulativeGesture = cumulativeGesture;
+    /// The cumulative state of the interaction when the event was triggered.
+    /// This should reflect the change in state from the initial touch gesture.
+    Gesture cumulativeGesture;
 
-        /**
-         * The incremental state of the gesture that triggered this event.
-         * This should reflect the change in state from the previous gesture.
-         * @member InteractionEvent#iterativeGesture
-         * @type {Gesture}
-         */
-        this.iterativeGesture = iterativeGesture;
+    /// The incremental state of the gesture that triggered this event.
+    /// This should reflect the change in state from the previous gesture.
+    Gesture iterativeGesture;
 
-        /**
-         * The center point of the gesture relative to the target element.
-         * @member InteractionEvent#position
-         * @type {{ x: number, y: number }}
-         */
-        this.position = iterativeGesture.getPosition();
+    /// The center point of the gesture relative to the target element.
+    Point<num> position;
 
-        /**
-         * Flag to mark simulated events and distinguish from gesture-based events.
-         * @member InteractionEvent#simulated
-         * @type {boolean}
-         * @default false
-         */
-        this.simulated = false;
+    /// Flag to mark simulated events and distinguish from gesture-based events.
+    bool simulated = false;
 
-        /**
-         * The Event that serves as the source of this instance.
-         * @member InteractionEvent#source
-         * @type {Event}
-         */
-        this.source = cumulativeGesture.source;
+    /// The Event that serves as the source of this instance.
+    /// TODO: I'm not sure what type of object this is yet.
+    dynamic source;
 
-        /**
-         * The target element of the event.
-         * @property InteractionEvent#target
-         * @type {HTMLElement}
-         */
-        this.target = cumulativeGesture.target;
+    /// The target element of the event.
+    HtmlElement target;
 
-        /**
-         * The target transform state for this event. This is used when simulated
-         * events need to finish at a specific state and therefore must wait to
-         * calculate gesture deltas until the moment when the event is processed.
-         * If this is not done, deltas might be calculated from a current
-         * transform state that is modified by the time this event is processed.
-         * @member InteractionEvent#targetState
-         * @type {{ translateX: number, translateY: number, scale: number }}
-         */
-        this.targetState = null;
+    /// The target transform state for this event. This is used when simulated
+    /// events need to finish at a specific state and therefore must wait to
+    /// calculate gesture deltas until the moment when the event is processed.
+    /// If this is not done, deltas might be calculated from a current
+    /// transform state that is modified by the time this event is processed.
+    TransformState targetState = null;
 
-        /**
-         * The event type. See {@link module:EventTypes|EventTypes}.
-         * @member InteractionEvent#type
-         * @type {string}
-         */
-        this.type = type;
-    };
+    /// The event type.
+    EventTypes type;
 
-    return InteractionEvent;
-});
+    InteractionEvent(this.type, this.cumulativeGesture, this.iterativeGesture) {
+        position = iterativeGesture.getPosition();
+        source = cumulativeGesture.source;
+        target = cumulativeGesture.target;
+    }
+
+}
