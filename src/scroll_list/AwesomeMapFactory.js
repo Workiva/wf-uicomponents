@@ -84,7 +84,8 @@ define(function(require) {
                 centerContentY: vAlignAuto,
                 mode: 'stop',
                 pinToLeft: hAlignLeft,
-                pinToTop: vAlignTop
+                pinToTop: vAlignTop,
+                scrollList: scrollList
             }));
 
             // Wire up observables.

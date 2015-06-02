@@ -151,6 +151,13 @@ define(function(require) {
         this._easing = options.easing || EasingFunctions.easeOutQuart;
 
         /**
+         * The easing function that controls the animation effect.
+         * @type {Function}
+         * @private
+         */
+         this._scrollList = options.scrollList;
+
+        /**
          * Determines how to handle boundary violations during interactions.
          * @type {{x: string, y: string}}
          * @private
@@ -544,6 +551,26 @@ define(function(require) {
          */
         _stopAtBoundaries: function(event, targetState, axis) {
             var boundedPosition = this._getBoundedPosition(targetState);
+
+            var currentState = this._awesomeMap.getCurrentTransformState();
+            var boundarySensetivity = 15; // This can be extracted to a constant somewhere
+            if ( currentState.translateY === boundedPosition.y ) {
+                if ( targetState.translateY-boundedPosition.y > boundarySensetivity &&
+                     (!this._scrollList || this._scrollList.getCurrentItem().index === 0) ) {
+                    console.log("TOP!");
+                    this._awesomeMap.onScrollPastBoundary.dispatch([this, {
+                        boundary: 'TOP'
+                    }]);
+                }
+                if ( targetState.translateY-boundedPosition.y < -boundarySensetivity && 
+                     (!this._scrollList || this._scrollList.getCurrentItem().index === 
+                     this._scrollList.getItemSizeCollection()._items.length-1)) {
+                    console.log("BOTTOM!");
+                    this._awesomeMap.onScrollPastBoundary.dispatch([this, {
+                        boundary: 'BOTTOM'
+                    }]);
+                }
+            }
 
             if (!axis || axis === 'x') {
                 targetState.translateX = boundedPosition.x;
