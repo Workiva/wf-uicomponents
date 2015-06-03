@@ -72,7 +72,6 @@ define(function(require) {
      * awesomeMap.onTransformStarted(function(sender, args) { });
      * awesomeMap.onTransformFinished(function(sender, args) { });
      * awesomeMap.onTranslationChanged(function(sender, args) { });
-     * awesomeMap.onScrollPastBoundary(function(sender, args) { });
      *
      * @example <caption>Registering Interceptors</caption>
      *
@@ -216,17 +215,6 @@ define(function(require) {
          *        })
          */
         this.onTransformStarted = Observable.newObservable();
-
-        /**
-         * Observable for subscribing to scroll events beyond AwesomeMap boundaries.
-         *
-         * @method AwesomeMap#onScrollPastTopBoundary
-         * @param {Function} callback
-         *        Invoked with (sender, {
-                      boundary: {'TOP'||'BOTTOM'}
-         *        })
-         */
-        this.onScrollPastBoundary = Observable.newObservable();        
 
         //---------------------------------------------------------
         // Private properties
@@ -603,7 +591,6 @@ define(function(require) {
             this.onTransformFinished.dispose();
             this.onTransformStarted.dispose();
             this.onTranslationChanged.dispose();
-            this.onScrollPastBoundary.dispose();
 
             DestroyUtil.destroy(this);
 

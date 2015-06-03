@@ -19,6 +19,7 @@ define(function(require) {
 
     var _ = require('lodash');
     var AwesomeMapFactory = require('wf-js-uicomponents/scroll_list/AwesomeMapFactory');
+    var BoundaryTypes = require('wf-js-uicomponents/awesome_map/BoundaryTypes');
     var DestroyUtil = require('wf-js-common/DestroyUtil');
     var FitModes = require('wf-js-uicomponents/layouts/FitModes');
     var HorizontalAlignments = require('wf-js-uicomponents/layouts/HorizontalAlignments');
@@ -378,6 +379,17 @@ define(function(require) {
          *        Invoked with no parameters
          */
         this.onScrollToItemStarted = Observable.newObservable();
+
+        /**
+         * Observable for subscribing to scroll events beyond AwesomeMap boundaries.
+         *
+         * @method AwesomeMap#onScrollPastTopBoundary
+         * @param {Function} callback
+         *        Invoked with (sender, {
+                      boundary: {'TOP'||'BOTTOM'}
+         *        })
+         */
+        this.onScrollPastBoundary = Observable.newObservable();
 
         //---------------------------------------------------------
         // Private properties
@@ -1387,7 +1399,32 @@ define(function(require) {
                 duration: options.duration,
                 done: options.done
             });
+        },
+
+        _shouldPropagateBoundaryEvent: function(source, args) {
+            var propagate = false;
+
+            // Left and Right events
+            if (args.boundary === BoundaryTypes.LEFT ||
+                args.boundary === BoundaryTypes.RIGHT) {
+                propagate = true;
+            }
+            // Top event on first Item
+            else if (args.boundary === BoundaryTypes.TOP &&
+                this.getCurrentItem().index === 0) {
+                propagate = true;
+            }
+            // Top event on first Item
+            else if (args.boundary === BoundaryTypes.BOTTOM &&
+                this.getCurrentItem().index === 
+                this._itemSizesCollection._items.length-1) {
+                propagate = true;
+            }
+            if (propagate) {
+                this.onScrollPastBoundary.dispatch([this, args]);
+            }
         }
+
     };
 
     return ScrollList;

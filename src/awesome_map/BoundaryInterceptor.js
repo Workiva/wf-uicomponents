@@ -18,9 +18,11 @@ define(function(require) {
     'use strict';
 
     var _ = require('lodash');
+    var BoundaryTypes = require('wf-js-uicomponents/awesome_map/BoundaryTypes');
     var EasingFunctions = require('wf-js-uicomponents/awesome_map/EasingFunctions');
     var EventTypes = require('wf-js-uicomponents/awesome_map/EventTypes');
     var InterceptorMixin = require('wf-js-uicomponents/awesome_map/InterceptorMixin');
+    var Observable = require('wf-js-common/Observable');
     var Utils = require('wf-js-common/Utils');
 
     /**
@@ -28,6 +30,8 @@ define(function(require) {
      * @type {number}
      */
     var INERTIAL_SCALE_FACTOR = 4;
+
+    var DEFAULT_BOUNDARY_SENSITIVITY = 25;
 
     /**
      * Values for the mode option.
@@ -150,12 +154,19 @@ define(function(require) {
          */
         this._easing = options.easing || EasingFunctions.easeOutQuart;
 
+        this._boundarySensitivity = options.boundarySensitivity || DEFAULT_BOUNDARY_SENSITIVITY
         /**
-         * The easing function that controls the animation effect.
-         * @type {Function}
-         * @private
+         * Observable for subscribing to scroll events beyond AwesomeMap boundaries.
+         *
+         * @method AwesomeMap#onScrollPastTopBoundary
+         * @param {Function} callback
+         *        Invoked with (sender, {
+                      boundary: {'TOP'||'BOTTOM'}
+         *        })
          */
-         this._scrollList = options.scrollList;
+        // @TODO: Does this need to be disposed somewhere?  If so, where?
+        this.onScrollPastBoundary = Observable.newObservable();
+
 
         /**
          * Determines how to handle boundary violations during interactions.
@@ -232,6 +243,41 @@ define(function(require) {
             var eventType = event.type;
             var originalState;
 
+
+            // Boundary Detection
+            var boundedPosition = this._getBoundedPosition(targetState);
+            var currentState = this._awesomeMap.getCurrentTransformState();
+            // Future: This should be able to be extended to provide left/right
+            //   boundary detection by copy+pasting this block and changing all Y's -> X's
+            if (currentState.translateY === boundedPosition.y) {
+                if (targetState.translateY-boundedPosition.y > this._boundarySensitivity) {
+                    console.log("TOP!");
+                    this.onScrollPastBoundary.dispatch([this, {
+                        boundary: BoundaryTypes.TOP
+                    }]);
+                }
+                if (targetState.translateY-boundedPosition.y < -this._boundarySensitivity) {
+                    console.log("BOTTOM!");
+                    this.onScrollPastBoundary.dispatch([this, {
+                        boundary: BoundaryTypes.BOTTOM
+                    }]);
+                }
+            }
+            if (currentState.translateX === boundedPosition.x) {
+                if (targetState.translateX-boundedPosition.x > this._boundarySensitivity) {
+                    console.log("LEFT!");
+                    this.onScrollPastBoundary.dispatch([this, {
+                        boundary: BoundaryTypes.LEFT
+                    }]);
+                }
+                if (targetState.translateX-boundedPosition.x < -this._boundarySensitivity) {
+                    console.log("RIGHT!");
+                    this.onScrollPastBoundary.dispatch([this, {
+                        boundary: BoundaryTypes.RIGHT
+                    }]);
+                }
+            }                   
+
             switch (eventType) {
             case EventTypes.TOUCH:
 
@@ -293,7 +339,7 @@ define(function(require) {
                     this._stopAtBoundaries(event, targetState);
                 }
                 break;
-            }
+            }     
         },
 
         //---------------------------------------------------------
@@ -551,26 +597,6 @@ define(function(require) {
          */
         _stopAtBoundaries: function(event, targetState, axis) {
             var boundedPosition = this._getBoundedPosition(targetState);
-
-            var currentState = this._awesomeMap.getCurrentTransformState();
-            var boundarySensetivity = 15; // This can be extracted to a constant somewhere
-            if ( currentState.translateY === boundedPosition.y ) {
-                if ( targetState.translateY-boundedPosition.y > boundarySensetivity &&
-                     (!this._scrollList || this._scrollList.getCurrentItem().index === 0) ) {
-                    console.log("TOP!");
-                    this._awesomeMap.onScrollPastBoundary.dispatch([this, {
-                        boundary: 'TOP'
-                    }]);
-                }
-                if ( targetState.translateY-boundedPosition.y < -boundarySensetivity && 
-                     (!this._scrollList || this._scrollList.getCurrentItem().index === 
-                     this._scrollList.getItemSizeCollection()._items.length-1)) {
-                    console.log("BOTTOM!");
-                    this._awesomeMap.onScrollPastBoundary.dispatch([this, {
-                        boundary: 'BOTTOM'
-                    }]);
-                }
-            }
 
             if (!axis || axis === 'x') {
                 targetState.translateX = boundedPosition.x;
