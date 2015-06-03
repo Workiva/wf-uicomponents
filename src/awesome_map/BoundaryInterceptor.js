@@ -251,13 +251,11 @@ define(function(require) {
             //   boundary detection by copy+pasting this block and changing all Y's -> X's
             if (currentState.translateY === boundedPosition.y) {
                 if (targetState.translateY-boundedPosition.y > this._boundarySensitivity) {
-                    console.log("TOP!");
                     this.onScrollPastBoundary.dispatch([this, {
                         boundary: BoundaryTypes.TOP
                     }]);
                 }
                 if (targetState.translateY-boundedPosition.y < -this._boundarySensitivity) {
-                    console.log("BOTTOM!");
                     this.onScrollPastBoundary.dispatch([this, {
                         boundary: BoundaryTypes.BOTTOM
                     }]);
@@ -265,13 +263,11 @@ define(function(require) {
             }
             if (currentState.translateX === boundedPosition.x) {
                 if (targetState.translateX-boundedPosition.x > this._boundarySensitivity) {
-                    console.log("LEFT!");
                     this.onScrollPastBoundary.dispatch([this, {
                         boundary: BoundaryTypes.LEFT
                     }]);
                 }
                 if (targetState.translateX-boundedPosition.x < -this._boundarySensitivity) {
-                    console.log("RIGHT!");
                     this.onScrollPastBoundary.dispatch([this, {
                         boundary: BoundaryTypes.RIGHT
                     }]);
