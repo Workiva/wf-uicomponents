@@ -154,7 +154,7 @@ define(function(require) {
          */
         this._easing = options.easing || EasingFunctions.easeOutQuart;
 
-        this._boundarySensitivity = options.boundarySensitivity || DEFAULT_BOUNDARY_SENSITIVITY
+        this._boundarySensitivity = options.boundarySensitivity || DEFAULT_BOUNDARY_SENSITIVITY;
         /**
          * Observable for subscribing to scroll events beyond AwesomeMap boundaries.
          *
@@ -272,7 +272,7 @@ define(function(require) {
                         boundary: BoundaryTypes.RIGHT
                     }]);
                 }
-            }                   
+            }
 
             switch (eventType) {
             case EventTypes.TOUCH:
@@ -335,7 +335,7 @@ define(function(require) {
                     this._stopAtBoundaries(event, targetState);
                 }
                 break;
-            }     
+            }
         },
 
         //---------------------------------------------------------

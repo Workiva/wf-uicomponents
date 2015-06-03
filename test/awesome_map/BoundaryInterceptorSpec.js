@@ -18,6 +18,7 @@ define(function(require) {
     'use strict';
 
     var BoundaryInterceptor = require('wf-js-uicomponents/awesome_map/BoundaryInterceptor');
+    var BoundaryTypes = require('wf-js-uicomponents/awesome_map/BoundaryTypes');
     var EventTypes = require('wf-js-uicomponents/awesome_map/EventTypes');
     var Gesture = require('wf-js-uicomponents/awesome_map/Gesture');
     var InteractionEvent = require('wf-js-uicomponents/awesome_map/InteractionEvent');
@@ -36,7 +37,12 @@ define(function(require) {
         var map = {
             isDisposed: function() { return false; },
             getContentDimensions: function() { return contentDimensions; },
-            getCurrentTransformState: function() {},
+            getCurrentTransformState: function() {
+                return new TransformState({
+                    translateX: 0,
+                    translateY: 0
+                });
+            },
             getViewportDimensions: function() { return viewportDimensions; },
             onTransformStarted: function() {}
         };
@@ -630,6 +636,119 @@ define(function(require) {
 
                 it('should snap to viewport bottom and right', function() {
                     expectSnapToViewportBottomAndRight(EventTypes.RESIZE);
+                });
+            });
+        });
+
+        describe('onScrollPastBoundary events', function() {
+            var contentDimensions = { width: 200, height: 400 };
+            //  viewportDimensions = { width: 100, height: 200 };
+            var interceptor, callback;
+            var evt = createEvent(EventTypes.MOUSE_WHEEL);
+            var DEFAULT_BOUNDARY_SENSITIVITY = 25;
+
+
+            function setCurrentTransformState(x,y) {
+                spyOn(map, 'getCurrentTransformState').andReturn(new TransformState({
+                    translateX: x,
+                    translateY: y
+                }));
+            }
+            function getTargetState(x,y) {
+                return new TransformState({
+                    translateX: x,
+                    translateY: y
+                });
+            }
+            function setupNewInterceptor(boundarySensitivity) {
+                interceptor = new BoundaryInterceptor({
+                    boundarySensitivity: boundarySensitivity || DEFAULT_BOUNDARY_SENSITIVITY
+                });
+                interceptor.register(map);
+                spyOn(interceptor.onScrollPastBoundary,'dispatch');
+                callback = interceptor.onScrollPastBoundary.dispatch;
+            }
+
+            beforeEach(function() {
+                spyOn(map, 'getViewportDimensions').andReturn(viewportDimensions);
+                spyOn(map, 'getContentDimensions').andReturn(contentDimensions);
+                setupNewInterceptor();
+            });
+
+            describe('should be emitted', function() {
+                it('when scrolling beyond the top boundary past the sensitivity threshold', function() {
+                    setCurrentTransformState(0,0); // Top of content
+                    var targetState = getTargetState(0,30);
+                    interceptor.handleTransformStarted(null, { event: evt, targetState: targetState });
+                    expect(callback).toHaveBeenCalledWith([interceptor,{boundary:BoundaryTypes.TOP}]);
+                });
+                it('when scrolling beyond the left boundary past the sensitivity threshold', function() {
+                    setCurrentTransformState(0,0); // Top of content
+                    var targetState = getTargetState(30,0);
+                    interceptor.handleTransformStarted(null, { event: evt, targetState: targetState });
+                    expect(callback).toHaveBeenCalledWith([interceptor,{boundary:BoundaryTypes.LEFT}]);
+                });
+                it('when scrolling beyond the right boundary past the sensitivity threshold', function() {
+                    setCurrentTransformState(-100,0); // Top-right of content
+                    var targetState = getTargetState(-130,0);
+                    interceptor.handleTransformStarted(null, { event: evt, targetState: targetState });
+                    expect(callback).toHaveBeenCalledWith([interceptor,{boundary:BoundaryTypes.RIGHT}]);
+                });
+                it('when scrolling beyond the bottom boundary past the sensitivity threshold', function() {
+                    setCurrentTransformState(0,-200); // Bottom of content
+                    var targetState = getTargetState(0,-230);
+                    interceptor.handleTransformStarted(null, { event: evt, targetState: targetState });
+                    expect(callback).toHaveBeenCalledWith([interceptor,{boundary:BoundaryTypes.BOTTOM}]);
+                });
+            });
+            describe('should not be emitted', function() {
+                it('when scrolling beyond the top boundary below the sensitivity threshold', function() {
+                    setCurrentTransformState(0,0); // Top of content
+                    var targetState = getTargetState(0,10);
+                    interceptor.handleTransformStarted(null, { event: evt, targetState: targetState });
+                    expect(callback).not.toHaveBeenCalled();
+                });
+                it('when scrolling beyond the left boundary below the sensitivity threshold', function() {
+                    setCurrentTransformState(0,0); // Top of content
+                    var targetState = getTargetState(10,0);
+                    interceptor.handleTransformStarted(null, { event: evt, targetState: targetState });
+                    expect(callback).not.toHaveBeenCalled();
+                });
+                it('when scrolling beyond the right boundary below the sensitivity threshold', function() {
+                    setCurrentTransformState(-100,0); // Top-right of content
+                    var targetState = getTargetState(-110,0);
+                    interceptor.handleTransformStarted(null, { event: evt, targetState: targetState });
+                    expect(callback).not.toHaveBeenCalled();
+                });
+                it('when scrolling beyond the bottom boundary below the sensitivity threshold', function() {
+                    setCurrentTransformState(0,-200); // Bottom of content
+                    var targetState = getTargetState(0,-210);
+                    interceptor.handleTransformStarted(null, { event: evt, targetState: targetState });
+                    expect(callback).not.toHaveBeenCalled();
+                });
+                it('when scrolling beyond the top boundary while viewport not at the top boundary of the content', function() {
+                    setCurrentTransformState(0,-200); // Bottom of content
+                    var targetState = getTargetState(0,30);
+                    interceptor.handleTransformStarted(null, { event: evt, targetState: targetState });
+                    expect(callback).not.toHaveBeenCalled();
+                });
+                it('when scrolling beyond the left boundary while viewport not at the left boundary of the content', function() {
+                    setCurrentTransformState(-100,0); // Top-right of content
+                    var targetState = getTargetState(30,0);
+                    interceptor.handleTransformStarted(null, { event: evt, targetState: targetState });
+                    expect(callback).not.toHaveBeenCalled();
+                });
+                it('when scrolling beyond the right boundary while viewport not at the right boundary of the content', function() {
+                    setCurrentTransformState(0,0); // Top-left of content
+                    var targetState = getTargetState(-130,0);
+                    interceptor.handleTransformStarted(null, { event: evt, targetState: targetState });
+                    expect(callback).not.toHaveBeenCalled();
+                });
+                it('when scrolling beyond the bottom boundary while viewport not at the bottom boundary of the content', function() {
+                    setCurrentTransformState(0,0); // Top of content
+                    var targetState = getTargetState(0,-230);
+                    interceptor.handleTransformStarted(null, { event: evt, targetState: targetState });
+                    expect(callback).not.toHaveBeenCalled();
                 });
             });
         });

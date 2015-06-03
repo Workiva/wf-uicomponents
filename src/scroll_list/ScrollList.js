@@ -1416,7 +1416,7 @@ define(function(require) {
             }
             // Top event on first Item
             else if (args.boundary === BoundaryTypes.BOTTOM &&
-                this.getCurrentItem().index === 
+                this.getCurrentItem().index ===
                 this._itemSizesCollection._items.length-1) {
                 propagate = true;
             }
