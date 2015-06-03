@@ -245,10 +245,10 @@ define(function(require) {
 
 
             // Boundary Detection
+            // @TODO: It seems that this event can be triggered by inertial events generated
+            //  by the browser.  Is this desirable or no?  Is there any way to prevent this?
             var boundedPosition = this._getBoundedPosition(targetState);
             var currentState = this._awesomeMap.getCurrentTransformState();
-            // Future: This should be able to be extended to provide left/right
-            //   boundary detection by copy+pasting this block and changing all Y's -> X's
             if (currentState.translateY === boundedPosition.y) {
                 if (targetState.translateY-boundedPosition.y > this._boundarySensitivity) {
                     this.onScrollPastBoundary.dispatch([this, {
