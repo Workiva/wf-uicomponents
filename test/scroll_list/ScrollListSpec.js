@@ -1487,9 +1487,6 @@ define(function(require) {
         });
     
         describe('_shouldPropagateBoundaryEvent', function() {
-            function getEvent(type) {
-                return ;
-            }
             function testInMode(mode) {
                 it('should propagate the event when it is on left-boundary',function() {
                     testScrollList({ mode: mode }, function(scrollList) {
