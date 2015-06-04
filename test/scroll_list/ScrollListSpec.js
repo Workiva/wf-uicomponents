@@ -20,6 +20,7 @@ define(function(require) {
     var $ = require('jquery');
     var _ = require('lodash');
     var AwesomeMap = require('wf-js-uicomponents/awesome_map/AwesomeMap');
+    var BoundaryTypes = require('wf-js-uicomponents/awesome_map/BoundaryTypes');
     var DestroyUtil = require('wf-js-common/DestroyUtil');
     var ItemSizeCollection = require('wf-js-uicomponents/layouts/ItemSizeCollection');
     var ScrollList = require('wf-js-uicomponents/scroll_list/ScrollList');
@@ -1484,5 +1485,78 @@ define(function(require) {
                 });
             });
         });
+    
+        describe('_shouldPropagateBoundaryEvent', function() {
+            function getEvent(type) {
+                return ;
+            }
+            function testInMode(mode) {
+                it('should propagate the event when it is on left-boundary',function() {
+                    testScrollList({ mode: mode }, function(scrollList) {
+                        spyOn(scrollList.onScrollPastBoundary,'dispatch');
+                        var callback = scrollList.onScrollPastBoundary.dispatch;
+                        scrollList._shouldPropagateBoundaryEvent(null,{boundary: BoundaryTypes.LEFT});
+                        expect(callback).toHaveBeenCalled();
+                    });
+                });
+                it('should propagate the event when it is on right-boundary',function() {
+                    testScrollList({ mode: mode }, function(scrollList) {
+                        spyOn(scrollList.onScrollPastBoundary,'dispatch');
+                        var callback = scrollList.onScrollPastBoundary.dispatch;
+                        scrollList._shouldPropagateBoundaryEvent(null,{boundary: BoundaryTypes.RIGHT});
+                        expect(callback).toHaveBeenCalled();
+                    });
+                });
+                it('should propagate the event when it is on top-boundary and the current listItem is the first',function() {
+                    testScrollList({ mode: mode }, function(scrollList) {
+                        spyOn(scrollList.onScrollPastBoundary,'dispatch');
+                        spyOn(scrollList._layout, 'getCurrentItemIndex').andReturn(0); // First item
+                        var callback = scrollList.onScrollPastBoundary.dispatch;
+                        scrollList._shouldPropagateBoundaryEvent(null,{boundary: BoundaryTypes.TOP});
+                        expect(callback).toHaveBeenCalled();
+                    });
+                });
+                it('should propagate the event when it is on bottom-boundary and the current listItem is the last',function() {
+                    testScrollList({ mode: mode }, function(scrollList) {
+                        spyOn(scrollList.onScrollPastBoundary,'dispatch');
+                        spyOn(scrollList._layout, 'getCurrentItemIndex').andReturn(19); // Last item
+                        var callback = scrollList.onScrollPastBoundary.dispatch;
+                        scrollList._shouldPropagateBoundaryEvent(null,{boundary: BoundaryTypes.BOTTOM});
+                        expect(callback).toHaveBeenCalled();
+                    });
+                });
+                it('should not propagate the event when it is on top-boundary and the current listItem is not the first',function() {
+                    testScrollList({ mode: mode }, function(scrollList) {
+                        spyOn(scrollList.onScrollPastBoundary,'dispatch');
+                        spyOn(scrollList._layout, 'getCurrentItemIndex').andReturn(19); // Last item
+                        var callback = scrollList.onScrollPastBoundary.dispatch;
+                        scrollList._shouldPropagateBoundaryEvent(null,{boundary: BoundaryTypes.TOP});
+                        expect(callback).not.toHaveBeenCalled();
+                    });
+                });
+                it('should not propagate the event when it is on bottom-boundary and the current listItem is not the last',function() {
+                    testScrollList({ mode: mode }, function(scrollList) {
+                        spyOn(scrollList.onScrollPastBoundary,'dispatch');
+                        spyOn(scrollList._layout, 'getCurrentItemIndex').andReturn(0); // first item
+                        var callback = scrollList.onScrollPastBoundary.dispatch;
+                        scrollList._shouldPropagateBoundaryEvent(null,{boundary: BoundaryTypes.BOTTOM});
+                        expect(callback).not.toHaveBeenCalled();
+                    });
+                });
+            }
+            describe('in Flow mode',function() {
+                testInMode('flow');
+            });
+            describe('in Peek mode',function() {
+                testInMode('peek');
+            });
+            describe('in Single mode',function() {
+                testInMode('single');
+            });
+
+        });
     });
+
+
+
 });

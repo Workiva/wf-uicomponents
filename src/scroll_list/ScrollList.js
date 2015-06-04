@@ -1411,13 +1411,13 @@ define(function(require) {
             }
             // Top event on first Item
             else if (args.boundary === BoundaryTypes.TOP &&
-                this.getCurrentItem().index === 0) {
+                this._layout.getCurrentItemIndex() === 0) {
                 propagate = true;
             }
             // Top event on first Item
             else if (args.boundary === BoundaryTypes.BOTTOM &&
-                this.getCurrentItem().index ===
-                this._itemSizesCollection._items.length-1) {
+                this._layout.getCurrentItemIndex() ===
+                this._itemSizesCollection.getLength()-1) {
                 propagate = true;
             }
             if (propagate) {
