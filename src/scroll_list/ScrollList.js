@@ -1414,7 +1414,7 @@ define(function(require) {
                 this._layout.getCurrentItemIndex() === 0) {
                 propagate = true;
             }
-            // Top event on first Item
+            // Bottom event on last Item
             else if (args.boundary === BoundaryTypes.BOTTOM &&
                 this._layout.getCurrentItemIndex() ===
                 this._itemSizesCollection.getLength()-1) {
