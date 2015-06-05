@@ -117,7 +117,7 @@ define(function(require) {
      *        Pins content that does not overflow the viewport to the top.
      *        When options.centerContentY is true it overrides this.
      *
-     * @param {boolean} [options.boundarySensitivity=DEFAULT_BOUNDARY_SENSITIVITY]
+     * @param {number} [options.boundarySensitivity=DEFAULT_BOUNDARY_SENSITIVITY]
      *        This value defines the minimum number of pixels beyond the boundary a scroll event
      *        must reach for boundary events to be fired, so that light touches and small scrolls 
      *        (by default) wont fire events constantly.  A value of 0 will cause every event which
