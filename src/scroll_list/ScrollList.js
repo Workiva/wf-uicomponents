@@ -386,7 +386,7 @@ define(function(require) {
          * @method AwesomeMap#onScrollPastTopBoundary
          * @param {Function} callback
          *        Invoked with (sender, {
-                      boundary: {'TOP'||'BOTTOM'}
+         *            boundary: {@link BoundaryTypes}
          *        })
          */
         this.onScrollPastBoundary = Observable.newObservable();
