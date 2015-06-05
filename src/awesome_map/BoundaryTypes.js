@@ -20,9 +20,9 @@ define(function() {
     /**
      * @classdesc
      *
-     * EventTypes represent the type of events encapsulted by an {@link IneractionEvent}.
+     * BoundaryTypes represent the type of boundaries encapsulted by {@link BoundaryInterceptor}.
      *
-     * @exports EventTypes
+     * @exports BoundaryTypes
      */
     var BoundaryTypes = {
         TOP: 'Top',
