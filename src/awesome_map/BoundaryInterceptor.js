@@ -317,8 +317,10 @@ define(function(require) {
 
             case EventTypes.DRAG_END:
                 /* jshint -W086 */// Expected break statement 
+
                 this._debouncedDetermineBoundaryVisibility();
                 // Fall through
+                
             case EventTypes.DRAG:
             case EventTypes.DRAG_START:
                 /* jshint +W086 */// Expected break statement             
@@ -340,6 +342,7 @@ define(function(require) {
                 break;
 
             case EventTypes.MOUSE_WHEEL:
+
                 this._updateBoundariesStillVisible();
                 this._debouncedDetermineBoundaryVisibility();
                 this._checkForBoundaryEvents(targetState);
