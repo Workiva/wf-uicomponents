@@ -184,7 +184,14 @@ define(function(require) {
          */
         this.onScrollPastBoundary = Observable.newObservable();
 
+        /**
+         * A list of boundaries that have been in view since the last completed user event 
+         * @type {[BoundaryType]}
+         * @private
+         */
         this._visibleBoundaries = [];
+        // Initialize with all of the boundaries, and any that are not in view will be removed
+        // when an event is processed.
         for (var boundary in BoundaryTypes) {
             if (BoundaryTypes.hasOwnProperty(boundary)) {
                 this._visibleBoundaries.push(BoundaryTypes[boundary]);
@@ -253,7 +260,13 @@ define(function(require) {
             };
         },
 
-        _isBoundaryVisible: function(boundary) {
+        /**
+         * Determines if the specified boundary is currently in view
+         * @method BoundaryInterceptor#isBoundaryVisible
+         * @param {BoundaryType} boundary
+         * @returns {boolean} true if visible, else false
+         */
+        isBoundaryVisible: function(boundary) {
             var contentDimensions = this._awesomeMap.getContentDimensions();
             var viewportDimensions = this._awesomeMap.getViewportDimensions();
             var currentState = this._awesomeMap.getCurrentTransformState();
@@ -282,60 +295,6 @@ define(function(require) {
             return false;
         },
 
-        _determineBoundaryVisibility: function() {
-            this._visibleBoundaries = [];
-            // Determine boundary visibility
-            for (var boundary in BoundaryTypes) {
-                if (this._isBoundaryVisible(BoundaryTypes[boundary])) {
-                    this._visibleBoundaries.push(BoundaryTypes[boundary]);
-                }
-            }
-        },
-
-        _debouncedDetermineBoundaryVisibility: function() {
-            // Overridden at the end of the Prototype definition with a concrete function.
-        },
-
-        _updateBoundariesStillVisible: function() {
-            var visibleBoundaries = [];
-            for (var boundary in this._visibleBoundaries) {
-                if (this._isBoundaryVisible(this._visibleBoundaries[boundary])) {
-                    visibleBoundaries.push(this._visibleBoundaries[boundary]);
-                }
-            }
-            this._visibleBoundaries = visibleBoundaries;
-        },
-
-        _checkForBoundaryEvents: function(targetState) {
-            var boundedPosition = this._getBoundedPosition(targetState);
-            var deltaY = targetState.translateY - boundedPosition.y;
-            if (deltaY > this._boundarySensitivity &&
-                this._visibleBoundaries.indexOf(BoundaryTypes.TOP) !== -1) {
-                this.onScrollPastBoundary.dispatch([this, {
-                    boundary: BoundaryTypes.TOP
-                }]);
-            }
-            if (deltaY < -this._boundarySensitivity &&
-                this._visibleBoundaries.indexOf(BoundaryTypes.BOTTOM) !== -1) {
-                this.onScrollPastBoundary.dispatch([this, {
-                    boundary: BoundaryTypes.BOTTOM
-                }]);
-            }
-            var deltaX = targetState.translateX - boundedPosition.x;
-            if (deltaX > this._boundarySensitivity &&
-                this._visibleBoundaries.indexOf(BoundaryTypes.LEFT) !== -1) {
-                this.onScrollPastBoundary.dispatch([this, {
-                    boundary: BoundaryTypes.LEFT
-                }]);
-            }
-            if (deltaX < -this._boundarySensitivity &&
-                this._visibleBoundaries.indexOf(BoundaryTypes.RIGHT) !== -1) {
-                this.onScrollPastBoundary.dispatch([this, {
-                    boundary: BoundaryTypes.RIGHT
-                }]);
-            }
-        },
-
         /**
          * Intercepts transforms and applies boundary constraints.
          * @method BoundaryInterceptor#handleTransformStarted
@@ -349,10 +308,6 @@ define(function(require) {
             var eventType = event.type;
             var originalState;
 
-
-            var boundedPosition = this._getBoundedPosition(targetState);
-            console.log(eventType);
-
             switch (eventType) {
             case EventTypes.TOUCH:
 
@@ -361,10 +316,12 @@ define(function(require) {
                 break;
 
             case EventTypes.DRAG_END:
+                /* jshint -W086 */// Expected break statement 
                 this._debouncedDetermineBoundaryVisibility();
                 // Fall through
             case EventTypes.DRAG:
             case EventTypes.DRAG_START:
+                /* jshint +W086 */// Expected break statement             
 
                 this._updateBoundariesStillVisible();
                 this._checkForBoundaryEvents(targetState);
@@ -502,6 +459,65 @@ define(function(require) {
                     bounceDistance = 0.1 * viewportSize.height;
                     direction = boundedPosition.y < originalState.translateY ? 1 : -1;
                     targetState.translateY = boundedPosition.y + bounceDistance * direction;
+                }
+            }
+        },
+
+        /**
+         * Tests to see if the given event state meets the criteria for firing
+         * one or more onScrollPastBoundary events.
+         * @param {TransformState} targetState
+         * @private
+         */
+        _checkForBoundaryEvents: function(targetState) {
+            var boundedPosition = this._getBoundedPosition(targetState);
+            var deltaY = targetState.translateY - boundedPosition.y;
+            if (deltaY > this._boundarySensitivity &&
+                this._visibleBoundaries.indexOf(BoundaryTypes.TOP) !== -1) {
+                this.onScrollPastBoundary.dispatch([this, {
+                    boundary: BoundaryTypes.TOP
+                }]);
+            }
+            if (deltaY < -this._boundarySensitivity &&
+                this._visibleBoundaries.indexOf(BoundaryTypes.BOTTOM) !== -1) {
+                this.onScrollPastBoundary.dispatch([this, {
+                    boundary: BoundaryTypes.BOTTOM
+                }]);
+            }
+            var deltaX = targetState.translateX - boundedPosition.x;
+            if (deltaX > this._boundarySensitivity &&
+                this._visibleBoundaries.indexOf(BoundaryTypes.LEFT) !== -1) {
+                this.onScrollPastBoundary.dispatch([this, {
+                    boundary: BoundaryTypes.LEFT
+                }]);
+            }
+            if (deltaX < -this._boundarySensitivity &&
+                this._visibleBoundaries.indexOf(BoundaryTypes.RIGHT) !== -1) {
+                this.onScrollPastBoundary.dispatch([this, {
+                    boundary: BoundaryTypes.RIGHT
+                }]);
+            }
+        },
+
+        /**
+         * A debounced wrapper for _determineBoundaryVisibility.
+         * This is declared now for clarity, but overriden at the end of the Prototype
+         * definition because lodash requires a concrete function.
+         * @private
+         */
+        _debouncedDetermineBoundaryVisibility: function() {
+        },
+
+        /**
+         * Creates a new list of currently visible boundaries.
+         * @private
+         */
+        _determineBoundaryVisibility: function() {
+            this._visibleBoundaries = [];
+            // Determine boundary visibility
+            for (var boundary in BoundaryTypes) {
+                if (this.isBoundaryVisible(BoundaryTypes[boundary])) {
+                    this._visibleBoundaries.push(BoundaryTypes[boundary]);
                 }
             }
         },
@@ -685,9 +701,24 @@ define(function(require) {
             if (!axis || axis === 'y') {
                 targetState.translateY = boundedPosition.y;
             }
+        },
+
+        /**
+         * Updates the list of boundaries, removing any which are not currently visible.
+         * @private
+         */
+        _updateBoundariesStillVisible: function() {
+            var visibleBoundaries = [];
+            for (var boundary in this._visibleBoundaries) {
+                if (this.isBoundaryVisible(this._visibleBoundaries[boundary])) {
+                    visibleBoundaries.push(this._visibleBoundaries[boundary]);
+                }
+            }
+            this._visibleBoundaries = visibleBoundaries;
         }
     };
 
+    // Replace the function stubbed above with a concrete debounced function.
     BoundaryInterceptor.prototype._debouncedDetermineBoundaryVisibility =
         _.debounce(BoundaryInterceptor.prototype._determineBoundaryVisibility,75);
 
