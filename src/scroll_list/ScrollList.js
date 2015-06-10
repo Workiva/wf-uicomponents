@@ -1404,21 +1404,31 @@ define(function(require) {
         _shouldPropagateBoundaryEvent: function(source, args) {
             var propagate = false;
 
-            // Left and Right events
-            if (args.boundary === BoundaryTypes.LEFT ||
-                args.boundary === BoundaryTypes.RIGHT) {
+            switch (this._options.mode) {
+            case ScrollModes.FLOW:
+                // Propagate all events; there is only one Awesome map, and its 
+                // boundaries are the same as the ScrollLists'
                 propagate = true;
-            }
-            // Top event on first Item
-            else if (args.boundary === BoundaryTypes.TOP &&
-                this._layout.getCurrentItemIndex() === 0) {
-                propagate = true;
-            }
-            // Bottom event on last Item
-            else if (args.boundary === BoundaryTypes.BOTTOM &&
-                this._layout.getCurrentItemIndex() ===
-                this._itemSizesCollection.getLength()-1) {
-                propagate = true;
+                break;
+            case ScrollModes.SINGLE:
+            case ScrollModes.PEEK:
+                // Left and Right events
+                if (args.boundary === BoundaryTypes.LEFT ||
+                    args.boundary === BoundaryTypes.RIGHT) {
+                    propagate = true;
+                }
+                // Top event only if on first Item
+                else if (args.boundary === BoundaryTypes.TOP &&
+                    this._layout.getCurrentItemIndex() === 0) {
+                    propagate = true;
+                }
+                // Bottom event only if on last Item
+                else if (args.boundary === BoundaryTypes.BOTTOM &&
+                    this._layout.getCurrentItemIndex() ===
+                    this._itemSizesCollection.getLength()-1) {
+                    propagate = true;
+                }
+                break;
             }
             if (propagate) {
                 this.onScrollPastBoundary.dispatch([this, args]);

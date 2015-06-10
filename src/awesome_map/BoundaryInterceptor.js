@@ -270,6 +270,9 @@ define(function(require) {
             var contentDimensions = this._awesomeMap.getContentDimensions();
             var viewportDimensions = this._awesomeMap.getViewportDimensions();
             var currentState = this._awesomeMap.getCurrentTransformState();
+            // Descale the currentState
+            //currentState.translateX = currentState.translateX/currentState.scale;
+            //currentState.translateY = currentState.translateY/currentState.scale;
             switch(boundary) {
             case BoundaryTypes.TOP:
                 if (currentState.translateY >= 0) {
@@ -277,7 +280,9 @@ define(function(require) {
                 }
                 break;
             case BoundaryTypes.BOTTOM:
-                if (currentState.translateY <= viewportDimensions.height-contentDimensions.height) {
+                var scaledBorderY = viewportDimensions.height-
+                    Math.round((contentDimensions.height*currentState.scale));
+                if (currentState.translateY <= scaledBorderY) {
                     return true;
                 }
                 break;
@@ -287,7 +292,9 @@ define(function(require) {
                 }
                 break;
             case BoundaryTypes.RIGHT:
-                if (currentState.translateY <= viewportDimensions.width-contentDimensions.width) {
+                var scaledBorderX = viewportDimensions.width-
+                    Math.round((contentDimensions.width*currentState.scale));
+                if (currentState.translateX <= scaledBorderX) {
                     return true;
                 }
                 break;
@@ -320,7 +327,7 @@ define(function(require) {
 
                 this._debouncedDetermineBoundaryVisibility();
                 // Fall through
-                
+
             case EventTypes.DRAG:
             case EventTypes.DRAG_START:
                 /* jshint +W086 */// Expected break statement             

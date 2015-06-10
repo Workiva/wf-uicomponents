@@ -1522,24 +1522,26 @@ define(function(require) {
                         expect(callback).toHaveBeenCalled();
                     });
                 });
-                it('should not propagate the event when it is on top-boundary and the current listItem is not the first',function() {
-                    testScrollList({ mode: mode }, function(scrollList) {
-                        spyOn(scrollList.onScrollPastBoundary,'dispatch');
-                        spyOn(scrollList._layout, 'getCurrentItemIndex').andReturn(19); // Last item
-                        var callback = scrollList.onScrollPastBoundary.dispatch;
-                        scrollList._shouldPropagateBoundaryEvent(null,{boundary: BoundaryTypes.TOP});
-                        expect(callback).not.toHaveBeenCalled();
+                if (mode !== 'flow') { // These tests dont apply to Flow mode
+                    it('should not propagate the event when it is on top-boundary and the current listItem is not the first',function() {
+                        testScrollList({ mode: mode }, function(scrollList) {
+                            spyOn(scrollList.onScrollPastBoundary,'dispatch');
+                            spyOn(scrollList._layout, 'getCurrentItemIndex').andReturn(19); // Last item
+                            var callback = scrollList.onScrollPastBoundary.dispatch;
+                            scrollList._shouldPropagateBoundaryEvent(null,{boundary: BoundaryTypes.TOP});
+                            expect(callback).not.toHaveBeenCalled();
+                        });
                     });
-                });
-                it('should not propagate the event when it is on bottom-boundary and the current listItem is not the last',function() {
-                    testScrollList({ mode: mode }, function(scrollList) {
-                        spyOn(scrollList.onScrollPastBoundary,'dispatch');
-                        spyOn(scrollList._layout, 'getCurrentItemIndex').andReturn(0); // first item
-                        var callback = scrollList.onScrollPastBoundary.dispatch;
-                        scrollList._shouldPropagateBoundaryEvent(null,{boundary: BoundaryTypes.BOTTOM});
-                        expect(callback).not.toHaveBeenCalled();
+                    it('should not propagate the event when it is on bottom-boundary and the current listItem is not the last',function() {
+                        testScrollList({ mode: mode }, function(scrollList) {
+                            spyOn(scrollList.onScrollPastBoundary,'dispatch');
+                            spyOn(scrollList._layout, 'getCurrentItemIndex').andReturn(0); // first item
+                            var callback = scrollList.onScrollPastBoundary.dispatch;
+                            scrollList._shouldPropagateBoundaryEvent(null,{boundary: BoundaryTypes.BOTTOM});
+                            expect(callback).not.toHaveBeenCalled();
+                        });
                     });
-                });
+                }
             }
             describe('in Flow mode',function() {
                 testInMode('flow');
