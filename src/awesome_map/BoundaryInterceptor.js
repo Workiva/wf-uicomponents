@@ -186,7 +186,7 @@ define(function(require) {
 
         /**
          * A list of boundaries that have been in view since the last completed user event 
-         * @type {[BoundaryType]}
+         * @type {Array.<BoundaryType>}
          * @private
          */
         this._visibleBoundaries = [];
