@@ -270,9 +270,6 @@ define(function(require) {
             var contentDimensions = this._awesomeMap.getContentDimensions();
             var viewportDimensions = this._awesomeMap.getViewportDimensions();
             var currentState = this._awesomeMap.getCurrentTransformState();
-            // Descale the currentState
-            //currentState.translateX = currentState.translateX/currentState.scale;
-            //currentState.translateY = currentState.translateY/currentState.scale;
             switch(boundary) {
             case BoundaryTypes.TOP:
                 if (currentState.translateY >= 0) {
@@ -280,8 +277,8 @@ define(function(require) {
                 }
                 break;
             case BoundaryTypes.BOTTOM:
-                var scaledBorderY = viewportDimensions.height-
-                    Math.round((contentDimensions.height*currentState.scale));
+                var scaledBorderY = viewportDimensions.height -
+                    Math.round((contentDimensions.height * currentState.scale));
                 if (currentState.translateY <= scaledBorderY) {
                     return true;
                 }
@@ -292,8 +289,8 @@ define(function(require) {
                 }
                 break;
             case BoundaryTypes.RIGHT:
-                var scaledBorderX = viewportDimensions.width-
-                    Math.round((contentDimensions.width*currentState.scale));
+                var scaledBorderX = viewportDimensions.width -
+                    Math.round((contentDimensions.width * currentState.scale));
                 if (currentState.translateX <= scaledBorderX) {
                     return true;
                 }
@@ -325,14 +322,13 @@ define(function(require) {
             case EventTypes.DRAG_END:
                 /* jshint -W086 */// Expected break statement 
 
-                this._debouncedDetermineBoundaryVisibility();
+                this._determineBoundaryVisibility();
                 // Fall through
 
             case EventTypes.DRAG:
             case EventTypes.DRAG_START:
                 /* jshint +W086 */// Expected break statement             
 
-                this._updateBoundariesStillVisible();
                 this._checkForBoundaryEvents(targetState);
                 if (!event.simulated && this._mode.x === Modes.SLOW) {
                     this._pullToBoundaries(event, targetState, 'x');
@@ -350,7 +346,6 @@ define(function(require) {
 
             case EventTypes.MOUSE_WHEEL:
 
-                this._updateBoundariesStillVisible();
                 this._debouncedDetermineBoundaryVisibility();
                 this._checkForBoundaryEvents(targetState);
                 this._stopAtBoundaries(event, targetState);
@@ -480,6 +475,7 @@ define(function(require) {
          * @private
          */
         _checkForBoundaryEvents: function(targetState) {
+            this._updateBoundariesStillVisible();
             var boundedPosition = this._getBoundedPosition(targetState);
             var deltaY = targetState.translateY - boundedPosition.y;
             if (deltaY > this._boundarySensitivity &&
@@ -526,7 +522,8 @@ define(function(require) {
             this._visibleBoundaries = [];
             // Determine boundary visibility
             for (var boundary in BoundaryTypes) {
-                if (this.isBoundaryVisible(BoundaryTypes[boundary])) {
+                if (BoundaryTypes.hasOwnProperty(boundary) &&
+                    this.isBoundaryVisible(BoundaryTypes[boundary])) {
                     this._visibleBoundaries.push(BoundaryTypes[boundary]);
                 }
             }
@@ -720,7 +717,8 @@ define(function(require) {
         _updateBoundariesStillVisible: function() {
             var visibleBoundaries = [];
             for (var boundary in this._visibleBoundaries) {
-                if (this.isBoundaryVisible(this._visibleBoundaries[boundary])) {
+                if (this._visibleBoundaries.hasOwnProperty(boundary) &&
+                    this.isBoundaryVisible(this._visibleBoundaries[boundary])) {
                     visibleBoundaries.push(this._visibleBoundaries[boundary]);
                 }
             }
