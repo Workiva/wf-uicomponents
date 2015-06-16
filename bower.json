@@ -1,6 +1,6 @@
 {
   "name": "wf-uicomponents",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "private": true,
   "ignore": [
     "bower_components",
@@ -17,7 +17,7 @@
   "dependencies": {
     "lodash": "3.6.0",
     "hammerjs": "1.0.5",
-    "wf-common": "git://github.com/WebFilings/wf-common#1.0.1"
+    "wf-common": "git://github.com/WebFilings/wf-common#1.1.0"
   },
   "devDependencies": {
     "jquery": "2.0.3",
