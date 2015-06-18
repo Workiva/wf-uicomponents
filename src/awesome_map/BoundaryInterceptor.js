@@ -228,7 +228,13 @@ define(function(require) {
          */
         this._pinToTop = !!options.pinToTop;
 
-
+        /**
+         * A dispatcher for BoundaryEvents.  Uses a front-firing debouncer for each 
+         * boundary type instead of a debounced master dispatcher so that the events dont
+         * block each other.
+         * @type {Function}
+         * @private
+         */
         this._dispatchBoundaryEvent = function() {
             var dispatchList = [];
             /* jshint -W083 */// Defining functions within a loop
