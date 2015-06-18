@@ -227,6 +227,27 @@ define(function(require) {
          * @private
          */
         this._pinToTop = !!options.pinToTop;
+
+
+        this._dispatchBoundaryEvent = function() {
+            var dispatchList = [];
+            /* jshint -W083 */// Defining functions within a loop
+            for (var bound in BoundaryTypes) {
+                if (BoundaryTypes.hasOwnProperty(bound)) {
+                    dispatchList[BoundaryTypes[bound]] = _.debounce(function(boundary) {
+                        this.onScrollPastBoundary.dispatch([this, {
+                            boundary: boundary
+                        }]);
+                    }.bind(this),90,true);
+                }
+            }
+            /* jshint +W083 */// Defining functions within a loop
+
+            return function(boundary) {
+                dispatchList[boundary](boundary);
+            };
+        }.bind(this)();
+
     };
 
     BoundaryInterceptor.prototype = {
@@ -344,9 +365,12 @@ define(function(require) {
                 }
                 break;
 
+            case EventTypes.MOUSE_WHEEL_END:
+                this._determineBoundaryVisibility();
+                break;
+
             case EventTypes.MOUSE_WHEEL:
 
-                this._debouncedDetermineBoundaryVisibility();
                 this._checkForBoundaryEvents(targetState);
                 this._stopAtBoundaries(event, targetState);
                 break;
@@ -480,38 +504,21 @@ define(function(require) {
             var deltaY = targetState.translateY - boundedPosition.y;
             if (deltaY > this._boundarySensitivity &&
                 this._visibleBoundaries.indexOf(BoundaryTypes.TOP) !== -1) {
-                this.onScrollPastBoundary.dispatch([this, {
-                    boundary: BoundaryTypes.TOP
-                }]);
+                this._dispatchBoundaryEvent(BoundaryTypes.TOP);
             }
             if (deltaY < -this._boundarySensitivity &&
                 this._visibleBoundaries.indexOf(BoundaryTypes.BOTTOM) !== -1) {
-                this.onScrollPastBoundary.dispatch([this, {
-                    boundary: BoundaryTypes.BOTTOM
-                }]);
+                this._dispatchBoundaryEvent(BoundaryTypes.BOTTOM);
             }
             var deltaX = targetState.translateX - boundedPosition.x;
             if (deltaX > this._boundarySensitivity &&
                 this._visibleBoundaries.indexOf(BoundaryTypes.LEFT) !== -1) {
-                this.onScrollPastBoundary.dispatch([this, {
-                    boundary: BoundaryTypes.LEFT
-                }]);
+                this._dispatchBoundaryEvent(BoundaryTypes.LEFT);
             }
             if (deltaX < -this._boundarySensitivity &&
                 this._visibleBoundaries.indexOf(BoundaryTypes.RIGHT) !== -1) {
-                this.onScrollPastBoundary.dispatch([this, {
-                    boundary: BoundaryTypes.RIGHT
-                }]);
+                this._dispatchBoundaryEvent(BoundaryTypes.RIGHT);
             }
-        },
-
-        /**
-         * A debounced wrapper for _determineBoundaryVisibility.
-         * This is declared now for clarity, but overriden at the end of the Prototype
-         * definition because lodash requires a concrete function.
-         * @private
-         */
-        _debouncedDetermineBoundaryVisibility: function() {
         },
 
         /**
@@ -725,10 +732,6 @@ define(function(require) {
             this._visibleBoundaries = visibleBoundaries;
         }
     };
-
-    // Replace the function stubbed above with a concrete debounced function.
-    BoundaryInterceptor.prototype._debouncedDetermineBoundaryVisibility =
-        _.debounce(BoundaryInterceptor.prototype._determineBoundaryVisibility,75);
 
     _.assign(BoundaryInterceptor.prototype, InterceptorMixin);
 
