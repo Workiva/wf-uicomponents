@@ -237,17 +237,19 @@ define(function(require) {
          */
         this._dispatchBoundaryEvent = function() {
             var dispatchList = [];
-            /* jshint -W083 */// Defining functions within a loop
+
+            var self = this;
+            function dispatcher(boundary) {
+                self.onScrollPastBoundary.dispatch([self, {boundary: boundary}]);
+            }
+
             for (var bound in BoundaryTypes) {
                 if (BoundaryTypes.hasOwnProperty(bound)) {
-                    dispatchList[BoundaryTypes[bound]] = _.debounce(function(boundary) {
-                        this.onScrollPastBoundary.dispatch([this, {
-                            boundary: boundary
-                        }]);
-                    }.bind(this),90,true);
+                    dispatchList[BoundaryTypes[bound]] = _.debounce(dispatcher,90,{
+                        leading: true
+                    });
                 }
             }
-            /* jshint +W083 */// Defining functions within a loop
 
             return function(boundary) {
                 dispatchList[boundary](boundary);
