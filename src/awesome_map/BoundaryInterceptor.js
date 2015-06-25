@@ -246,7 +246,8 @@ define(function(require) {
             for (var bound in BoundaryTypes) {
                 if (BoundaryTypes.hasOwnProperty(bound)) {
                     dispatchList[BoundaryTypes[bound]] = _.debounce(dispatcher,90,{
-                        leading: true
+                        leading: true,
+                        trailing: false
                     });
                 }
             }
