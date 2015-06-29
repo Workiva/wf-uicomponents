@@ -164,6 +164,8 @@ define(function(require) {
      */
     var ScrollList = function(host, itemSizeCollection, options) {
 
+        var self = this;
+
         //---------------------------------------------------------
         // Observables
         //---------------------------------------------------------
@@ -390,6 +392,38 @@ define(function(require) {
          *        })
          */
         this.onScrollPastBoundary = Observable.newObservable();
+
+        /**
+         * Boolean flag indicating whether or not to block boundary events.
+         * @type {boolean}
+         */
+        this._blockBoundaryEvents = false;
+
+        /**
+         * Debounced function for toggling off the boundary-event blocker flag.
+         * @type {Function}
+         */
+        this._debouncedUnblockBoundaryEvents = _.debounce(function() {
+            self._blockBoundaryEvents = false;
+        },200);
+
+        /*
+         * This function is used to handle an edge case in SINGLE and PEEK modes
+         * where, upon scrolling to the top or bottom item in the ScrollList, the
+         * boundaries immediately are visible, allowing the same event(s) which 
+         * triggered the page transition to also fire boundary events.  However,
+         * this is not desired behavior.  In these cases, events are blocked
+         * temporarily.
+         */
+        this.onCurrentItemChanged(function() {
+            switch (self._options.mode) {
+            case ScrollModes.SINGLE:
+            case ScrollModes.PEEK:
+                self._blockBoundaryEvents = true;
+                self._debouncedUnblockBoundaryEvents();
+                break;
+            }
+        });
 
         //---------------------------------------------------------
         // Private properties
@@ -1402,6 +1436,10 @@ define(function(require) {
         },
 
         _shouldPropagateBoundaryEvent: function(source, args) {
+            if (this._blockBoundaryEvents) {
+                return;
+            }
+
             var propagate = false;
 
             switch (this._options.mode) {
