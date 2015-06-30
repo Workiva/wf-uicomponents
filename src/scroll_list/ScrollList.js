@@ -415,7 +415,7 @@ define(function(require) {
          * this is not desired behavior.  In these cases, events are blocked
          * temporarily.
          */
-        this.onCurrentItemChanged(function() {
+        this.onCurrentItemChanging(function() {
             switch (self._options.mode) {
             case ScrollModes.SINGLE:
             case ScrollModes.PEEK:

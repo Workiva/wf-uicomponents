@@ -1487,7 +1487,7 @@ define(function(require) {
         });
     
         describe('_shouldPropagateBoundaryEvent', function() {
-            function testBoundaryEvent(scrollList, boundary,isCalled) {
+            function testBoundaryEvent(scrollList, boundary, isCalled) {
                 spyOn(scrollList.onScrollPastBoundary,'dispatch');
                 var callback = scrollList.onScrollPastBoundary.dispatch;
                 scrollList._shouldPropagateBoundaryEvent(null,{boundary: boundary});
