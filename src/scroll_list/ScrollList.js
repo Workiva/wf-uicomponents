@@ -19,6 +19,7 @@ define(function(require) {
 
     var _ = require('lodash');
     var AwesomeMapFactory = require('wf-js-uicomponents/scroll_list/AwesomeMapFactory');
+    var BoundaryTypes = require('wf-js-uicomponents/awesome_map/BoundaryTypes');
     var DestroyUtil = require('wf-js-common/DestroyUtil');
     var FitModes = require('wf-js-uicomponents/layouts/FitModes');
     var HorizontalAlignments = require('wf-js-uicomponents/layouts/HorizontalAlignments');
@@ -162,6 +163,8 @@ define(function(require) {
      * scrollList.render();
      */
     var ScrollList = function(host, itemSizeCollection, options) {
+
+        var self = this;
 
         //---------------------------------------------------------
         // Observables
@@ -378,6 +381,49 @@ define(function(require) {
          *        Invoked with no parameters
          */
         this.onScrollToItemStarted = Observable.newObservable();
+
+        /**
+         * Observable for subscribing to scroll events beyond AwesomeMap boundaries.
+         *
+         * @method AwesomeMap#onScrollPastTopBoundary
+         * @param {Function} callback
+         *        Invoked with (sender, {
+         *            boundary: {@link BoundaryTypes}
+         *        })
+         */
+        this.onScrollPastBoundary = Observable.newObservable();
+
+        /**
+         * Boolean flag indicating whether or not to block boundary events.
+         * @type {boolean}
+         */
+        this._blockBoundaryEvents = false;
+
+        /**
+         * Debounced function for toggling off the boundary-event blocker flag.
+         * @type {Function}
+         */
+        this._debouncedUnblockBoundaryEvents = _.debounce(function() {
+            self._blockBoundaryEvents = false;
+        },200);
+
+        /*
+         * This function is used to handle an edge case in SINGLE and PEEK modes
+         * where, upon scrolling to the top or bottom item in the ScrollList, the
+         * boundaries immediately are visible, allowing the same event(s) which 
+         * triggered the page transition to also fire boundary events.  However,
+         * this is not desired behavior.  In these cases, events are blocked
+         * temporarily.
+         */
+        this.onCurrentItemChanging(function() {
+            switch (self._options.mode) {
+            case ScrollModes.SINGLE:
+            case ScrollModes.PEEK:
+                self._blockBoundaryEvents = true;
+                self._debouncedUnblockBoundaryEvents();
+                break;
+            }
+        });
 
         //---------------------------------------------------------
         // Private properties
@@ -1387,7 +1433,46 @@ define(function(require) {
                 duration: options.duration,
                 done: options.done
             });
+        },
+
+        _shouldPropagateBoundaryEvent: function(source, args) {
+            if (this._blockBoundaryEvents) {
+                return;
+            }
+
+            var propagate = false;
+
+            switch (this._options.mode) {
+            case ScrollModes.FLOW:
+                // Propagate all events; there is only one Awesome map, and its 
+                // boundaries are the same as the ScrollLists'
+                propagate = true;
+                break;
+            case ScrollModes.SINGLE:
+            case ScrollModes.PEEK:
+                // Left and Right events
+                if (args.boundary === BoundaryTypes.LEFT ||
+                    args.boundary === BoundaryTypes.RIGHT) {
+                    propagate = true;
+                }
+                // Top event only if on first Item
+                else if (args.boundary === BoundaryTypes.TOP &&
+                    this._layout.getCurrentItemIndex() === 0) {
+                    propagate = true;
+                }
+                // Bottom event only if on last Item
+                else if (args.boundary === BoundaryTypes.BOTTOM &&
+                    this._layout.getCurrentItemIndex() ===
+                    this._itemSizesCollection.getLength()-1) {
+                    propagate = true;
+                }
+                break;
+            }
+            if (propagate) {
+                this.onScrollPastBoundary.dispatch([this, args]);
+            }
         }
+
     };
 
     return ScrollList;

@@ -20,6 +20,7 @@ define(function(require) {
     var $ = require('jquery');
     var _ = require('lodash');
     var AwesomeMap = require('wf-js-uicomponents/awesome_map/AwesomeMap');
+    var BoundaryTypes = require('wf-js-uicomponents/awesome_map/BoundaryTypes');
     var DestroyUtil = require('wf-js-common/DestroyUtil');
     var ItemSizeCollection = require('wf-js-uicomponents/layouts/ItemSizeCollection');
     var ScrollList = require('wf-js-uicomponents/scroll_list/ScrollList');
@@ -1484,5 +1485,70 @@ define(function(require) {
                 });
             });
         });
+    
+        describe('_shouldPropagateBoundaryEvent', function() {
+            function testBoundaryEvent(scrollList, boundary, isCalled) {
+                spyOn(scrollList.onScrollPastBoundary,'dispatch');
+                var callback = scrollList.onScrollPastBoundary.dispatch;
+                scrollList._shouldPropagateBoundaryEvent(null,{boundary: boundary});
+                if ( isCalled ) {
+                    expect(callback).toHaveBeenCalled();
+                }
+                else {
+                    expect(callback).not.toHaveBeenCalled();
+                }
+            }
+            function testInMode(mode) {
+                it('should propagate the event when it is on left-boundary',function() {
+                    testScrollList({ mode: mode }, function(scrollList) {
+                        testBoundaryEvent(scrollList, BoundaryTypes.LEFT, true);
+                    });
+                });
+                it('should propagate the event when it is on right-boundary',function() {
+                    testScrollList({ mode: mode }, function(scrollList) {
+                        testBoundaryEvent(scrollList, BoundaryTypes.RIGHT, true);
+                    });
+                });
+                it('should propagate the event when it is on top-boundary and the current listItem is the first',function() {
+                    testScrollList({ mode: mode }, function(scrollList) {
+                        spyOn(scrollList._layout, 'getCurrentItemIndex').andReturn(0); // First item
+                        testBoundaryEvent(scrollList, BoundaryTypes.TOP, true);
+                    });
+                });
+                it('should propagate the event when it is on bottom-boundary and the current listItem is the last',function() {
+                    testScrollList({ mode: mode }, function(scrollList) {
+                        spyOn(scrollList._layout, 'getCurrentItemIndex').andReturn(19); // Last item
+                        testBoundaryEvent(scrollList, BoundaryTypes.BOTTOM, true);
+                    });
+                });
+                if (mode !== 'flow') { // These tests dont apply to Flow mode
+                    it('should not propagate the event when it is on top-boundary and the current listItem is not the first',function() {
+                        testScrollList({ mode: mode }, function(scrollList) {
+                            spyOn(scrollList._layout, 'getCurrentItemIndex').andReturn(19); // Last item
+                            testBoundaryEvent(scrollList, BoundaryTypes.TOP, false);
+                        });
+                    });
+                    it('should not propagate the event when it is on bottom-boundary and the current listItem is not the last',function() {
+                        testScrollList({ mode: mode }, function(scrollList) {
+                            spyOn(scrollList._layout, 'getCurrentItemIndex').andReturn(0); // first item
+                            testBoundaryEvent(scrollList, BoundaryTypes.BOTTOM, false);
+                        });
+                    });
+                }
+            }
+            describe('in Flow mode',function() {
+                testInMode('flow');
+            });
+            describe('in Peek mode',function() {
+                testInMode('peek');
+            });
+            describe('in Single mode',function() {
+                testInMode('single');
+            });
+
+        });
     });
+
+
+
 });

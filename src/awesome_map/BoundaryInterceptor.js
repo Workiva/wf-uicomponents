@@ -18,9 +18,11 @@ define(function(require) {
     'use strict';
 
     var _ = require('lodash');
+    var BoundaryTypes = require('wf-js-uicomponents/awesome_map/BoundaryTypes');
     var EasingFunctions = require('wf-js-uicomponents/awesome_map/EasingFunctions');
     var EventTypes = require('wf-js-uicomponents/awesome_map/EventTypes');
     var InterceptorMixin = require('wf-js-uicomponents/awesome_map/InterceptorMixin');
+    var Observable = require('wf-js-common/Observable');
     var Utils = require('wf-js-common/Utils');
 
     /**
@@ -28,6 +30,13 @@ define(function(require) {
      * @type {number}
      */
     var INERTIAL_SCALE_FACTOR = 4;
+
+    /** 
+     * This constant defines the default minimum number of pixels beyond the boundary a
+     * scroll event must reach for boundary events to be fired.
+     * @type {number}
+     */
+    var DEFAULT_BOUNDARY_SENSITIVITY = 25; // Pixels
 
     /**
      * Values for the mode option.
@@ -108,6 +117,12 @@ define(function(require) {
      *        Pins content that does not overflow the viewport to the top.
      *        When options.centerContentY is true it overrides this.
      *
+     * @param {number} [options.boundarySensitivity=DEFAULT_BOUNDARY_SENSITIVITY]
+     *        This value defines the minimum number of pixels beyond the boundary a scroll event
+     *        must reach for boundary events to be fired, so that light touches and small scrolls 
+     *        (by default) wont fire events constantly.  A value of 0 will cause every event which
+     *        passes a boundary to fire a boundary event.
+     *
      * @example
      *
      * new BoundaryInterceptor({
@@ -151,6 +166,39 @@ define(function(require) {
         this._easing = options.easing || EasingFunctions.easeOutQuart;
 
         /**
+         * Defines the minimum number of pixels beyond the boundary which a scroll event
+         * must reach for boundary events to be fired.
+         * @type {number}
+         * @private
+         */
+        this._boundarySensitivity = options.boundarySensitivity || DEFAULT_BOUNDARY_SENSITIVITY;
+
+        /**
+         * Observable for subscribing to scroll events beyond AwesomeMap boundaries.
+         *
+         * @method AwesomeMap#onScrollPastTopBoundary
+         * @param {Function} callback
+         *        Invoked with (sender, {
+         *            boundary: {@link BoundaryTypes}
+         *        })
+         */
+        this.onScrollPastBoundary = Observable.newObservable();
+
+        /**
+         * A list of boundaries that have been in view since the last completed user event 
+         * @type {Array.<BoundaryType>}
+         * @private
+         */
+        this._visibleBoundaries = [];
+        // Initialize with all of the boundaries, and any that are not in view will be removed
+        // when an event is processed.
+        for (var boundary in BoundaryTypes) {
+            if (BoundaryTypes.hasOwnProperty(boundary)) {
+                this._visibleBoundaries.push(BoundaryTypes[boundary]);
+            }
+        }
+
+        /**
          * Determines how to handle boundary violations during interactions.
          * @type {{x: string, y: string}}
          * @private
@@ -179,6 +227,36 @@ define(function(require) {
          * @private
          */
         this._pinToTop = !!options.pinToTop;
+
+        /**
+         * A dispatcher for BoundaryEvents.  Uses a front-firing debouncer for each 
+         * boundary type instead of a debounced master dispatcher so that the events dont
+         * block each other.
+         * @type {Function}
+         * @private
+         */
+        this._dispatchBoundaryEvent = function() {
+            var dispatchList = [];
+
+            var self = this;
+            function dispatcher(boundary) {
+                self.onScrollPastBoundary.dispatch([self, {boundary: boundary}]);
+            }
+
+            for (var bound in BoundaryTypes) {
+                if (BoundaryTypes.hasOwnProperty(bound)) {
+                    dispatchList[BoundaryTypes[bound]] = _.debounce(dispatcher,90,{
+                        leading: true,
+                        trailing: false
+                    });
+                }
+            }
+
+            return function(boundary) {
+                dispatchList[boundary](boundary);
+            };
+        }.bind(this)();
+
     };
 
     BoundaryInterceptor.prototype = {
@@ -213,6 +291,45 @@ define(function(require) {
         },
 
         /**
+         * Determines if the specified boundary is currently in view
+         * @method BoundaryInterceptor#isBoundaryVisible
+         * @param {BoundaryType} boundary
+         * @returns {boolean} true if visible, else false
+         */
+        isBoundaryVisible: function(boundary) {
+            var contentDimensions = this._awesomeMap.getContentDimensions();
+            var viewportDimensions = this._awesomeMap.getViewportDimensions();
+            var currentState = this._awesomeMap.getCurrentTransformState();
+            switch(boundary) {
+            case BoundaryTypes.TOP:
+                if (currentState.translateY >= 0) {
+                    return true;
+                }
+                break;
+            case BoundaryTypes.BOTTOM:
+                var scaledBorderY = viewportDimensions.height -
+                    Math.round((contentDimensions.height * currentState.scale));
+                if (currentState.translateY <= scaledBorderY) {
+                    return true;
+                }
+                break;
+            case BoundaryTypes.LEFT:
+                if (currentState.translateX >= 0) {
+                    return true;
+                }
+                break;
+            case BoundaryTypes.RIGHT:
+                var scaledBorderX = viewportDimensions.width -
+                    Math.round((contentDimensions.width * currentState.scale));
+                if (currentState.translateX <= scaledBorderX) {
+                    return true;
+                }
+                break;
+            }
+            return false;
+        },
+
+        /**
          * Intercepts transforms and applies boundary constraints.
          * @method BoundaryInterceptor#handleTransformStarted
          * @param {AwesomeMap} source
@@ -232,10 +349,17 @@ define(function(require) {
                 this._touchState = targetState;
                 break;
 
-            case EventTypes.DRAG:
             case EventTypes.DRAG_END:
-            case EventTypes.DRAG_START:
+                /* jshint -W086 */// Expected break statement 
 
+                this._determineBoundaryVisibility();
+                // Fall through
+
+            case EventTypes.DRAG:
+            case EventTypes.DRAG_START:
+                /* jshint +W086 */// Expected break statement             
+
+                this._checkForBoundaryEvents(targetState);
                 if (!event.simulated && this._mode.x === Modes.SLOW) {
                     this._pullToBoundaries(event, targetState, 'x');
                 }
@@ -250,8 +374,13 @@ define(function(require) {
                 }
                 break;
 
+            case EventTypes.MOUSE_WHEEL_END:
+                this._determineBoundaryVisibility();
+                break;
+
             case EventTypes.MOUSE_WHEEL:
 
+                this._checkForBoundaryEvents(targetState);
                 this._stopAtBoundaries(event, targetState);
                 break;
 
@@ -368,6 +497,50 @@ define(function(require) {
                     bounceDistance = 0.1 * viewportSize.height;
                     direction = boundedPosition.y < originalState.translateY ? 1 : -1;
                     targetState.translateY = boundedPosition.y + bounceDistance * direction;
+                }
+            }
+        },
+
+        /**
+         * Tests to see if the given event state meets the criteria for firing
+         * one or more onScrollPastBoundary events.
+         * @param {TransformState} targetState
+         * @private
+         */
+        _checkForBoundaryEvents: function(targetState) {
+            this._updateBoundariesStillVisible();
+            var boundedPosition = this._getBoundedPosition(targetState);
+            var deltaY = targetState.translateY - boundedPosition.y;
+            if (deltaY > this._boundarySensitivity &&
+                this._visibleBoundaries.indexOf(BoundaryTypes.TOP) !== -1) {
+                this._dispatchBoundaryEvent(BoundaryTypes.TOP);
+            }
+            if (deltaY < -this._boundarySensitivity &&
+                this._visibleBoundaries.indexOf(BoundaryTypes.BOTTOM) !== -1) {
+                this._dispatchBoundaryEvent(BoundaryTypes.BOTTOM);
+            }
+            var deltaX = targetState.translateX - boundedPosition.x;
+            if (deltaX > this._boundarySensitivity &&
+                this._visibleBoundaries.indexOf(BoundaryTypes.LEFT) !== -1) {
+                this._dispatchBoundaryEvent(BoundaryTypes.LEFT);
+            }
+            if (deltaX < -this._boundarySensitivity &&
+                this._visibleBoundaries.indexOf(BoundaryTypes.RIGHT) !== -1) {
+                this._dispatchBoundaryEvent(BoundaryTypes.RIGHT);
+            }
+        },
+
+        /**
+         * Creates a new list of currently visible boundaries.
+         * @private
+         */
+        _determineBoundaryVisibility: function() {
+            this._visibleBoundaries = [];
+            // Determine boundary visibility
+            for (var boundary in BoundaryTypes) {
+                if (BoundaryTypes.hasOwnProperty(boundary) &&
+                    this.isBoundaryVisible(BoundaryTypes[boundary])) {
+                    this._visibleBoundaries.push(BoundaryTypes[boundary]);
                 }
             }
         },
@@ -551,6 +724,21 @@ define(function(require) {
             if (!axis || axis === 'y') {
                 targetState.translateY = boundedPosition.y;
             }
+        },
+
+        /**
+         * Updates the list of boundaries, removing any which are not currently visible.
+         * @private
+         */
+        _updateBoundariesStillVisible: function() {
+            var visibleBoundaries = [];
+            for (var boundary in this._visibleBoundaries) {
+                if (this._visibleBoundaries.hasOwnProperty(boundary) &&
+                    this.isBoundaryVisible(this._visibleBoundaries[boundary])) {
+                    visibleBoundaries.push(this._visibleBoundaries[boundary]);
+                }
+            }
+            this._visibleBoundaries = visibleBoundaries;
         }
     };
 

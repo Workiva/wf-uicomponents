@@ -79,13 +79,17 @@ define(function(require) {
             map.addInterceptor(new SwipeInterceptor({
                 constrainToAxes: true
             }));
-            map.addInterceptor(new BoundaryInterceptor({
+            var boundaryInterceptor = new BoundaryInterceptor({
                 centerContentX: hAlignCenter,
                 centerContentY: vAlignAuto,
                 mode: 'stop',
                 pinToLeft: hAlignLeft,
-                pinToTop: vAlignTop
-            }));
+                pinToTop: vAlignTop,
+            });
+            boundaryInterceptor.onScrollPastBoundary(function(source, args) {
+                scrollList._shouldPropagateBoundaryEvent(source,args);
+            });
+            map.addInterceptor(boundaryInterceptor);
 
             // Wire up observables.
             // Emit interaction events from the map that was current at the
@@ -188,13 +192,17 @@ define(function(require) {
                 if (options.scaleLimits) {
                     map.addInterceptor(new ScaleInterceptor(options.scaleLimits));
                 }
-                map.addInterceptor(new BoundaryInterceptor({
+                var boundaryInterceptor = new BoundaryInterceptor({
                     centerContentX: hAlignCenter,
                     centerContentY: vAlignAuto,
                     mode: { x: 'stop', y: 'slow' },
                     pinToLeft: hAlignLeft,
                     pinToTop: vAlignTop
-                }));
+                });
+                boundaryInterceptor.onScrollPastBoundary(function(source, args) {
+                    scrollList._shouldPropagateBoundaryEvent(source,args);
+                });
+                map.addInterceptor(boundaryInterceptor);
             }
             else {
                 map.addInterceptor(new MouseWheelNavigationInterceptor(scrollList));
