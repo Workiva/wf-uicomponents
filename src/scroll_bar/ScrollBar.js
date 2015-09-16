@@ -20,7 +20,7 @@ define(function(require) {
     var EventTypes = require('wf-js-uicomponents/awesome_map/EventTypes');
     var DestroyUtil = require('wf-js-common/DestroyUtil');
 
-    var DEFAULT_MIN_SIZE = 16;
+    var DEFAULT_MIN_SIZE = 45;
     var DEFAULT_SCROLLER_Z_INDEX = 3;
     var DEFAULT_SCROLLER_CLASS = 'scroller';
     var DEFAULT_VERT_SCROLLER_CLASS = 'vertical-scroller';
