@@ -1,4 +1,4 @@
-WebFilings JavaScript UI Components
+Workiva JavaScript UI Components
 ===================================
 
 > UI components that support a rich HTML5 user experience. _Optimized for mobile!_

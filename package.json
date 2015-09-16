@@ -5,14 +5,14 @@
   "private": true,
   "repository": {
     "type": "git",
-    "url": "git://github.com/WebFilings/wf-uicomponents.git"
+    "url": "git://github.com/Workiva/wf-uicomponents.git"
   },
   "readmeFilename": "README.md",
   "devDependencies": {
     "almond": "~0.2.7",
     "grunt": "^0.4.5",
     "grunt-contrib-requirejs": "~0.4.1",
-    "wf-grunt": "git://github.com/WebFilings/wf-grunt.git#0.4.0"
+    "wf-grunt": "git://github.com/Workiva/wf-grunt.git#0.4.0"
   },
   "jspm": {
     "directories": {
