@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 WebFilings, LLC
+ * Copyright 2015 Workiva Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,7 +31,7 @@ define(function(require) {
      */
     var INERTIAL_SCALE_FACTOR = 4;
 
-    /** 
+    /**
      * This constant defines the default minimum number of pixels beyond the boundary a
      * scroll event must reach for boundary events to be fired.
      * @type {number}
@@ -119,7 +119,7 @@ define(function(require) {
      *
      * @param {number} [options.boundarySensitivity=DEFAULT_BOUNDARY_SENSITIVITY]
      *        This value defines the minimum number of pixels beyond the boundary a scroll event
-     *        must reach for boundary events to be fired, so that light touches and small scrolls 
+     *        must reach for boundary events to be fired, so that light touches and small scrolls
      *        (by default) wont fire events constantly.  A value of 0 will cause every event which
      *        passes a boundary to fire a boundary event.
      *
@@ -185,7 +185,7 @@ define(function(require) {
         this.onScrollPastBoundary = Observable.newObservable();
 
         /**
-         * A list of boundaries that have been in view since the last completed user event 
+         * A list of boundaries that have been in view since the last completed user event
          * @type {Array.<BoundaryType>}
          * @private
          */
@@ -229,7 +229,7 @@ define(function(require) {
         this._pinToTop = !!options.pinToTop;
 
         /**
-         * A dispatcher for BoundaryEvents.  Uses a front-firing debouncer for each 
+         * A dispatcher for BoundaryEvents.  Uses a front-firing debouncer for each
          * boundary type instead of a debounced master dispatcher so that the events dont
          * block each other.
          * @type {Function}
@@ -350,14 +350,14 @@ define(function(require) {
                 break;
 
             case EventTypes.DRAG_END:
-                /* jshint -W086 */// Expected break statement 
+                /* jshint -W086 */// Expected break statement
 
                 this._determineBoundaryVisibility();
                 // Fall through
 
             case EventTypes.DRAG:
             case EventTypes.DRAG_START:
-                /* jshint +W086 */// Expected break statement             
+                /* jshint +W086 */// Expected break statement
 
                 this._checkForBoundaryEvents(targetState);
                 if (!event.simulated && this._mode.x === Modes.SLOW) {
