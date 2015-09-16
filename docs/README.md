@@ -21,8 +21,6 @@ There are three interceptors provided out of the box:
 - **ScaleInterceptor**: Restricts zooming of content to specified scale limits.
 - **SwipeInterceptor**: Animates a swipe when swipe events are transformed.
 
-[Demo](https://webfilings.box.com/shared/static/4aj3gfi3u2hmkqueashm.mov)
-
 #### {@link ScrollList}
 
 The ScrollList renders a virtualized list of items in its host element.
