@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/WebFilings/wf-uicomponents.png)](https://travis-ci.org/WebFilings/wf-uicomponents)
+[![Build Status](https://travis-ci.org/Workiva/wf-uicomponents.png)](https://travis-ci.org/Workiva/wf-uicomponents)
 
 WebFilings JavaScript UI Components
 ================================================================================
