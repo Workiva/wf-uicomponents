@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 WebFilings, LLC
+ * Copyright 2015 Workiva Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -410,7 +410,7 @@ define(function(require) {
         /*
          * This function is used to handle an edge case in SINGLE and PEEK modes
          * where, upon scrolling to the top or bottom item in the ScrollList, the
-         * boundaries immediately are visible, allowing the same event(s) which 
+         * boundaries immediately are visible, allowing the same event(s) which
          * triggered the page transition to also fire boundary events.  However,
          * this is not desired behavior.  In these cases, events are blocked
          * temporarily.
@@ -1444,7 +1444,7 @@ define(function(require) {
 
             switch (this._options.mode) {
             case ScrollModes.FLOW:
-                // Propagate all events; there is only one Awesome map, and its 
+                // Propagate all events; there is only one Awesome map, and its
                 // boundaries are the same as the ScrollLists'
                 propagate = true;
                 break;

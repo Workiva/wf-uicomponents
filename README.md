@@ -1,6 +1,6 @@
-[![Build Status](https://travis-ci.org/WebFilings/wf-uicomponents.png)](https://travis-ci.org/WebFilings/wf-uicomponents)
+[![Build Status](https://travis-ci.org/Workiva/wf-uicomponents.png)](https://travis-ci.org/Workiva/wf-uicomponents)
 
-WebFilings JavaScript UI Components
+Workiva JavaScript UI Components
 ================================================================================
 
 > Mobile-optimized, composable UI components that support a rich HTML5 user experience.
@@ -37,8 +37,6 @@ There are three interceptors provided out of the box:
 - **ScaleInterceptor**: Restricts zooming of content to specified scale limits.
 - **SwipeInterceptor**: Animates a swipe when swipe events are transformed.
 
-[Demo](https://webfilings.box.com/shared/static/4aj3gfi3u2hmkqueashm.mov)
-
 #### ScrollList
 
 The ScrollList renders a virtualized list of items in its host element.
@@ -56,7 +54,7 @@ Consuming This Library
 $ npm install -g bower
 
 # install this package
-$ bower install git@github.com:WebFilings/wf-uicomponents.git#{version}
+$ bower install git@github.com:Workiva/wf-uicomponents.git#{version}
 ```
 
 - In your requirejs configuration, ensure the following config exists
@@ -89,7 +87,7 @@ Development: Getting Started
 
 ```bash
 # clone the repo
-$ git clone git@github.com:WebFilings/wf-uicomponents.git
+$ git clone git@github.com:Workiva/wf-uicomponents.git
 $ cd wf-uicomponents
 
 # install global tools if you haven't already
@@ -156,7 +154,7 @@ Familiarize yourself with the package managers we use:
 Development: Process
 --------------------------------------------------------------------------------
 
-This project uses [wf-grunt](https://github.com/WebFilings/wf-grunt#task-reference).
+This project uses [wf-grunt](https://github.com/Workiva/wf-grunt#task-reference).
 Please see that repo for more information.
 
 [Node]: http://nodejs.org/api/
