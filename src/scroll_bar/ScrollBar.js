@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 WebFilings, LLC
+ * Copyright 2015 Workiva, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,7 +20,7 @@ define(function(require) {
     var EventTypes = require('wf-js-uicomponents/awesome_map/EventTypes');
     var DestroyUtil = require('wf-js-common/DestroyUtil');
 
-    var DEFAULT_MIN_SIZE = 16;
+    var DEFAULT_MIN_SIZE = 45;
     var DEFAULT_SCROLLER_Z_INDEX = 3;
     var DEFAULT_SCROLLER_CLASS = 'scroller';
     var DEFAULT_VERT_SCROLLER_CLASS = 'vertical-scroller';

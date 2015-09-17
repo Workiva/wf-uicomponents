@@ -1,4 +1,4 @@
-/*! WebFilings Copyright (c) 2014 */
+/*! Copyright 2015 Workiva, Inc. */
 
 (function (root, factory) {
     if (typeof define === 'function' && define.amd) {

@@ -1,4 +1,4 @@
-WebFilings JavaScript UI Components
+Workiva JavaScript UI Components
 ===================================
 
 > UI components that support a rich HTML5 user experience. _Optimized for mobile!_
@@ -20,8 +20,6 @@ There are three interceptors provided out of the box:
 - **BoundaryInterceptor**: Restricts panning of content to the viewport boundaries.
 - **ScaleInterceptor**: Restricts zooming of content to specified scale limits.
 - **SwipeInterceptor**: Animates a swipe when swipe events are transformed.
-
-[Demo](https://webfilings.box.com/shared/static/4aj3gfi3u2hmkqueashm.mov)
 
 #### {@link ScrollList}
 
